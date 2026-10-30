@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Window Shop</title>
+<title>Hanvika Industries — Windows & Doors</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f6feb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hanvika">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
   --bg:#f4f5f7; --panel:#fff; --ink:#1b1f24; --soft:#5b6472; --faint:#98a1ad; --line:#e3e6ea;
@@ -262,6 +271,9 @@ table.items tbody td.sq{font-weight:400;color:var(--soft)}
 @media(min-width:1100px){ .fab{display:none} }
 @media(min-width:701px) and (max-width:1099px){ .toast{bottom:96px} }
 
+/* new-version banner */
+.updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));width:min(560px,calc(100% - 20px));z-index:25;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #bfd3fb;border-left:5px solid var(--accent);border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:14px}
+
 /* send-link box */
 .viewer.share{align-items:flex-start;overflow:auto;padding:24px 0 calc(24px + env(safe-area-inset-bottom));background:rgba(0,0,0,.55)}
 .viewer.share textarea{min-height:230px}
@@ -313,7 +325,7 @@ function plev(o){ return o.plevel||'Normal'; } function plBadge(o){ return plev(
 var BASIS={window:'per window / door',slider:'per sliding window',gshutter:'per glass shutter',mshutter:'per mesh shutter / frame',fixed:'per fixed pane',vent:'per ventilator',fan:'per exhaust fan',door:'per door',frameM:'per metre of outer frame',shutterM:'per metre of shutter',profM:'per metre of all profile',beadM:'per metre of glass bead'};
 
 var DEF={
-  company:{name:'My uPVC Windows',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
+  company:{name:'Hanvika Industries',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
   pins:{admin:'1234',sales:'0000',production:'1111'},
   gstPct:0, advancePct:50,
   brands:[{name:'Standard',
@@ -334,7 +346,8 @@ var DEF={
   heads:[{name:'Material purchase',grp:'Direct'},{name:'Glass',grp:'Direct'},{name:'Hardware',grp:'Direct'},{name:'Salary & wages',grp:'Direct'},{name:'Transport',grp:'Direct'},{name:'Rent',grp:'Indirect'},{name:'Electricity',grp:'Indirect'},{name:'Machine / tools',grp:'Indirect'},{name:'Office & misc',grp:'Indirect'},{name:'Owner drawings',grp:'Capital'},{name:'Staff advance',grp:'Advances'}],
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
-var BAKED={url:'',key:''};
+var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
+var APPV='31 Oct 2026, 01:38';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(d.heads&&!d.heads.some(function(h){return h.name==='Staff advance';})) d.heads.push({name:'Staff advance',grp:'Advances'}); (d.expenses||[]).forEach(function(e){ if(!e.head) e.head=e.cat==='Salary'?'Salary & wages':e.cat==='Material'?'Material purchase':(e.cat||'Office & misc'); if(!e.mode) e.mode='Cash'; if(!e.vno){ e.vno=d.vseq||1; d.vseq=(d.vseq||1)+1; } }); if(!d.brands||!d.brands.length) d.brands=JSON.parse(JSON.stringify(DEF.brands));
@@ -346,7 +359,7 @@ function migrate(d){ if(d.heads&&!d.heads.some(function(h){return h.name==='Staf
 function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name===name) return D.brands[i]; return D.brands[0]; }
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
-var saveT; function save(){ localStorage.setItem('wshop',JSON.stringify(D)); clearTimeout(saveT); saveT=setTimeout(cloudPush,1200); }
+var saveT; function save(){ localStorage.setItem('wshop',JSON.stringify(D)); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
 
 function sbOn(){ return D.sb.url&&D.sb.key; }
 var SESS=(function(){ try{ return JSON.parse(localStorage.getItem('sbsess')||'null'); }catch(e){ return null; } })();
@@ -376,8 +389,8 @@ function sbUsers(){ return sbRefresh().then(function(){ return fetch(sbUrl('/res
 function sbUserSave(email,role){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/app_users'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates'}),body:JSON.stringify([{email:email.toLowerCase(),role:role}])}); }).then(function(r){ if(!r.ok) throw new Error(r.status===403||r.status===401?'Only an admin can change users':'save '+r.status); }); }
 function sbUserDel(email){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/app_users?email=eq.'+encodeURIComponent(email)),{method:'DELETE',headers:sbHeaders()}); }).then(function(r){ if(!r.ok) throw new Error('delete '+r.status); }); }
 function loadUsers(){ S.ru='loading'; sbUsers().then(function(u){ S.ru=u; if(S.tab==='settings') render(); }).catch(function(e){ S.ru={err:e.message}; if(S.tab==='settings') render(); }); }
-function cloudPush(){ if(!sbOn()||!SESS) return; var c=JSON.parse(JSON.stringify(D)); delete c.sb; var now=new Date().toISOString();
-  sbRefresh().then(function(){
+function cloudPush(){ if(!sbOn()||!SESS) return Promise.resolve(); var c=JSON.parse(JSON.stringify(D)); delete c.sb; var now=new Date().toISOString();
+  return sbRefresh().then(function(){
     if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; localStorage.setItem('sbseen',now); setSync('Saved online'); }); }
     return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&updated_at=eq.'+encodeURIComponent(LASTSEEN)),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:JSON.stringify({data:c,updated_at:now})}).then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('save '+r.status); if(!rows.length){ setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } LASTSEEN=now; localStorage.setItem('sbseen',now); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
   }).catch(function(e){ setSync('Offline — saved on this device ('+(e&&e.message||'')+')'); }); }
@@ -1056,6 +1069,7 @@ function viewSettings(){
         +'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
      if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
      return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
+   +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div><p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'
    +'<div class="card"><h2>Backup</h2><div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label></div><p class="faint">Download a backup once a week if you are not using online sync.</p></div>';
 }
 
@@ -1169,6 +1183,7 @@ document.addEventListener('click',function(e){
   var a=d.act;
   if(a==='login'){ var p=$('#pin').value; if(p===D.pins.admin) S.role='admin'; else if(p===D.pins.sales) S.role='sales'; else if(p===D.pins.production) S.role='production'; else { toast('Wrong PIN'); return; } sessionStorage.setItem('role',S.role); render(); cloudPull(); if(alerts().length&&!prod()){ setTimeout(showReminders,300); } }
   if(a==='bell') showReminders();
+  if(a==='chkupd') checkUpdate(true);
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
@@ -1307,8 +1322,24 @@ function installCard(){ if(isStandalone||localStorage.getItem('noInstall')) retu
   if(INSTALL) return '<div class="card row between" style="background:#eef3fd;border-color:#bfd3fb"><div><b>📲 Install the app</b><div class="faint">Opens full-screen from your home screen, like any app.</div></div><span class="row"><button class="btn primary" data-act="install">Install</button><button class="btn ghost sm" data-act="noinstall">Later</button></span></div>';
   if(isIOS&&BAKED.url) return '<div class="card" style="background:#eef3fd;border-color:#bfd3fb"><div class="row between"><b>📲 Install on iPhone</b><button class="btn ghost sm" data-act="noinstall">Hide</button></div><div class="faint">In Safari tap <b>Share</b> (square with arrow) → <b>Add to Home Screen</b> → Add.</div></div>';
   return ''; }
+/* ---- app updates: check the website for a newer version ---- */
+var UPD=null, UPDLATER=false, LASTCHK=0;
+if(/[?&]u=\d+/.test(location.search)&&history.replaceState){ history.replaceState(null,'',location.pathname); }
+function checkUpdate(manual){ if(!BAKED.url||APPV==='dev'||!/^https?:$/.test(location.protocol)||navigator.onLine===false){ if(manual) toast(APPV==='dev'?'Updates come from your website version':'You are offline'); return; }
+  if(!manual&&Date.now()-LASTCHK<10*60*1000) return; LASTCHK=Date.now();
+  fetch('index.html?check=1',{cache:'no-cache'}).then(function(r){ return r.ok?r.text():''; }).then(function(t){ var m=t.match(/var APPV='([^']+)'/);
+    if(m&&m[1]!==APPV){ UPD=m[1]; if(manual) UPDLATER=false; showUpdate(); } else if(manual) toast('You have the latest version ✓'); }).catch(function(){ if(manual) toast('Could not check — try again'); }); }
+function showUpdate(){ if(UPDLATER||document.getElementById('updbar')) return; var b=document.createElement('div'); b.id='updbar'; b.className='updbar';
+  b.innerHTML='<span class="grow">🔄 <b>New version of the app is ready</b></span><button class="btn sm primary" data-u="go">Update now</button><button class="btn sm" data-u="later">Later</button>';
+  b.addEventListener('click',function(e){ var x=e.target.closest('[data-u]'); if(!x) return; if(x.dataset.u==='later'){ UPDLATER=true; b.remove(); return; } x.textContent='Updating…'; x.disabled=true; doUpdate(); });
+  document.body.appendChild(b); }
+function doUpdate(){ var done=false, go=function(){ if(done) return; done=true; location.replace(location.pathname.replace(/index\.html$/,'')+'?u='+Date.now()); };
+  setTimeout(go,4000);   // never hang
+  var push=Promise.resolve(); if(saveT){ clearTimeout(saveT); saveT=null; push=cloudPush(); }
+  push.catch(function(){}).then(function(){ return navigator.serviceWorker&&navigator.serviceWorker.getRegistration?navigator.serviceWorker.getRegistration().then(function(r){ return r&&r.update(); }):null; }).catch(function(){}).then(go,go); }
+if(BAKED.url){ setTimeout(checkUpdate,3000); setInterval(function(){ if(document.visibilityState==='visible') checkUpdate(); },30*60*1000); }
 if(BAKED.url&&'serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&window.top===window){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
-document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT) cloudPull(); });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState!=='visible') return; if(S.role&&sbOn()&&SESS&&!saveT) cloudPull(); checkUpdate(); });
 window.addEventListener('online',function(){ setSync('Back online'); if(S.role&&sbOn()&&SESS){ cloudPush(); } render(); });
 window.addEventListener('offline',function(){ setSync('Offline — changes are kept on this phone'); render(); });
 render();
