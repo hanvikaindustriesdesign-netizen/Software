@@ -3,16 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hanvika Industries — Windows & Doors</title>
-<meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#1f6feb">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Hanvika">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Window Shop</title>
 <style>
 :root{
   --bg:#f4f5f7; --panel:#fff; --ink:#1b1f24; --soft:#5b6472; --faint:#98a1ad; --line:#e3e6ea;
@@ -22,7 +13,8 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%} button,a,select,input{touch-action:manipulation}
 @media (display-mode: standalone){ #app{padding-top:calc(14px + env(safe-area-inset-top))} }
-@media (max-width:700px){ .who .wname{display:none} .top{align-items:flex-start} .who{white-space:nowrap;display:flex;align-items:center;gap:2px} }
+@media (max-width:700px){ .top{align-items:flex-start} .who{white-space:nowrap;display:flex;align-items:center;gap:2px} }
+@media (max-width:1099px){ .who .wname{display:none} }
 html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",Roboto,Inter,sans-serif;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
@@ -35,18 +27,28 @@ h1{font-size:22px}
 .hide{display:none!important}
 code{font-size:12px;background:#f0f2f5;padding:2px 5px;border-radius:4px}
 
-#app{max-width:900px;margin:0 auto;padding:14px 14px 90px}
-@media(min-width:700px){#app{padding-bottom:30px}}
+#app{max-width:900px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(86px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+@media(min-width:701px){#app{max-width:none;padding:calc(18px + env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}}
+@media(min-width:1100px){#app{max-width:1200px;padding:16px 24px 32px}}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .top .who{font-size:13px;color:var(--soft)}
-nav.bottom{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
-nav.bottom button{flex:1;padding:9px 0 7px;font-size:11.5px;color:var(--soft);display:flex;flex-direction:column;align-items:center;gap:3px}
-nav.bottom button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -2px 12px rgba(0,0,0,.05);padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);z-index:5}
+nav.bottom button{flex:1 1 0;min-width:0;max-width:140px;padding:9px 0 7px;font-size:11.5px;color:var(--soft);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+nav.bottom button span{white-space:nowrap}
+nav.bottom button svg{width:22px;height:22px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 nav.bottom button.on{color:var(--accent);font-weight:600}
-@media(min-width:700px){
-  body{display:flex;flex-direction:column} nav.bottom{order:-1;position:static;border:0;background:none;justify-content:flex-start;gap:4px;margin:14px auto 0;padding:0 14px;max-width:900px;width:100%;flex-wrap:wrap} #app{width:100%}
-  nav.bottom button{flex:0 0 auto;flex-direction:row;gap:7px;padding:8px 14px;border-radius:999px;font-size:14px;background:var(--panel);border:1px solid var(--line)}
+nav.bottom button.on::before{content:'';position:absolute;top:0;left:24%;right:24%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+@media(max-width:400px){ nav.bottom button{font-size:10.5px;letter-spacing:-.01em} }
+@media(max-width:350px){ nav.bottom button{font-size:9.5px} nav.bottom button svg{width:20px;height:20px} }
+@media(min-width:701px) and (max-width:1099px){
+  nav.bottom button{padding:11px 0 9px;font-size:13px;gap:4px}
+  nav.bottom button svg{width:25px;height:25px}
+}
+@media(min-width:1100px){
+  body{display:flex;flex-direction:column} nav.bottom{order:-1;position:static;border:0;background:none;box-shadow:none;justify-content:flex-start;gap:6px;margin:16px auto 0;padding:0 24px;max-width:1200px;width:100%;flex-wrap:wrap} #app{width:100%}
+  nav.bottom button{flex:0 0 auto;max-width:none;flex-direction:row;gap:7px;padding:8px 15px;border-radius:999px;font-size:14px;background:var(--panel);border:1px solid var(--line)}
   nav.bottom button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  nav.bottom button.on::before{display:none}
 }
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh)}
@@ -71,7 +73,7 @@ nav.bottom button.on{color:var(--accent);font-weight:600}
 
 label.f{display:block;margin-bottom:10px}
 label.f span{display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px}
-input[type=text],input[type=tel],input[type=number],input[type=date],input[type=password],select,textarea{
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{
   width:100%;min-height:42px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,235,.15)}
 textarea{min-height:70px;resize:vertical}
@@ -141,7 +143,7 @@ table.att td,table.att th{padding:3px 2px;text-align:center} table.att td:first-
 .pick{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:#f3f4f6} .pick:hover{background:#e8f0fe} td.pk{width:40px}
 @media(max-width:700px){table.items tbody td.pk{grid-column:3;grid-row:1;text-align:right}}
 .draw-grid{display:grid;grid-template-columns:1fr;gap:16px} @media(min-width:700px){.draw-grid{grid-template-columns:minmax(0,1.2fr) minmax(260px,1fr);align-items:start}}
-.subtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.subtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none} .subtabs::-webkit-scrollbar{display:none}
 .subtabs button{flex:0 0 auto;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:13.5px;font-weight:600;color:var(--soft)}
 .subtabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 
@@ -156,6 +158,114 @@ table.att td,table.att th{padding:3px 2px;text-align:center} table.att td:first-
 .login{max-width:360px;margin:60px auto;text-align:center}
 .pin{display:flex;gap:8px;justify-content:center;margin:16px 0}
 .pin input{width:150px;text-align:center;font-size:22px;letter-spacing:6px}
+
+/* ===================== phone & tablet layout ===================== */
+/* top bar fits small phones (360–375 px wide) */
+@media(max-width:700px){ .top h1{flex:1 1 0} .top .who{flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;row-gap:4px;min-width:0} }
+@media(max-width:400px){ .top h1{font-size:25px} .top .who{font-size:12px} .top .who .btn.sm{padding:0 8px} .top .who .btn.ghost.sm{padding:0 4px} }
+/* no zoom-in when tapping a box on iPhone / iPad (iOS zooms below 16px) */
+@media (pointer:coarse){ input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],input[type=password],select,textarea{font-size:16px} }
+/* drop-downs: same clean arrow on every phone, more room for the text */
+select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%235b6472' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;background-size:11px 7px;padding-right:30px}
+table.items td select{padding-right:23px;background-position:right 8px center}
+select:disabled,input:disabled,textarea:disabled{opacity:.5;background-color:#f6f7f9}
+table.items tbody td.empty{grid-column:1/-1}
+table.items tbody td.sq{font-weight:400;color:var(--soft)}
+@media(max-width:700px){ table.items tbody td.num[data-l]{padding-top:0} table.items tbody td.num[data-l]::before{font-weight:400}
+  table.items tbody td.c2{grid-column:span 2}
+  table.items.i3 tbody tr{grid-template-columns:minmax(0,1fr) minmax(0,128px) 30px} table.items.i3 tbody td.c1{grid-column:auto} table.items.i3 tbody td.dl{align-self:end;padding:0 0 10px} }
+
+/* window / door lines on the phone: 6-column card, nothing cut off */
+@media(max-width:700px){
+  table.items.iw tbody tr,table.items.idr tbody tr{grid-template-columns:repeat(6,minmax(0,1fr))}
+  table.items.iw tbody tr{grid-template-areas:"loc loc loc loc pk pk" "ty ty br br se se" "w w h h qt qt" "gl gl gl me me me" "sq sq amt amt dl dl"}
+  table.items.idr tbody tr{grid-template-areas:"loc loc loc loc pk pk" "ty ty br br pr pr" "w w h h qt qt" "amt amt amt amt dl dl"}
+  table.items.iw tbody td.pk,table.items.idr tbody td.pk{grid-area:pk;justify-self:end;align-self:end}
+  table.items.iw tbody td.c1,table.items.idr tbody td.c1{grid-area:loc}
+  table.items.iw tbody td.dl,table.items.idr tbody td.dl{grid-area:dl;align-self:center;justify-self:end;padding-top:0}
+  table.items.iw tbody td.num,table.items.idr tbody td.num{align-self:center}
+}
+/* window / door lines — tablet & small laptop: two tidy lines per window */
+@media(min-width:701px) and (max-width:1279px){
+  table.items.iw,table.items.idr,table.items.iw tbody,table.items.idr tbody,table.items.iw tfoot,table.items.idr tfoot{display:block}
+  table.items.iw thead,table.items.idr thead{display:none}
+  table.items.iw tbody tr,table.items.idr tbody tr{display:grid;gap:5px 8px;align-items:end;padding:10px 4px;border-bottom:1px solid var(--line);border-radius:10px}
+  table.items.iw tbody tr{grid-template-columns:38px minmax(0,.95fr) minmax(0,1.1fr) minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,1.5fr) minmax(0,.75fr);grid-template-areas:"pk loc ty br gl me dl" "pk w h qt se sq amt"}
+  table.items.idr tbody tr{grid-template-columns:40px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);grid-template-areas:"pk loc ty br pr dl" "pk w h qt . amt"}
+  table.items.iw tbody td,table.items.idr tbody td{display:block;border:0;padding:0;min-width:0}
+  table.items.iw tbody td[data-l]::before,table.items.idr tbody td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;color:var(--soft);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  table.items.iw td input,table.items.iw td select,table.items.idr td input,table.items.idr td select,table.items.iw td input.n,table.items.iw td input.q,table.items.idr td input.n,table.items.idr td input.q,table.items.iw td input.loc,table.items.idr td input.loc{width:100%;min-width:0}
+  table.items td.pk{grid-area:pk;align-self:center;width:auto}
+  table.items.iw tbody td.num,table.items.idr tbody td.num{text-align:left;padding-bottom:9px}
+  table.items.iw tbody td.amt,table.items.idr tbody td.amt{font-weight:650}
+  table.items.iw tbody td.num::before,table.items.idr tbody td.num::before{font-weight:400}
+  table.items td.dl{grid-area:dl;align-self:center;justify-self:end}
+  table.items.iw tfoot tr,table.items.idr tfoot tr{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:5px 4px}
+  table.items.iw tfoot td,table.items.idr tfoot td{border:0;padding:0} table.items.iw tfoot td:empty,table.items.idr tfoot td:empty{display:none}
+  table.items.iw tfoot td.num,table.items.idr tfoot td.num{min-width:110px}
+  table.items.iw tfoot td input.n,table.items.idr tfoot td input.n{width:110px}
+}
+/* named spots used by the phone + tablet window cards */
+@media(max-width:1279px){
+  table.items.iw tbody td.c1,table.items.idr tbody td.c1{grid-area:loc}
+  table.items.iw tbody td.c-ty,table.items.idr tbody td.c-ty{grid-area:ty} table.items.iw tbody td.c-br,table.items.idr tbody td.c-br{grid-area:br} table.items.iw tbody td.c-se{grid-area:se}
+  table.items.iw tbody td.c-w,table.items.idr tbody td.c-w{grid-area:w} table.items.iw tbody td.c-h,table.items.idr tbody td.c-h{grid-area:h} table.items.iw tbody td.c-gl{grid-area:gl} table.items.iw tbody td.c-me{grid-area:me}
+  table.items.iw tbody td.c-qt,table.items.idr tbody td.c-qt{grid-area:qt} table.items.idr tbody td.c-pr{grid-area:pr}
+  table.items.iw tbody td.sq{grid-area:sq} table.items.iw tbody td.amt,table.items.idr tbody td.amt{grid-area:amt}
+}
+/* other editable tables on tablet & desktop: drop-downs keep a readable width */
+@media(min-width:701px){ table.items td select{width:auto;min-width:88px} }
+@media(min-width:701px) and (max-width:1279px){ table.items.iw td select,table.items.idr td select{width:100%;min-width:0} }
+/* desktop: the whole window line fits on one row, amount always visible */
+@media(min-width:1280px){ table.items td input.loc{width:130px;min-width:0} table.items td.c-se select{min-width:0} }
+@media(min-width:1360px){ #app{max-width:1280px} nav.bottom{max-width:1280px} }
+
+/* small tables become stacked cards on the phone (plan queue, stock) */
+@media(max-width:700px){
+  table.rt,table.rt tbody{display:block} table.rt thead{display:none}
+  table.rt tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:11px 0;border-bottom:1px solid var(--line)}
+  table.rt tbody tr:last-child{border-bottom:0}
+  table.rt tbody td{display:block;border:0;padding:0;min-width:0}
+  table.rt tbody td.num{text-align:left}
+  table.rt tbody td[data-l]::before{content:attr(data-l)' ';color:var(--faint);font-size:12px;font-weight:400}
+  table.rt td.rw{flex:1 1 100%} table.rt td.rg{flex:1 1 55%} table.rt td.ra{margin-left:auto} table.rt td.rx{display:none}
+  /* day book */
+  table.db,table.db tbody,table.db tfoot{display:block} table.db thead{display:none}
+  table.db tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.db tbody tr::after{content:'';order:-1;flex:0 0 100%;height:0}
+  table.db tbody td,table.db tfoot td{display:block;border:0;padding:0;font-size:13px;min-width:0}
+  table.db td.lp{order:-2;flex:1 1 55%;font-size:14px} table.db td.rc,table.db td.py{order:-1;margin-left:auto;font-size:15.5px;font-weight:650}
+  table.db td.rc:empty,table.db td.py:empty,table.db td.md:empty,table.db td.nr:empty{display:none}
+  table.db td.dt,table.db td.md{color:var(--soft)} table.db td.ac{margin-left:auto}
+  table.db tfoot tr{display:flex;justify-content:flex-end;gap:14px;padding:10px 0 0} table.db tfoot td:empty{display:none}
+  table.db tfoot td[data-l]::before{content:attr(data-l)' ';color:var(--soft);font-weight:400;font-size:12px}
+}
+
+/* order tabs: all six visible on the phone; stay on screen while scrolling on tablet */
+@media(max-width:700px){ .subtabs.osub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible} .subtabs.osub button{padding:9px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} }
+@media(min-width:701px){ .subtabs.osub{position:sticky;top:0;z-index:4;background:var(--bg);margin:0 -6px 10px;padding:8px 6px} }
+
+/* drawing tools: short labels on the phone */
+.sbl{display:none}
+@media(max-width:700px){ .lbl,.lblx{display:none} .sbl{display:inline} .tbar{gap:6px} .tbar .btn.sm{padding:0 10px} }
+
+/* Home: two columns on wide screens (same order as before on phones) */
+.hgrid{display:flex;flex-direction:column} .hcol{display:contents}
+.hgrid .h-al{order:1} .hgrid .h-pi{order:2} .hgrid .h-pa{order:3} .hgrid .h-wk{order:4}
+@media(min-width:900px){ .hgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px;align-items:start} .hcol{display:block} }
+
+/* floating “new order” button on phone & tablet */
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:52px;padding:0 20px;border-radius:999px;background:var(--accent);color:#fff;font-weight:650;font-size:15px;box-shadow:0 6px 18px rgba(31,111,235,.35)}
+.fab:active{transform:translateY(1px)}
+@media(min-width:701px) and (max-width:1099px){ .fab{bottom:calc(88px + env(safe-area-inset-bottom));right:max(24px,env(safe-area-inset-right))} }
+@media(max-width:1099px){ .newin{display:none} body[data-tab=orders] #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))} body[data-tab=orders] .toast{bottom:140px} }
+@media(min-width:1100px){ .fab{display:none} }
+@media(min-width:701px) and (max-width:1099px){ .toast{bottom:96px} }
+
+/* send-link box */
+.viewer.share{align-items:flex-start;overflow:auto;padding:24px 0 calc(24px + env(safe-area-inset-bottom));background:rgba(0,0,0,.55)}
+.viewer.share textarea{min-height:230px}
+.toast{z-index:30}
 
 .doc{display:none}
 @media print{
@@ -203,7 +313,7 @@ function plev(o){ return o.plevel||'Normal'; } function plBadge(o){ return plev(
 var BASIS={window:'per window / door',slider:'per sliding window',gshutter:'per glass shutter',mshutter:'per mesh shutter / frame',fixed:'per fixed pane',vent:'per ventilator',fan:'per exhaust fan',door:'per door',frameM:'per metre of outer frame',shutterM:'per metre of shutter',profM:'per metre of all profile',beadM:'per metre of glass bead'};
 
 var DEF={
-  company:{name:'Hanvika Industries',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
+  company:{name:'My uPVC Windows',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
   pins:{admin:'1234',sales:'0000',production:'1111'},
   gstPct:0, advancePct:50,
   brands:[{name:'Standard',
@@ -224,7 +334,7 @@ var DEF={
   heads:[{name:'Material purchase',grp:'Direct'},{name:'Glass',grp:'Direct'},{name:'Hardware',grp:'Direct'},{name:'Salary & wages',grp:'Direct'},{name:'Transport',grp:'Direct'},{name:'Rent',grp:'Indirect'},{name:'Electricity',grp:'Indirect'},{name:'Machine / tools',grp:'Indirect'},{name:'Office & misc',grp:'Indirect'},{name:'Owner drawings',grp:'Capital'},{name:'Staff advance',grp:'Advances'}],
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
-var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
+var BAKED={url:'',key:''};
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(d.heads&&!d.heads.some(function(h){return h.name==='Staff advance';})) d.heads.push({name:'Staff advance',grp:'Advances'}); (d.expenses||[]).forEach(function(e){ if(!e.head) e.head=e.cat==='Salary'?'Salary & wages':e.cat==='Material'?'Material purchase':(e.cat||'Office & misc'); if(!e.mode) e.mode='Cash'; if(!e.vno){ e.vno=d.vseq||1; d.vseq=(d.vseq||1)+1; } }); if(!d.brands||!d.brands.length) d.brands=JSON.parse(JSON.stringify(DEF.brands));
@@ -442,12 +552,16 @@ var I={home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v
 
 function render(){
   var app=$('#app'), nav=$('#nav');
-  if(!S.role){ nav.innerHTML=''; app.innerHTML=viewLogin(); return; }
+  if(!S.role){ nav.innerHTML=''; document.body.setAttribute('data-tab','login'); app.innerHTML=viewLogin(); return; }
+  document.body.setAttribute('data-tab',S.tab);
   var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
   nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&S.tab==='order'))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
   var v={home:viewHome,orders:viewOrders,order:viewOrder,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
   var nal=alerts().length; app.innerHTML='<div class="top"><h1>'+esc(D.company.name)+'</h1><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+v;
+  fixChips();
 }
+
+function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){ var on=st.querySelector('button.on'); if(!on||st.scrollWidth<=st.clientWidth+2) return; var a=st.getBoundingClientRect(), b=on.getBoundingClientRect(); if(b.left<a.left||b.right>a.right) st.scrollLeft+=b.left-a.left-(a.width-b.width)/2; }); }
 
 /* ============================================================
    VIEWS
@@ -468,6 +582,32 @@ function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWor
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
     if(!sbOn()){ var lb=D.lastBackup||''; if(!lb||Math.round((new Date(t)-new Date(lb))/864e5)>7) al.push(['y','','settings','No backup for '+(lb?Math.round((new Date(t)-new Date(lb))/864e5)+' days':'a while')+' — download one from Settings']); } }
   return al.map(function(a){ return a.length===4?{c:a[0],go:a[2],txt:a[3]}:{c:a[0],id:a[1],txt:a[2]}; }); }
+/* ---- send the app link to a staff member ---- */
+var ROLEDESC={admin:'Admin — everything',sales:'Sales — orders, quotes, payments',production:'Production — floor work, cutting lists'};
+function sbRef(){ var m=String(D.sb&&D.sb.url||'').match(/^https:\/\/([a-z0-9]+)\.supabase\.co/); return m?m[1]:''; }
+function appLink(){ if(D.appUrl) return D.appUrl; if(/^https?:$/.test(location.protocol)&&window.top===window) return location.origin+location.pathname.replace(/index\.html$/,''); return ''; }
+function shareMsg(email,role,pw,link){ return 'Hi, please use our '+D.company.name+' app.\n\n'
+  +'Open: '+(link||'(app link)')+'\nEmail: '+email+'\nPassword: '+(pw||'I will tell you separately')+'\nAccess: '+(ROLEDESC[role]||role)+'\n\n'
+  +'Keep it on your phone like an app:\n• Android: open the link in Chrome, sign in, then tap "Install" (or ⋮ menu → Add to Home screen)\n• iPhone: open the link in Safari → Share → Add to Home Screen\n\n'
+  +'Please do not share your password with anyone.'; }
+function showShare(email,role){ var link=appLink(), v=document.createElement('div'); v.className='viewer share';
+  v.innerHTML='<div class="card" style="max-width:520px;width:94vw;margin:auto"><div class="row between"><h2>📤 Send app link</h2><button class="btn sm" data-x="close">Close</button></div>'
+   +'<div class="muted" style="margin:2px 0 10px">To <b>'+esc(email)+'</b> · '+esc(ROLEDESC[role]||role)+'</div>'
+   +(link?'':'<label class="f"><span>App link (your website address)</span><input type="text" id="shlink" placeholder="https://….github.io/Software/"></label>')
+   +'<label class="f"><span>Password (optional — not saved anywhere; or tell it by phone)</span><input type="text" id="shpw" autocomplete="off" autocapitalize="off" spellcheck="false"></label>'
+   +'<label class="f"><span>Message</span><textarea id="shmsg" rows="12"></textarea></label>'
+   +'<div class="row"><button class="btn good" data-x="wa">WhatsApp</button>'+(navigator.share?'<button class="btn" data-x="share">Share…</button>':'')+'<button class="btn" data-x="copy">Copy</button></div></div>';
+  document.body.appendChild(v);
+  var q=function(sel){ return v.querySelector(sel); };
+  var upd=function(){ var l=q('#shlink'); if(l){ link=l.value.trim(); D.appUrl=link; save(); } q('#shmsg').value=shareMsg(email,role,q('#shpw').value.trim(),link); };
+  upd();
+  v.addEventListener('input',function(e){ if(e.target.id==='shpw'||e.target.id==='shlink') upd(); });
+  v.addEventListener('click',function(e){ if(e.target===v){ v.remove(); return; } var b=e.target.closest('[data-x]'); if(!b) return; var x=b.dataset.x, msg=q('#shmsg').value;
+    var copied=function(){ toast('Message copied — paste it in WhatsApp'); }, oldCopy=function(){ q('#shmsg').select(); try{ document.execCommand('copy'); copied(); }catch(err){ toast('Select the message and copy it'); } };
+    if(x==='close') v.remove();
+    if(x==='wa') window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    if(x==='share') navigator.share({title:D.company.name,text:msg}).catch(function(){});
+    if(x==='copy'){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(copied,oldCopy); else oldCopy(); } }); }
 function alertBtn(a){ return '<button class="alert" '+(a.id?'data-open="'+a.id+'"':'data-go="'+a.go+'"')+'><i class="'+a.c+'"></i><span>'+esc(a.txt)+'</span></button>'; }
 function showReminders(){ var al=alerts(); var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto"><div class="row between"><h2>🔔 Reminders'+(al.length?' ('+al.length+')':'')+'</h2><button class="btn sm" id="remclose">Close</button></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing pending — all good 👍</div>')+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
 function viewHome(){
@@ -482,14 +622,14 @@ function viewHome(){
    +'<div class="kpi'+(due>0?' warn':'')+'"><span>To collect</span><b>'+money(due)+'</b></div>'
    +(admin()?'<div class="kpi'+(prof-exp<0?' warn':' good')+'"><span>Profit this month</span><b>'+money(prof-exp)+'</b><i>after '+money(exp)+' expenses</i></div>':'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){return o.stage<3&&o.stage>0;}).reduce(function(a,o){return a+leftQty(o);},0)+'</b></div>')+'</div>';
   var al=alerts();
-  var alertsCard='<div class="card"><h2>Needs attention</h2>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">All good 👍</div>')+'</div>';
-  var pipe='<div class="card"><h2>Orders</h2><div class="pipe">'+STAGES.map(function(s,i){return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span></button>';}).join('')+'</div></div>';
+  var alertsCard='<div class="card h-al"><h2>Needs attention</h2>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">All good 👍</div>')+'</div>';
+  var pipe='<div class="card h-pi"><h2>Orders</h2><div class="pipe">'+STAGES.map(function(s,i){return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span></button>';}).join('')+'</div></div>';
   var q=queue();
-  var work='<div class="card"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
+  var work='<div class="card h-wk"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
    +(q.length?'<table><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">#'+o.no+' '+esc(o.customer)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
   var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5;}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
-  var payCard='<div class="card"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending</div>')+'</div></div>';
-  return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+alertsCard+pipe+payCard+work;
+  var payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending</div>')+'</div></div>';
+  return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
 function homeProd(){
   var open=openOrders(), P=plan(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});});
@@ -510,7 +650,7 @@ function viewOrders(){
   var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
     return !q||(o.customer+' '+o.phone+' '+o.no+' '+o.address).toLowerCase().indexOf(q)>=0; }).sort(function(a,b){return b.no-a.no;});
   var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}),[['pay','₹ Pending'],['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
-  return '<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+(list.length?list.map(oRow).join(''):'<div class="empty">No orders here</div>')+'</div>';
+  return '<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+(list.length?list.map(oRow).join(''):'<div class="empty">No orders here</div>')+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
 }
 
 function viewOrder(){
@@ -520,7 +660,7 @@ function viewOrder(){
     var hd='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px">#'+o.no+' · '+esc(o.customer)+'</h2><div class="muted">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span>'+(o.due?' · due '+dShort(o.due):'')+(p?' · plan '+dShort(p.start)+' → '+dShort(p.finish):'')+'</div>'+(o.notes?'<div class="muted" style="margin-top:6px">📝 '+esc(o.notes)+'</div>':'')+'</div></div>'
      +'<div style="margin-top:12px">'+(o.stage===1?'<button class="btn primary big" data-act="next">Start production</button>':o.stage===2?'<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>':'<span class="muted">'+HINT[o.stage]+'</span>')+'</div></div>';
     if(S.sub!=='cutting'&&S.sub!=='production'&&S.sub!=='items') S.sub='production';
-    var tb='<div class="subtabs">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
+    var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
     return hd+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
    +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right"><div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div>'
@@ -528,7 +668,7 @@ function viewOrder(){
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
    +'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
   var subs=[['items',o.kind==='doors'?'Doors':'Windows'],['customer','Customer'],['quote','Quote'],['payments','Payments'],['cutting','Cutting list'],['production','Production']];
-  var tabs='<div class="subtabs">'+subs.map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
+  var tabs='<div class="subtabs osub">'+subs.map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
   return head+tabs+({items:subItems,customer:subCustomer,quote:subQuote,payments:subPayments,cutting:subCutting,production:subProduction}[S.sub])(o);
 }
 function nextBtn(o){
@@ -546,17 +686,17 @@ function subItems(o){
   if(o.kind==='doors'){ cols=8;
     head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th class="num">W mm</th><th class="num">H mm</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Amount</th><th></th></tr>';
     rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Bedroom"></td>'
-     +'<td data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td><td data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td>'
-     +'<td data-l="Price ₹"><input class="n" type="number" data-k="price" value="'+it.price+'"></td><td data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num amt">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+     +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td>'
+     +'<td class="c-pr" data-l="Price ₹"><input class="n" type="number" data-k="price" value="'+it.price+'"></td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
   } else { cols=11;
     head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th>Series</th><th class="num">W mm</th><th class="num">H mm</th><th>Glass</th><th>Mesh</th><th class="num">Qty</th><th class="num">Sq ft</th><th class="num">Amount</th><th></th></tr>';
     rows=o.items.map(function(it,i){ var tr=it.type.indexOf('Track')>=0; return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Hall"></td>'
-     +'<td data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td><td data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
-     +'<td data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td><td data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td>'
-     +'<td data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+(it.type==='Custom'?'<span class="faint">see drawing</span>':it.type==='Ventilator'?'<select data-k="fan">'+opts(FAN,it.fan||'No fan')+'</select>':'<select data-k="mesh"'+(tr?'':' disabled')+'>'+opts(MESH,it.mesh)+'</select>')+'</td><td data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num sq">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+     +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
+     +'<td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td><td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td>'
+     +'<td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+(it.type==='Custom'?'<span class="faint">see drawing</span>':it.type==='Ventilator'?'<select data-k="fan">'+opts(FAN,it.fan||'No fan')+'</select>':'<select data-k="mesh"'+(tr?'':' disabled')+'>'+opts(MESH,it.mesh)+'</select>')+'</td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
   }
   var st=o.items.reduce(function(a,it){return a+itemPrice(o,it);},0);
-  return '<div class="card"><div class="tscroll"><table class="items"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
+  return '<div class="card"><div class="tscroll"><table class="items '+(o.kind==='doors'?'idr':'iw')+'"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
    +'<tfoot><tr><td colspan="'+cols+'" class="right">Subtotal</td><td class="num" id="tsub">'+money(st)+'</td><td></td></tr>'
    +'<tr><td colspan="'+cols+'" class="right">Discount ₹</td><td class="num"><input class="n" type="number" id="disc" value="'+(o.discount||'')+'"></td><td></td></tr>'
    +(n(D.gstPct)?'<tr><td colspan="'+cols+'" class="right">GST '+D.gstPct+'%</td><td class="num" id="tgst">'+money(gstAmt(o))+'</td><td></td></tr>':'')
@@ -616,8 +756,8 @@ function drawPanel(o,di){
    +(ro?F('price','Price ₹','<input type="number" data-dk="price" value="'+it.price+'">'):F('series','Series','<select data-dk="series">'+opts(SERIES,it.series)+'</select>')+F('glass','Glass','<select data-dk="glass">'+opts(GLASS,it.glass)+'</select>')
    +(it.type==='Ventilator'?F('fan','Exhaust fan','<select data-dk="fan">'+opts(FAN,it.fan||'No fan')+'</select>')+(it.fan&&it.fan!=='No fan'?F('fanSz','Fan size','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″ fan</option>';}).join('')+'</select>')+F('fanW','Fan section width mm','<input type="number" data-dk="fanW" value="'+fanSec(it)+'">')+F('fanH','Fan section height mm','<input type="number" data-dk="fanH" value="'+(n(it.fanH)||fanSec(it))+'">')+'<div style="grid-column:1/-1;margin-bottom:8px"><button class="btn sm" data-act="editlay">✎ Edit layout</button> <span class="faint">make the fan section bigger, put glass beside the fan, move lines… (or just tap / draw on the drawing)</span></div>':''):it.type==='Custom'?F('fanSz','Fan size (for fan cells)','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″</option>';}).join('')+'</select>'):F('mesh','Mesh','<select data-dk="mesh"'+(it.type.indexOf('Track')<0?' disabled':'')+'>'+opts(MESH,it.mesh)+'</select>')))+'</div>'
    +'<div class="muted" id="dsum">'+(ro?'':fmt(sqft(it.w,it.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it))+'</b></div>';
-  var tools=ro?'':'<div class="row" style="margin-bottom:6px"><span class="faint">Tool:</span>'+[['draw','✏️ Draw line'],['move','↔ Move line'],['del','🗑 Delete line']].map(function(x){return '<button class="btn sm'+(pm===x[0]?' primary':'')+'" data-pmode="'+x[0]+'">'+x[1]+'</button>';}).join('')+undoBtns()+(it.type==='Custom'?'<button class="btn sm danger" data-act="pclear">Clear lines</button>':'')+'</div>'
-   +(pm==='draw'?'<div class="row" style="margin-bottom:6px"><span class="faint">Line:</span>'+[['auto','Auto'],['v','│ Vertical'],['h','— Horizontal']].map(function(x){return '<button class="btn sm'+((S.ldir||'auto')===x[0]?' primary':'')+'" data-ldir="'+x[0]+'">'+x[1]+'</button>';}).join('')+'<span class="faint">draw across the window to split it · tap a cell to change its type · drag ● to resize</span></div>':'<div class="faint" style="margin-bottom:6px">'+(pm==='move'?'Tap a line and type its new position in mm.':'Tap a line to delete it — the two parts merge.')+'</div>');
+  var tools=ro?'':'<div class="row tbar" style="margin-bottom:6px"><span class="faint lblx">Tool:</span>'+[['draw','✏️ Draw<span class="lbl">line</span>'],['move','↔ Move<span class="lbl">line</span>'],['del','🗑 Delete<span class="lbl">line</span>']].map(function(x){return '<button class="btn sm'+(pm===x[0]?' primary':'')+'" data-pmode="'+x[0]+'">'+x[1]+'</button>';}).join('')+undoBtns()+(it.type==='Custom'?'<button class="btn sm danger" data-act="pclear">Clear lines</button>':'')+'</div>'
+   +(pm==='draw'?'<div class="row tbar" style="margin-bottom:6px"><span class="faint lblx">Line:</span>'+[['auto','Auto'],['v','│ <span class="lbl">Vertical</span><span class="sbl">Vert</span>'],['h','— <span class="lbl">Horizontal</span><span class="sbl">Horiz</span>']].map(function(x){return '<button class="btn sm'+((S.ldir||'auto')===x[0]?' primary':'')+'" data-ldir="'+x[0]+'">'+x[1]+'</button>';}).join('')+'<span class="faint">draw across the window to split it · tap a cell to change its type · drag ● to resize</span></div>':'<div class="faint" style="margin-bottom:6px">'+(pm==='move'?'Tap a line and type its new position in mm.':'Tap a line to delete it — the two parts merge.')+'</div>');
   var pick='';
   if(!ro&&it.type!=='Custom'){ pick='<div style="margin-top:8px"><div class="faint" style="margin-bottom:4px">Window type — tap to choose</div><div class="row">'+WTYPES.filter(function(x){return x!=='Custom';}).concat(['Vent + fan']).map(function(tp){ var on=tp==='Vent + fan'?(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'):(it.type===tp&&!(tp==='Ventilator'&&it.fan&&it.fan!=='No fan')); return '<button class="btn sm'+(on?' primary':'')+'" data-wt="'+tp+'">'+tp+'</button>'; }).join('')+'</div></div>'; }
   if(S.ns&&it.type==='Custom'){ var L=layoutOf(it), ax=S.ns.axis, i=S.ns.i, nr=S.ns.row||0, names=ax==='c'?['Left part','Right part']:['Top part','Bottom part'];
@@ -736,12 +876,12 @@ function viewExpenses(){
   var m=S.em||today().slice(0,7), sub=S.esub||'day', months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
   var all=vouchers(), mv=all.filter(function(v){return (v.on||'').slice(0,7)===m;});
   var inn=mv.filter(function(v){return v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), out=mv.filter(function(v){return v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0);
-  var tabs='<div class="subtabs">'+[['day','Day book'],['pay','Payment voucher'],['led','Ledgers'],['cash','Cash & Bank'],['heads','Ledger heads']].map(function(x){return '<button data-esub="'+x[0]+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'<select id="em" style="width:120px;flex:0 0 auto;margin-left:auto">'+months.map(function(x){return '<option value="'+x+'"'+(x===m?' selected':'')+'>'+mLabel(x)+'</option>';}).join('')+'</select></div>';
+  var tabs='<div class="row" style="flex-wrap:nowrap;gap:8px;align-items:flex-start;margin-bottom:10px"><div class="subtabs grow" style="margin-bottom:0">'+[['day','Day book'],['pay','Payment voucher'],['led','Ledgers'],['cash','Cash & Bank'],['heads','Ledger heads']].map(function(x){return '<button data-esub="'+x[0]+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div><select id="em" style="width:auto;flex:0 0 auto;min-height:38px;padding:4px 30px 4px 10px" aria-label="Month">'+months.map(function(x){return '<option value="'+x+'"'+(x===m?' selected':'')+'>'+mLabel(x)+'</option>';}).join('')+'</select></div>';
   var kp='<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi good"><span>Receipts '+mLabel(m)+'</span><b>'+money(inn)+'</b></div><div class="kpi warn"><span>Payments '+mLabel(m)+'</span><b>'+money(out)+'</b></div><div class="kpi'+(inn-out<0?' warn':'')+'"><span>Net cash flow</span><b>'+money(inn-out)+'</b></div></div>';
   var body='';
-  if(sub==='day'){ body='<div class="card"><div class="row between"><h2>Day book — '+mLabel(m)+'</h2><button class="btn sm" data-act="vxlsx">⬇ Excel</button></div><div class="tscroll"><table><thead><tr><th>Date</th><th>Vch no</th><th>Type</th><th>Ledger / Party</th><th>Mode</th><th>Narration</th><th class="num">Receipt</th><th class="num">Payment</th><th></th></tr></thead><tbody>'
-     +(mv.length?mv.map(function(v){return '<tr><td>'+dShort(v.on)+'</td><td class="faint">'+v.vno+'</td><td>'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td>'+v.mode+'</td><td class="faint">'+esc(v.narr)+'</td><td class="num goodt">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td>'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
-     +'</tbody><tfoot><tr><td colspan="6" class="right">Total</td><td class="num">'+money(inn)+'</td><td class="num">'+money(out)+'</td><td></td></tr></tfoot></table></div></div>'; }
+  if(sub==='day'){ body='<div class="card"><div class="row between"><h2>Day book — '+mLabel(m)+'</h2><button class="btn sm" data-act="vxlsx">⬇ Excel</button></div><div class="tscroll"><table class="db"><thead><tr><th>Date</th><th>Vch no</th><th>Type</th><th>Ledger / Party</th><th>Mode</th><th>Narration</th><th class="num">Receipt</th><th class="num">Payment</th><th></th></tr></thead><tbody>'
+     +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
+     +'</tbody><tfoot><tr><td colspan="6" class="right">Total</td><td class="num" data-l="In">'+money(inn)+'</td><td class="num" data-l="Out">'+money(out)+'</td><td></td></tr></tfoot></table></div></div>'; }
   if(sub==='pay'){ body='<div class="card"><h2>Payment voucher <span class="faint" style="font-weight:400;font-size:13px">P-'+D.vseq+'</span></h2><div class="grid2"><label class="f"><span>Date</span><input type="date" id="eon" value="'+today()+'"></label><label class="f"><span>Ledger head</span><select id="ecat">'+D.heads.map(function(h){return '<option>'+esc(h.name)+'</option>';}).join('')+'</select></label>'
      +'<label class="f"><span>Paid to (party)</span><input type="text" id="eparty" placeholder="Supplier / person"></label><label class="f"><span>Mode</span><select id="emode">'+opts(MODES,'Cash')+'</select></label></div><label class="f"><span>Narration</span><input type="text" id="enote" placeholder="Bill no, what for…"></label><div class="row"><label class="f" style="margin:0;max-width:200px"><span>Amount ₹</span><input type="number" id="eamt" style="font-size:18px;font-weight:600"></label><button class="btn primary" data-act="exp" style="margin-top:18px">Save voucher</button></div></div>'
      +'<div class="card"><h2>Recent payments</h2><table><tbody>'+D.expenses.slice(-10).reverse().map(function(e){return '<tr><td>'+dShort(e.on)+'</td><td class="faint">P-'+e.vno+'</td><td>'+esc(e.head)+(e.party?' · '+esc(e.party):'')+'</td><td>'+e.mode+'</td><td class="num">'+money(e.amt)+'</td></tr>';}).join('')+'</tbody></table></div>'; }
@@ -752,7 +892,7 @@ function viewExpenses(){
   if(sub==='cash'){ body='<div class="card"><h2>Cash & Bank book — '+mLabel(m)+'</h2><p class="faint">Opening = balance brought forward from all earlier vouchers plus the opening balance in Ledger heads.</p><div class="tscroll"><table><thead><tr><th>Book</th><th class="num">Opening</th><th class="num">Receipts</th><th class="num">Payments</th><th class="num">Closing</th></tr></thead><tbody>'
      +MODES.map(function(md){ var before=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md]); var r=mv.filter(function(v){return v.mode===md&&v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), p=mv.filter(function(v){return v.mode===md&&v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0); return '<tr><td><b>'+md+'</b></td><td class="num">'+money(before)+'</td><td class="num goodt">'+money(r)+'</td><td class="num warnt">'+money(p)+'</td><td class="num"><b>'+money(before+r-p)+'</b></td></tr>'; }).join('')+'</tbody></table></div></div>'
      +'<div class="card"><h2>'+mLabel(m)+' — entries by book</h2>'+MODES.map(function(md){ var vv=mv.filter(function(v){return v.mode===md;}); if(!vv.length) return ''; var run=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md]); return '<h3 style="margin:10px 0 4px">'+md+'</h3><table><tbody>'+vv.map(function(v){ run+=v.kind==='Receipt'?v.amt:-v.amt; return '<tr><td>'+dShort(v.on)+'</td><td>'+esc(v.head)+(v.party?' · '+esc(v.party):'')+'</td><td class="num '+(v.kind==='Receipt'?'goodt':'warnt')+'">'+(v.kind==='Receipt'?'+':'−')+money(v.amt)+'</td><td class="num faint">'+money(run)+'</td></tr>'; }).join('')+'</tbody></table>'; }).join('')+'</div>'; }
-  if(sub==='heads'){ body='<div class="card"><div class="row between"><h2>Ledger heads</h2><button class="btn sm primary" data-act="headadd">+ Add head</button></div><table class="items"><thead><tr><th>Head</th><th>Group</th><th></th></tr></thead><tbody>'+D.heads.map(function(h,i){return '<tr data-hdi="'+i+'"><td class="c1" data-l="Head"><input type="text" data-hdk="name" value="'+esc(h.name)+'"></td><td data-l="Group"><select data-hdk="grp">'+opts(['Direct','Indirect','Capital','Advances'],h.grp)+'</select></td><td class="dl"><button class="del" data-hddel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'
+  if(sub==='heads'){ body='<div class="card"><div class="row between"><h2>Ledger heads</h2><button class="btn sm primary" data-act="headadd">+ Add head</button></div><table class="items i3"><thead><tr><th>Head</th><th>Group</th><th></th></tr></thead><tbody>'+D.heads.map(function(h,i){return '<tr data-hdi="'+i+'"><td class="c1" data-l="Head"><input type="text" data-hdk="name" value="'+esc(h.name)+'"></td><td data-l="Group"><select data-hdk="grp">'+opts(['Direct','Indirect','Capital','Advances'],h.grp)+'</select></td><td class="dl"><button class="del" data-hddel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'
      +'<div class="card"><h2>Opening balances</h2><div class="grid3">'+MODES.map(function(md){return '<label class="f"><span>'+md+' opening ₹</span><input type="number" data-open="'+md+'" value="'+n(D.opening[md])+'"></label>';}).join('')+'</div></div>'; }
   return tabs+kp+body;
 }
@@ -762,7 +902,7 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   var dayList=[], d=nextWork(t); for(var i=0;i<14;i++){ dayList.push(d); var dd=new Date(d+'T00:00'); dd.setDate(dd.getDate()+1); d=nextWork(ymd(dd)); }
   var cap='<div class="card"><div class="row between"><h2>Production plan</h2><span class="row">'+(admin()?'<label class="f" style="margin:0;max-width:120px"><span>Windows / day</span><input type="number" data-pd="windows" value="'+D.perDay.windows+'"></label><label class="f" style="margin:0;max-width:110px"><span>Doors / day</span><input type="number" data-pd="doors" value="'+D.perDay.doors+'"></label>':'<span class="faint">'+D.perDay.windows+' windows · '+D.perDay.doors+' doors a day</span>')+'</span></div>'
    +'<p class="faint">Urgent orders go first, then High, Normal, Low; within a level use ▲ ▼ to fine-tune. Sundays and holidays are skipped.</p>'
-   +(q.length?'<table><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td>'+(i+1)+'</td><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">#'+o.no+' '+esc(o.customer)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 8px;width:110px;background:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td>'+dShort(o.due)+'</td>'+(canEdit?'<td class="right" style="white-space:nowrap"><button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
+   +(q.length?'<table class="rt"><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td class="rx">'+(i+1)+'</td><td class="rg"><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">#'+o.no+' '+esc(o.customer)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 26px 4px 8px;width:110px;background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num" data-l="Left">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'" data-l="Make">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td data-l="Due">'+dShort(o.due)+'</td>'+(canEdit?'<td class="right ra" style="white-space:nowrap"><button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
    +(held.length?'<div style="margin-top:10px"><b>On hold:</b> '+held.map(function(o){return '<span class="stage">#'+o.no+' '+esc(o.customer)+(canEdit?' <button class="btn ghost sm" style="min-height:0;padding:0 4px" data-phold="'+o.id+'">release</button>':'')+'</span> ';}).join('')+'</div>':'')+'</div>';
   // timeline
   var tl='<div class="card"><h2>Timeline — next 14 working days</h2><div class="tscroll"><table class="tl"><thead><tr><th style="min-width:140px">Order</th>'+dayList.map(function(ds){var dd=new Date(ds+'T00:00');return '<th class="num" style="padding:4px 3px;font-size:11px">'+dd.toLocaleDateString('en-IN',{weekday:'short'}).slice(0,2)+'<br>'+dd.getDate()+'</th>';}).join('')+'</tr></thead><tbody>'
@@ -793,8 +933,8 @@ function viewInventory(){ var ks=invKeys(); Object.keys(ks).forEach(function(k){
   var html='<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="iq" placeholder="Search stock" value="'+esc(S.iq||'')+'"><button class="btn" data-act="invadd">+ Other item</button></div>';
   var low=lowStock(); if(low.length) html+='<div class="card" style="border-color:#fcd34d;background:#fffbeb"><b>Low stock:</b> '+low.map(function(k){return esc(D.inv[k].name)+' ('+D.inv[k].qty+' '+D.inv[k].unit+')';}).join(' · ')+'</div>';
   groups.forEach(function(g){ var rows=keys.filter(function(k){return k.charAt(0)===g[0];}); if(!rows.length) return;
-    html+='<div class="card"><h2>'+g[1]+'</h2><div class="tscroll"><table><thead><tr><th>Item</th><th class="num">In stock</th><th class="num">Min</th><th></th></tr></thead><tbody>'+rows.map(function(k){ var it=D.inv[k], lowk=it.min>0&&it.qty<it.min; return '<tr><td>'+esc(it.name)+(ks[k]?'':' <span class="faint">(custom)</span>')+'</td><td class="num'+(lowk?' warnt':'')+'"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:32px;width:64px"></td><td class="right" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(ks[k]?'':' <button class="del" data-idel="'+esc(k)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table></div></div>'; });
-  var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); if(others.length) html+='<div class="card"><h2>Other items</h2><table><tbody>'+others.map(function(k){var it=D.inv[k];return '<tr><td>'+esc(it.name)+'</td><td class="num"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:32px;width:64px"></td><td class="right" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button> <button class="del" data-idel="'+esc(k)+'">×</button></td></tr>';}).join('')+'</tbody></table></div>';
+    html+='<div class="card"><h2>'+g[1]+'</h2><div class="tscroll"><table class="rt"><thead><tr><th>Item</th><th class="num">In stock</th><th class="num">Min</th><th></th></tr></thead><tbody>'+rows.map(function(k){ var it=D.inv[k], lowk=it.min>0&&it.qty<it.min; return '<tr><td class="rw">'+esc(it.name)+(ks[k]?'':' <span class="faint">(custom)</span>')+'</td><td class="num'+(lowk?' warnt':'')+'" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(ks[k]?'':' <button class="del" data-idel="'+esc(k)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table></div></div>'; });
+  var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); if(others.length) html+='<div class="card"><h2>Other items</h2><table class="rt"><tbody>'+others.map(function(k){var it=D.inv[k];return '<tr><td class="rw">'+esc(it.name)+'</td><td class="num" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button> <button class="del" data-idel="'+esc(k)+'">×</button></td></tr>';}).join('')+'</tbody></table></div>';
   var codes=Object.keys(ks).filter(function(k){return k.charAt(0)==='P';}).map(function(k){return k.slice(2);}).sort();
   html+='<div class="card"><h2>Offcuts (usable cut pieces)</h2><p class="faint">Leftover pieces ≥ '+D.minOffcut+' mm are added here automatically when an order starts production, and the nesting uses them before opening a new bar. Enter pieces you already have in the rack.</p>'
    +'<div class="row" style="margin-bottom:10px"><select id="ocCode" style="width:160px">'+codes.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select><input type="number" id="ocLen" placeholder="Length mm" style="width:130px"><input type="number" id="ocQty" placeholder="Qty" value="1" style="width:80px"><button class="btn primary sm" data-act="ocadd">Add offcut</button><label class="f" style="margin:0 0 0 auto;max-width:170px"><span>Min usable length mm</span><input type="number" data-d="minOffcut" value="'+D.minOffcut+'"></label></div>'
@@ -887,7 +1027,7 @@ function viewReports(){
    +'<div class="card"><h2>Export</h2><div class="row"><button class="btn" data-act="csv">Orders → Excel</button><button class="btn" data-act="csvitems">All windows & doors → Excel</button></div></div>';
 }
 function viewSettings(){
-  var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td>'+t+'</td>'+SERIES.map(function(s){return '<td class="num"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
+  var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Sell '+s+'"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
   return '<div class="card"><h2>Company (shown on quotes)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
    +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % on quotes (0 = none)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
@@ -899,7 +1039,7 @@ function viewSettings(){
    +'<tr><td>Door frame PVC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|PVC" value="'+esc(B.prof.door.PVC)+'"></td></tr><tr><td>Door frame WPC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|WPC" value="'+esc(B.prof.door.WPC)+'"></td></tr></tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — cutting deductions, mm</h2><p class="faint">Shutter W = (frame W − Shutter W ded. + overlap × (shutters − 1)) ÷ shutters. Shutter H = frame H − Shutter H ded. Glass / mesh = shutter size minus their W / H deduction.</p><div class="tscroll"><table><thead><tr><th>Series</th><th class="num">Shutter W</th><th class="num">Shutter H</th><th class="num">Overlap</th><th class="num">Glass W</th><th class="num">Glass H</th><th class="num">Mesh W</th><th class="num">Mesh H</th></tr></thead><tbody>'+cutRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>Hardware per window</h2><p class="faint">Rules for screws, rollers, locks and consumables. Qty × basis is worked out for every order on the BOM.</p><div class="tscroll"><table class="items"><thead><tr><th>Item</th><th class="num">Qty</th><th>Basis</th><th></th></tr></thead><tbody>'
-   +(D.hw||[]).map(function(r,i){return '<tr data-hi="'+i+'"><td class="c1" data-l="Item"><input type="text" data-hk="name" value="'+esc(r.name)+'"></td><td data-l="Qty"><input class="n" type="number" step="0.5" data-hk="qty" value="'+r.qty+'"></td><td data-l="Basis"><select data-hk="basis">'+Object.keys(BASIS).map(function(k){return '<option value="'+k+'"'+(r.basis===k?' selected':'')+'>'+BASIS[k]+'</option>';}).join('')+'</select></td><td class="dl"><button class="del" data-hdel="'+i+'">×</button></td></tr>';}).join('')
+   +(D.hw||[]).map(function(r,i){return '<tr data-hi="'+i+'"><td class="c1" data-l="Item"><input type="text" data-hk="name" value="'+esc(r.name)+'"></td><td data-l="Qty"><input class="n" type="number" step="0.5" data-hk="qty" value="'+r.qty+'"></td><td class="c2" data-l="Basis"><select data-hk="basis">'+Object.keys(BASIS).map(function(k){return '<option value="'+k+'"'+(r.basis===k?' selected':'')+'>'+BASIS[k]+'</option>';}).join('')+'</select></td><td class="dl"><button class="del" data-hdel="'+i+'">×</button></td></tr>';}).join('')
    +'</tbody></table></div><div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="hwadd">+ Add item</button></div></div>'
    +'<div class="card"><h2>How we cut</h2><p class="faint">Profiles cut 2 bars at a time are nested in pairs — both bars get the same cut pattern.</p><table><thead><tr><th>Profile</th><th>Bars at a time</th><th>Cut</th></tr></thead><tbody>'
    +PROFS.concat([['door','Door frame']]).map(function(p){var r=D.cutRule[p[0]]||{bars:1,angle:45};return '<tr><td>'+p[1]+'</td><td><select data-rule="'+p[0]+'|bars" style="max-width:140px"><option value="1"'+(r.bars==1?' selected':'')+'>1 bar</option><option value="2"'+(r.bars==2?' selected':'')+'>2 bars</option></select></td><td><select data-rule="'+p[0]+'|angle" style="max-width:140px"><option value="45"'+(r.angle==45?' selected':'')+'>45°</option><option value="90"'+(r.angle==90?' selected':'')+'>Straight</option></select></td></tr>';}).join('')+'</tbody></table></div>'
@@ -909,12 +1049,13 @@ function viewSettings(){
    +'<div class="card"><h2>Online sync & login (Supabase)</h2><p class="faint">When filled in, the app asks for email + password and keeps one shared copy of all data online. Only emails on the allowed list below can see anything — anyone else who signs up gets nothing. Setup SQL (run once in Supabase → SQL editor):</p><pre id="setupsql" style="font-size:11px;background:#f3f4f6;padding:8px;border-radius:8px;overflow:auto;white-space:pre-wrap;max-height:160px">'+esc(setupSql(SESS&&SESS.email))+'</pre><button class="btn sm" data-act="copysql">Copy SQL</button>'
    +'<label class="f"><span>Project URL</span><input type="text" data-sb="url" value="'+esc(D.sb.url)+'" placeholder="https://xxxx.supabase.co"></label><label class="f"><span>Anon key</span><input type="password" data-sb="key" value="'+esc(D.sb.key)+'"></label>'
    +'<div class="row"><button class="btn" data-act="pull">Load from online</button><button class="btn" data-act="push">Save online now</button><span class="faint" id="sync">'+esc(syncMsg)+'</span></div></div>'
-   +(function(){ var roleSel=function(attr,cur){ return '<select '+attr+' style="min-height:34px;padding:4px 8px;max-width:150px">'+[['admin','Admin'],['sales','Sales'],['production','Production']].map(function(r){return '<option value="'+r[0]+'"'+(cur===r[0]?' selected':'')+'>'+r[1]+'</option>';}).join('')+'</select>'; };
+   +(function(){ var roleSel=function(attr,cur){ return '<select '+attr+' style="min-height:34px;padding:4px 28px 4px 8px;max-width:150px">'+[['admin','Admin'],['sales','Sales'],['production','Production']].map(function(r){return '<option value="'+r[0]+'"'+(cur===r[0]?' selected':'')+'>'+r[1]+'</option>';}).join('')+'</select>'; };
      if(sbOn()&&SESS){ if(S.ru==null) loadUsers(); var ru=S.ru;
-       return '<div class="card"><h2>Users & roles (allowed list)</h2><p class="faint">Only these emails can sign in. Also create each one with a password in Supabase → Authentication → Users → Add user. Changes apply on their next sign-in.</p>'
-        +(ru==='loading'?'<div class="empty">Loading…</div>':ru&&ru.err?'<div class="warnt">Could not load users: '+esc(ru.err)+'</div>':'<table><tbody>'+(ru||[]).map(function(u){ var me=SESS&&u.email===(SESS.email||'').toLowerCase(); return '<tr><td>'+esc(u.email)+(me?' <span class="faint">(you)</span>':'')+'</td><td>'+(me?'<b>'+u.role+'</b>':roleSel('data-rurole="'+esc(u.email)+'"',u.role))+'</td><td class="right">'+(me?'':'<button class="del" data-rudel="'+esc(u.email)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>')
+       return '<div class="card"><h2>Users & roles (allowed list)</h2><p class="faint">Only these emails can sign in. Give each one a password in Supabase → Authentication → Users → Add user'+(sbRef()?' (<a href="https://supabase.com/dashboard/project/'+sbRef()+'/auth/users" target="_blank" rel="noopener">open</a>)':'')+', then tap <b>📤 Send link</b>. Changes apply on their next sign-in.</p>'
+        +(ru==='loading'?'<div class="empty">Loading…</div>':ru&&ru.err?'<div class="warnt">Could not load users: '+esc(ru.err)+'</div>':'<table class="rt"><tbody>'+(ru||[]).map(function(u){ var me=SESS&&u.email===(SESS.email||'').toLowerCase(); return '<tr><td class="rw" style="word-break:break-all">'+esc(u.email)+(me?' <span class="faint">(you)</span>':'')+'</td><td>'+(me?'<b>'+u.role+'</b>':roleSel('data-rurole="'+esc(u.email)+'"',u.role))+'</td><td class="right ra" style="white-space:nowrap">'+(me?'':'<button class="btn sm" data-ushare="'+esc(u.email)+'|'+esc(u.role)+'">📤 Send link</button> <button class="del" data-rudel="'+esc(u.email)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>')
         +'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
-     return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
+     if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
+     return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
    +'<div class="card"><h2>Backup</h2><div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label></div><p class="faint">Download a backup once a week if you are not using online sync.</p></div>';
 }
 
@@ -980,13 +1121,14 @@ function newItem(o){ var l=o.items[o.items.length-1];
 function byId(id){ return D.orders.filter(function(y){return y.id===id;})[0]; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel]'); if(!t) return;
+  var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.go){ go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
   if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':+d.filter; go('orders'); return; }
   if(d.sub){ S.sub=d.sub; render(); return; }
   if(d.esub){ S.esub=d.esub; render(); return; }
+  if(d.ushare){ var us=d.ushare.split('|'); showShare(us[0],us[1]); return; }
   if(d.rudel){ if(confirm('Remove '+d.rudel+'? They will lose access.')) sbUserDel(d.rudel).then(function(){ toast('Removed'); loadUsers(); }).catch(function(e){ toast(e.message); }); return; }
   if(d.udel!==undefined){ D.users.splice(+d.udel,1); save(); render(); return; }
   if(d.hddel!==undefined){ D.heads.splice(+d.hddel,1); save(); render(); return; }
@@ -1051,7 +1193,7 @@ document.addEventListener('click',function(e){
   if(a==='pay'&&o){ var amt=n($('#pamt').value); if(!amt){toast('Enter amount');return;} o.payments.push({on:$('#pon').value||today(),note:$('#pnote').value,mode:$('#pmode').value,amt:amt}); save(); render(); toast('Payment added'); }
   if(a==='exp'){ var ea=n($('#eamt').value); if(!ea){toast('Enter amount');return;} var vh=$('#ecat').value, vp=$('#eparty').value, vst=vh==='Staff advance'?D.staff.filter(function(x){return (x.name||'').toLowerCase()===vp.trim().toLowerCase();})[0]:null; if(vh==='Staff advance'&&!vst){ toast('For Staff advance, type the worker name exactly as in Staff (or use Staff → Salary advance)'); return; } D.expenses.push({on:$('#eon').value||today(),head:vh,cat:vh,party:vp,staffId:vst?vst.id:undefined,adv:vst?true:undefined,mode:$('#emode').value,note:$('#enote').value,amt:ea,vno:D.vseq++}); S.em=($('#eon').value||today()).slice(0,7); save(); render(); toast('Voucher P-'+(D.vseq-1)+' saved'); }
   if(a==='copysql'){ var tx=$('#setupsql').textContent; (navigator.clipboard?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('SQL copied');}).catch(function(){ var r=document.createRange(); r.selectNodeContents($('#setupsql')); var sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('Selected — copy it'); }); }
-  if(a==='ruadd'){ var re=($('#ruemail').value||'').trim().toLowerCase(), rr=$('#rurole').value; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(re)){ toast('Enter a valid email'); return; } sbUserSave(re,rr).then(function(){ toast(re+' added as '+rr); loadUsers(); }).catch(function(e){ toast(e.message); }); }
+  if(a==='ruadd'){ var re=($('#ruemail').value||'').trim().toLowerCase(), rr=$('#rurole').value; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(re)){ toast('Enter a valid email'); return; } sbUserSave(re,rr).then(function(){ toast(re+' added as '+rr); loadUsers(); showShare(re,rr); }).catch(function(e){ toast(e.message); }); }
   if(a==='useradd'){ D.users=D.users||[]; D.users.push({email:'',role:'sales'}); save(); render(); }
   if(a==='headadd'){ D.heads.push({name:'',grp:'Indirect'}); save(); render(); }
   if(a==='vxlsx'){ var mm=S.em||today().slice(0,7); download('daybook-'+mm+'.xlsx',xlsx([['Day book',[['Date','Voucher','Type','Ledger','Party','Mode','Narration','Receipt','Payment']].concat(vouchers().filter(function(v){return (v.on||'').slice(0,7)===mm;}).map(function(v){return [v.on,v.vno,v.kind,v.head,v.party,v.mode,v.narr,v.kind==='Receipt'?v.amt:'',v.kind==='Payment'?v.amt:''];}))]])); }
@@ -1126,7 +1268,7 @@ var DR=null, DRAGGED=false;
 var UNDO={oid:null,back:[],fwd:[],t:0};
 function snap(o,coalesce){ if(!o) return; if(UNDO.oid!==o.id){ UNDO={oid:o.id,back:[],fwd:[],t:0}; } var now=Date.now(); if(coalesce&&now-UNDO.t<1500) return; var j=JSON.stringify(o.items); if(UNDO.back.length&&UNDO.back[UNDO.back.length-1]===j) return; UNDO.back.push(j); if(UNDO.back.length>40) UNDO.back.shift(); UNDO.fwd=[]; UNDO.t=now; }
 function undo(o,redo){ if(UNDO.oid!==o.id) return toast('Nothing to undo'); var from=redo?UNDO.fwd:UNDO.back, to=redo?UNDO.back:UNDO.fwd; if(!from.length) return toast(redo?'Nothing to redo':'Nothing to undo'); to.push(JSON.stringify(o.items)); o.items=JSON.parse(from.pop()); if(S.di!=null&&S.di>=o.items.length) S.di=o.items.length?o.items.length-1:null; UNDO.t=0; save(); render(); toast(redo?'Redone':'Undone'); }
-function undoBtns(){ return '<button class="btn sm" data-act="undo" title="Undo">↶ Undo</button><button class="btn sm" data-act="redo" title="Redo">↷ Redo</button>'; }
+function undoBtns(){ return '<button class="btn sm" data-act="undo" title="Undo" aria-label="Undo">↶<span class="lbl">Undo</span></button><button class="btn sm" data-act="redo" title="Redo" aria-label="Redo">↷<span class="lbl">Redo</span></button>'; }
 document.addEventListener('pointerdown',function(e){ var o=order(); if(!o) return;
   var hd=e.target.closest('[data-hd]'); if(hd&&S.di!=null){ var svg=hd.closest('svg'), r=svg.getBoundingClientRect(), it=o.items[S.di]; snap(o); if(hd.dataset.hd.length>2) ensureCustom(it); DR={kind:'hd',k:hd.dataset.hd,x:e.clientX,y:e.clientY,w0:n(it.w),h0:n(it.h),mmpx:1/(parseFloat(svg.dataset.s)*(r.width/parseFloat(svg.dataset.wt))),L0:it.layout?JSON.parse(JSON.stringify(it.layout)):null}; DRAGGED=false; e.preventDefault(); return; }
   var sk=e.target.closest('#sksvg'); if(sk&&S.di!=null&&o.kind!=='doors'&&(S.pmode||'draw')==='draw'&&!e.target.closest('[data-edit]')){ var rs=sk.getBoundingClientRect(), ppu=rs.width/parseFloat(sk.dataset.wt), ss=parseFloat(sk.dataset.s), sox=parseFloat(sk.dataset.ox), soy=parseFloat(sk.dataset.oy);
