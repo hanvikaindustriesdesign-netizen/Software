@@ -107,6 +107,8 @@ textarea{min-height:70px;resize:vertical}
 .empty{padding:22px 0;text-align:center;color:var(--faint)}
 .alert{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);width:100%;text-align:left;font-size:14px}
 .alert:last-child{border-bottom:0}
+.arow{display:flex;align-items:center;border-bottom:1px solid var(--line)} .arow:last-child{border-bottom:0} .arow .alert{border-bottom:0;flex:1 1 auto;min-width:0}
+.adx{flex:none;width:38px;height:38px;border-radius:50%;color:var(--faint);font-size:20px;line-height:1} .adx:hover,.adx:active{background:#f3f4f6;color:var(--warn)}
 .alert i{width:9px;height:9px;border-radius:50%;background:var(--warn);flex:none}
 .alert i.y{background:var(--live)}
 
@@ -594,7 +596,7 @@ function render(){
   var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
   nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&S.tab==='order'))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
   var v={home:viewHome,orders:viewOrders,order:viewOrder,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
-  var nal=alerts().length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+v;
+  var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+v;
   fixChips();
 }
 
@@ -648,8 +650,15 @@ function showShare(email,role){ var link=appLink(), v=document.createElement('di
     if(x==='copy'){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(copied,oldCopy); else oldCopy(); } }); }
 function photoCount(){ return D.orders.reduce(function(a,o){return a+(o.photos||[]).length;},0); }
 function spaceLine(){ if(!DSIZE) DSIZE=JSON.stringify(D).length; var mb=DSIZE/1048576, pc=Math.min(100,Math.round(mb/5*100)); return '<div style="margin-top:10px"><div class="faint">Space used: <b>'+(mb<0.1?Math.max(1,Math.round(DSIZE/1024))+' KB':mb.toFixed(1)+' MB')+'</b> of about 5 MB a phone can keep · '+D.orders.length+' orders · '+photoCount()+' photos</div><div style="height:8px;background:#eef1f5;border-radius:99px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,pc)+'%;background:'+(pc>70?'var(--warn)':'var(--accent)')+'"></div></div><div class="faint" style="margin-top:4px">An order without photos takes about 2 KB; each site photo about 80 KB.</div></div>'; }
-function alertBtn(a){ return '<button class="alert" '+(a.id?'data-open="'+a.id+'"':'data-go="'+a.go+'"')+'><i class="'+a.c+'"></i><span>'+esc(a.txt)+'</span></button>'; }
-function showReminders(){ var al=alerts(); var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto"><div class="row between"><h2>🔔 Reminders'+(al.length?' ('+al.length+')':'')+'</h2><button class="btn sm" id="remclose">Close</button></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing pending — all good 👍</div>')+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
+function alertKey(a){ return (a.id||a.go||'')+'|'+String(a.txt).replace(/\d+ days?/g,'N days').replace(/[\d.]+ MB/g,'N MB'); }
+function dismissed(){ try{ return JSON.parse(localStorage.getItem('wdismiss')||'{}')||{}; }catch(e){ return {}; } }
+function setDismissed(m){ var cut=Date.now()-120*864e5; Object.keys(m).forEach(function(k){ if(m[k]<cut) delete m[k]; }); try{ localStorage.setItem('wdismiss',JSON.stringify(m)); }catch(e){} }
+function alertSets(){ var dm=dismissed(), all=alerts(), live=all.filter(function(a){ return !dm[alertKey(a)]; }); return {live:live, hidden:all.length-live.length}; }
+function alertTools(AS){ return (AS.live.length>1?'<button class="btn ghost sm" data-act="aclear">Clear all</button>':'')+(AS.hidden?'<button class="btn ghost sm" data-act="ashow">Show '+AS.hidden+' cleared</button>':''); }
+function alertBtn(a){ return '<div class="arow"><button class="alert" '+(a.id?'data-open="'+a.id+'"':'data-go="'+a.go+'"')+'><i class="'+a.c+'"></i><span>'+esc(a.txt)+'</span></button><button class="adx" data-adx="'+esc(alertKey(a))+'" aria-label="Clear this alert" title="Clear">×</button></div>'; }
+function remHtml(){ var AS=alertSets(), al=AS.live; return '<div class="row between"><h2>🔔 Reminders'+(al.length?' ('+al.length+')':'')+'</h2><span class="row" style="gap:4px">'+alertTools(AS)+'<button class="btn sm" id="remclose">Close</button></span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing pending — all good 👍</div>'); }
+function refreshAlerts(){ var rc=document.getElementById('remcard'); if(rc) rc.innerHTML=remHtml(); render(); }
+function showReminders(){ var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" id="remcard" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto">'+remHtml()+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
 function viewHome(){
   if(prod()) return homeProd();
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
@@ -661,8 +670,8 @@ function viewHome(){
   var kp='<div class="kpis"><div class="kpi"><span>Sales this month</span><b>'+money(sales)+'</b><i>'+pl(mo.length,'order')+' confirmed</i></div><div class="kpi good"><span>Received this month</span><b>'+money(inn)+'</b></div>'
    +'<div class="kpi'+(due>0?' warn':'')+'"><span>To collect</span><b>'+money(due)+'</b></div>'
    +(admin()?'<div class="kpi'+(prof-exp<0?' warn':' good')+'"><span>Profit this month</span><b>'+money(prof-exp)+'</b><i>after '+money(exp)+' expenses</i></div>':'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){return o.stage<3&&o.stage>0;}).reduce(function(a,o){return a+leftQty(o);},0)+'</b></div>')+'</div>';
-  var al=alerts();
-  var alertsCard='<div class="card h-al"><h2>Needs attention</h2>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">All good 👍</div>')+'</div>';
+  var AS=alertSets(), al=AS.live;
+  var alertsCard='<div class="card h-al"><div class="row between"><h2>Needs attention</h2><span class="row" style="gap:4px">'+alertTools(AS)+'</span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">All good 👍</div>')+'</div>';
   var pipe='<div class="card h-pi"><h2>Orders</h2><div class="pipe">'+STAGES.map(function(s,i){return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span></button>';}).join('')+'</div></div>';
   var q=queue();
   var work='<div class="card h-wk"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
@@ -1163,13 +1172,14 @@ function newItem(o){ var l=o.items[o.items.length-1];
 function byId(id){ return D.orders.filter(function(y){return y.id===id;})[0]; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel]'); if(!t) return;
+  var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.go){ go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
   if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':+d.filter; go('orders'); return; }
   if(d.sub){ S.sub=d.sub; render(); return; }
   if(d.esub){ S.esub=d.esub; render(); return; }
+  if(d.adx){ var dmx=dismissed(); dmx[d.adx]=Date.now(); setDismissed(dmx); refreshAlerts(); return; }
   if(d.ushare){ var us=d.ushare.split('|'); showShare(us[0],us[1]); return; }
   if(d.rudel){ if(confirm('Remove '+d.rudel+'? They will lose access.')) sbUserDel(d.rudel).then(function(){ toast('Removed'); loadUsers(); }).catch(function(e){ toast(e.message); }); return; }
   if(d.udel!==undefined){ D.users.splice(+d.udel,1); save(); render(); return; }
@@ -1210,15 +1220,17 @@ document.addEventListener('click',function(e){
   if(d.att){ var pa=d.att.split('|'), aa=attOf(S.am||today().slice(0,7),pa[0]), cur=aa.d[pa[1]]||'', nx=ATT[(ATT.indexOf(cur)+1)%ATT.length]; if(nx) aa.d[pa[1]]=nx; else { delete aa.d[pa[1]]; delete aa.ot[pa[1]]; } save(); render(); return; }
   if(d.made!==undefined&&o){ o.items[+d.made].made=!o.items[+d.made].made; save(); render(); return; }
   var a=d.act;
-  if(a==='login'){ var p=$('#pin').value; if(p===D.pins.admin) S.role='admin'; else if(p===D.pins.sales) S.role='sales'; else if(p===D.pins.production) S.role='production'; else { toast('Wrong PIN'); return; } sessionStorage.setItem('role',S.role); render(); cloudPull(); if(alerts().length&&!prod()){ setTimeout(showReminders,300); } }
+  if(a==='login'){ var p=$('#pin').value; if(p===D.pins.admin) S.role='admin'; else if(p===D.pins.sales) S.role='sales'; else if(p===D.pins.production) S.role='production'; else { toast('Wrong PIN'); return; } sessionStorage.setItem('role',S.role); render(); cloudPull(); if(alertSets().live.length&&!prod()){ setTimeout(showReminders,300); } }
   if(a==='bell') showReminders();
+  if(a==='aclear'){ var dma=dismissed(); alerts().forEach(function(x){ dma[alertKey(x)]=Date.now(); }); setDismissed(dma); refreshAlerts(); toast('Alerts cleared — they come back if something changes'); }
+  if(a==='ashow'){ var dms=dismissed(); alerts().forEach(function(x){ delete dms[alertKey(x)]; }); setDismissed(dms); refreshAlerts(); }
   if(a==='navback'){ if(canBack()) history.back(); else go('home'); }
   if(a==='unfix'&&o&&S.di!=null&&o.items[S.di]){ delete o.items[S.di].fixed; save(); render(); toast('Now priced from the rate card'); }
   if(a==='chkupd') checkUpdate(true);
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
-  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alerts().length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
+  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
   if(a==='logout'){ NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
