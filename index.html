@@ -367,6 +367,9 @@ body.dzon{overflow:hidden}
 .pplist{border:1px solid var(--line);border-radius:10px;padding:2px 12px;margin:2px 0 10px;max-height:46vh;overflow:auto} .pprow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)} .pprow:last-child{border-bottom:0} .pprow select{width:auto;min-width:130px;max-width:48%}
 .btlist{max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:2px 10px} .btlist .chk{margin:0;padding:9px 0;border-bottom:1px solid var(--line)} .btlist .chk:last-child{border-bottom:0} .btf.hide{display:none}
 
+.geoaddr{display:block;margin-bottom:12px} .geoaddr textarea{min-height:92px} .geoaddr>.row>span{font-size:12.5px;color:var(--soft)} .geoaddr textarea{width:100%;box-sizing:border-box}
+.pjgeo{display:flex;gap:8px;align-items:flex-end} .pjgeo label.f{flex:1 1 auto;margin-bottom:10px} .pjgeo .btn{margin-bottom:10px}
+
 /* back button */
 .top .tl{display:flex;align-items:center;gap:8px;flex:1 1 0}
 .backbtn{flex:none;width:40px;min-height:40px;padding:0;border-radius:50%;font-size:28px;line-height:1;font-weight:500;color:var(--ink);padding-bottom:3px}
@@ -451,7 +454,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 16:48';
+var APPV='31 Oct 2026, 18:19';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1542,7 +1545,7 @@ function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">
   var tiles=PJST.filter(function(x){ return x[0]!=='Confirmed'||c.Confirmed; }).map(function(x){ var on=!prod()&&sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='Confirmed'?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('');
   var pend=fl.reduce(function(a,f){ return a+(f.stage>0?Math.max(0,balance(f)):0); },0);
   var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>'+(prod()?'':'<button class="btn sm" data-act="pjedit">✎ Edit project</button>')+'</div>'
-   +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+'</div>':'')
+   +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone||p.maplink?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+(p.maplink?' <a href="'+esc(p.maplink)+'" target="_blank" rel="noopener" class="pjmap">📍 Map</a>':'')+'</div>':'')
    +'<div class="pjst">'+tiles+'</div>'
    +(prod()?'':'<div class="pjmoney"><button data-psub="pay"><span>Billed</span><b>'+money(st.billed)+'</b></button><button data-psub="pay" class="good"><span>Received</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>Pending</span><b>'+money(pend)+'</b></button></div>')+'</div>';
   var body=sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
@@ -1656,8 +1659,10 @@ function batchView(o){ var r=batchById(o.bat.id), b=r.b, p=r.p, fl=batchFlats(b)
        +f.items.map(function(it,k){ return '<button class="check'+(it.made?' done':'')+'" data-bmade="'+f.id+'|'+k+'"><i>'+(it.made?'✓':'')+'</i>'+sketch(f,it,30)+'<span>'+esc(it.loc||'Window '+(k+1))+' · '+esc(it.type)+' · '+it.w+' × '+it.h+(n(it.qty)>1?' × '+it.qty:'')+'</span></button>'; }).join('')+'</div>'; }).join('')||'<div class="empty">No flats yet — add them in the Flats tab above</div>')+'</div>'; }
 
 /* ---- popups ---- */
-function projPop(p){ var nw=!p; p=p||{};
-  var body='<div class="grid2">'+pjFld('pj_name','Project name',p.name,'text',' placeholder="Golden Arena"')+pjFld('pj_site','Site / area',p.site,'text',' placeholder="Whitefield, Bengaluru"')+pjFld('pj_builder','Builder',p.builder)+pjFld('pj_bphone','Builder phone',p.bphone,'tel')+'</div><label class="f"><span>Notes</span><textarea id="pj_notes" rows="2">'+esc(p.notes||'')+'</textarea></label>';
+function projPop(p){ var nw=!p; p=p||{}; S.pjgeo=null;
+  var body=pjFld('pj_name','Project name',p.name,'text',' placeholder="Golden Arena"')
+   +'<div class="f geoaddr"><div class="row between" style="margin-bottom:4px;gap:8px"><span>Site address (with PIN)</span><button class="btn sm" data-act="pjgeo" title="Fill the site address and PIN from where this phone is now">📍 Use my location</button></div><textarea id="pj_site" rows="2" placeholder="Hennur Main Road, Bengaluru 560043">'+esc(p.site||'')+'</textarea></div>'
+   +'<div class="grid2">'+pjFld('pj_builder','Builder',p.builder)+pjFld('pj_bphone','Builder phone',p.bphone,'tel')+'</div><label class="f"><span>Notes</span><textarea id="pj_notes" rows="2">'+esc(p.notes||'')+'</textarea></label>';
   var foot='<button class="btn primary" data-act="pjsave"'+(nw?'':' data-pid="'+p.id+'"')+'>'+(nw?'Create project':'Save')+'</button><span class="grow"></span>'+(!nw&&admin()?'<button class="btn" data-act="pjarch" data-pid="'+p.id+'">'+(p.archived?'Bring back':'Archive')+'</button><button class="btn danger" data-act="pjdel" data-pid="'+p.id+'">🗑 Delete project</button>':'');
   pjPop(nw?'New apartment project':'Edit project',body,foot); }
 function flatPop(f){ var p=projById(f.proj), types=p?p.types||[]:[], meas=f.measured||f.stage>0;
@@ -1726,9 +1731,13 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='pjedit'&&p&&!prod()){ projPop(p); return; }
   if(a==='pjsave'){ var nm=pjV('pj_name'); if(!nm){ toast('Enter the project name'); return; } var pp=d.pid?projById(d.pid):null, nw=!pp; if(nw&&!admin()) return;
     if(nw){ pp={id:uid(),name:nm,created:today(),types:[],batches:[]}; D.projects=D.projects||[]; D.projects.push(pp); pjFresh(); }
-    var oa=pjAddr('\u0001',pp); pp.name=nm; pp.site=pjV('pj_site'); pp.builder=pjV('pj_builder'); pp.bphone=pjV('pj_bphone'); pp.notes=(($('#pj_notes')||{}).value||'');
+    var oa=pjAddr('\u0001',pp); pp.name=nm; pp.site=pjV('pj_site'); if(S.pjgeo){ pp.geo=S.pjgeo.geo; pp.maplink=S.pjgeo.maplink; if(S.pjgeo.pin) pp.pin=S.pjgeo.pin; S.pjgeo=null; } pp.builder=pjV('pj_builder'); pp.bphone=pjV('pj_bphone'); pp.notes=(($('#pj_notes')||{}).value||'');
     if(!nw) projFlats(pp.id).forEach(function(f){ if(!f.address||f.address===oa.replace('\u0001',f.no)) f.address=pjAddr(f.no,pp); });
     pjPopX(); save(); if(nw){ S.tab='project'; S.pid=pp.id; S.psub='types'; S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; render(); window.scrollTo(0,0); toast('Project made — now add its flat types'); } else { render(); toast('Project saved'); } return; }
+  if(a==='pjgeo'){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); var gb=t; geoBusy(gb,true);
+    geoGet().then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); S.pjgeo={geo:la+', '+lo,maplink:'https://maps.google.com/?q='+la+','+lo};
+      return geoAddr(g).then(function(ad){ var el=$('#pj_site'); if(el) el.value=ad.text; S.pjgeo.pin=ad.pin; geoBusy(gb,false); toast(ad.pin?'📍 Site address filled · PIN '+ad.pin+' — tap Save':'📍 Site filled — PIN not found, please type it'); },
+        function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); toast('⚠ '+er.message); }); return; }
   if(a==='pjarch'){ var pa=projById(d.pid); if(!pa||!admin()) return; pa.archived=!pa.archived; pjPopX(); save(); if(pa.archived){ S.pjarch=false; go('orders'); toast(pa.name+' archived — find it under Archived projects'); } else { render(); toast(pa.name+' is back'); } return; }
   if(a==='pjdel'){ var pd=projById(d.pid); if(!pd||!admin()) return; var pf=projFlats(pd.id), got=pf.reduce(function(x,f){return x+paid(f);},0);
     if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+'\n\nThis cannot be undone.')) return;
@@ -1793,6 +1802,39 @@ function viewOrder(){ var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.
 var MATC=null; function material(o){ if(MATC&&MATC.o===o) return MATC.M; var M=material0(o); MATC={o:o,M:M}; setTimeout(function(){ MATC=null; },0); return M; }
 flatsBoot();
 
+
+/* ============================================================
+   SITE ADDRESS FROM LOCATION — GPS → street, area, city, state + PIN.
+   OpenStreetMap (Nominatim) first, BigDataCloud for a missing PIN or if OSM is down.
+   One lookup per button press (both services ask for light use), remembered per spot.
+   ============================================================ */
+var GEOC={}, GEOT=0;
+function geoGet(){ return new Promise(function(res,rej){ if(!navigator.geolocation) return rej(new Error('This phone or browser cannot share its location'));
+  navigator.geolocation.getCurrentPosition(function(p){ res({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy||0)}); },
+    function(e){ rej(new Error(e&&e.code===1?'Location is blocked — allow location for this app in the phone / browser settings, then try again':e&&e.code===3?'Location took too long — turn on GPS, step outside and try again':'Could not get the location — turn on GPS and try again')); },
+    {enableHighAccuracy:true,timeout:20000,maximumAge:30000}); }); }
+function geoSlow(ms,pr){ return Promise.race([pr,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('slow')); },ms); })]); }
+function geoAddr(g){ var k=g.lat.toFixed(5)+','+g.lng.toFixed(5); if(GEOC[k]) return Promise.resolve(GEOC[k]);
+  var pin=function(v){ v=String(v||'').replace(/\s+/g,''); return /^\d{6}$/.test(v)?v:(v.match(/\d{6}/)||[''])[0]; };
+  var osm=function(){ return geoSlow(10000,fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&accept-language=en&lat='+g.lat+'&lon='+g.lng).then(function(r){ if(!r.ok) throw new Error('osm '+r.status); return r.json(); }))
+    .then(function(j){ if(!j||j.error||!j.address) throw new Error('no address'); var a=j.address;
+      return {src:'osm',no:a.house_number||a.house_name||'',road:a.road||a.pedestrian||a.footway||a.path||'',area:a.neighbourhood||a.residential||a.quarter||a.hamlet||'',area2:a.suburb||a.city_district||'',city:a.city||a.town||a.village||a.municipality||a.county||'',state:a.state||'',pin:pin(a.postcode)}; }); };
+  var bdc=function(){ return geoSlow(10000,fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en&latitude='+g.lat+'&longitude='+g.lng).then(function(r){ if(!r.ok) throw new Error('bdc '+r.status); return r.json(); }))
+    .then(function(j){ if(!j||!(j.locality||j.city||j.postcode)) throw new Error('no address'); return {src:'bdc',no:'',road:'',area:j.locality||'',area2:'',city:j.city||'',state:j.principalSubdivision||'',pin:pin(j.postcode)}; }); };
+  return osm().then(function(a){ if(a.pin) return a; return bdc().then(function(b){ a.pin=b.pin; if(!a.city) a.city=b.city; if(!a.state) a.state=b.state; return a; },function(){ return a; }); },function(){ return bdc(); })
+    .then(function(a){ var seen=[], out=[]; [a.no&&a.road?a.no+', '+a.road:(a.road||a.no),a.area,a.area2,a.city].forEach(function(x){ x=String(x||'').trim(); if(x&&seen.indexOf(x.toLowerCase())<0){ seen.push(x.toLowerCase()); out.push(x); } });
+      var tail=[a.state,a.pin].filter(Boolean).join(' '); if(tail) out.push(tail); a.text=out.join(', '); GEOC[k]=a; return a; }); }
+function geoBusy(btn,on){ if(!btn) return; if(on){ btn.dataset.lbl=btn.textContent; btn.textContent='📍 Finding…'; btn.disabled=true; } else { btn.disabled=false; if(btn.dataset.lbl) btn.textContent=btn.dataset.lbl; } }
+/* fill an order's / flat's site address (+ PIN, map link) from where the phone is now */
+function geoFill(o,btn){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); geoBusy(btn,true);
+  geoGet().then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); o.geo=la+', '+lo; o.geoAcc=g.acc; o.maplink='https://maps.google.com/?q='+la+','+lo; save();
+    return geoAddr(g).then(function(a){ var pj=o.proj&&typeof projById==='function'&&projById(o.proj), full=(pj?'Flat '+o.no+', '+pj.name+', ':'')+a.text, cur=String(o.address||'').trim(), auto=pj?pjAddr(o.no,pj):'';
+        if(!cur||cur===auto||cur===o.geoAddr) o.address=full;
+        else if(cur!==full){ if(confirm('Use this address from your location?\n\n'+full+'\n\nOK = replace the site address\nCancel = keep yours'+(a.pin&&cur.indexOf(a.pin)<0?' and only add PIN '+a.pin:''))) o.address=full; else if(a.pin&&cur.indexOf(a.pin)<0) o.address=cur.replace(/[\s,.\-–]+$/,'')+' - '+a.pin; }
+        o.geoAddr=o.address; o.geoSrc=a.src; if(a.pin) o.pin=a.pin; save(); geoBusy(btn,false); render(); toast(a.pin?'📍 Site address updated · PIN '+a.pin:'📍 Address filled — PIN not found, please type it'); },
+      function(){ geoBusy(btn,false); render(); toast('📍 Map location saved. Address not found (no internet?) — please type it.'); }); },
+    function(e){ geoBusy(btn,false); toast('⚠ '+e.message); }); }
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
@@ -1824,7 +1866,7 @@ function normalizeCustom(it){ if(it.type!=='Custom'||!it.layout) return; var L=i
 function parseHd(k){ var m=k.match(/^c(\d+)_(\d+)$/); if(m) return {ax:'c',row:+m[1],i:+m[2]}; m=k.match(/^r(\d+)$/); if(m) return {ax:'r',i:+m[1]}; return null; }
 function subCustomer(o){
   return '<div class="card"><label class="f"><span>Customer name</span><input type="text" data-o="customer" value="'+esc(o.customer)+'"></label><label class="f"><span>Phone</span><input type="tel" data-o="phone" value="'+esc(o.phone)+'"></label>'
-   +'<label class="f"><span>Site address</span><textarea data-o="address">'+esc(o.address)+'</textarea></label>'
+   +'<div class="f geoaddr"><div class="row between" style="margin-bottom:4px;gap:8px"><span>Site address</span><button class="btn sm" data-act="geoaddr" title="Fill the address and PIN from where this phone is now">📍 Use my location</button></div><textarea data-o="address">'+esc(o.address)+'</textarea>'+(o.pin||o.geoSrc==='osm'?'<div class="faint" style="font-size:12px;margin-top:3px">'+(o.pin?'PIN <b>'+esc(o.pin)+'</b>':'')+(o.pin&&o.geoSrc==='osm'?' · ':'')+(o.geoSrc==='osm'?'address © OpenStreetMap contributors':'')+'</div>':'')+'</div>'
    +'<div class="grid2"><label class="f"><span>Order type</span><select data-o="kind"'+(o.items.length?' disabled':'')+'><option value="windows"'+(o.kind==='windows'?' selected':'')+'>uPVC windows</option><option value="doors"'+(o.kind==='doors'?' selected':'')+'>PVC / WPC doors</option></select></label>'
    +'<label class="f"><span>Delivery date</span><input type="date" data-o="due" value="'+esc(o.due||'')+'"></label></div>'
    +'<div class="grid2"><label class="f"><span>Priority</span><select data-o="plevel">'+opts(PLEV,plev(o))+'</select></label><label class="f"><span>🔔 Remind me on</span><input type="date" data-o="remind" value="'+esc(o.remind||'')+'"></label></div>'
@@ -2271,7 +2313,7 @@ document.addEventListener('click',function(e){
   if(a==='slips'){ printDoc(slipsHtml(S.am||today().slice(0,7))); }
   if(a==='advgive'){ var sid=$('#advst').value, sa=D.staff.filter(function(x){return x.id===sid;})[0], am=n($('#advamt').value); if(!sa||!am){ toast('Pick worker and amount'); return; }
     D.expenses.push({on:$('#advon').value||today(),head:'Staff advance',party:sa.name,staffId:sa.id,mode:$('#advmode').value,note:$('#advnote').value||'Salary advance',amt:am,adv:true,vno:D.vseq++}); save(); render(); toast('Advance '+money(am)+' to '+sa.name+' recorded'); }
-  if(a==='locate'&&o){ if(!navigator.geolocation){ toast('No GPS on this device'); return; } toast('Getting location…'); navigator.geolocation.getCurrentPosition(function(pos){ var la=pos.coords.latitude.toFixed(6), lo=pos.coords.longitude.toFixed(6); o.geo=la+', '+lo; o.maplink='https://maps.google.com/?q='+la+','+lo; save(); render(); toast('Location saved'); },function(){ toast('Could not get location — allow location access'); },{enableHighAccuracy:true,timeout:15000}); }
+  if((a==='locate'||a==='geoaddr')&&o){ geoFill(o,t); }
   if(a==='pull') cloudPull(); if(a==='push') cloudPush();
   if(a==='export'){ D.lastBackup=today(); save(); } if(a==='export') download('windowshop-backup-'+today()+'.json',JSON.stringify(D,null,1),'application/json');
   if(a==='csv') download('orders.xlsx',xlsx([['Orders',[['No','Customer','Phone','Type','Stage','Created','Confirmed','Due','Delivered','Qty','Total','Paid','Balance','Cost','Profit']].concat(D.orders.map(function(x){return [x.no,x.customer,x.phone,x.kind,STAGES[x.stage]+(x.archived?' (archived)':''),x.created,x.confirmedOn||'',x.due||'',x.deliveredOn||'',qty(x),orderTotal(x),paid(x),balance(x),orderCost(x),profit(x)];}))]]));
