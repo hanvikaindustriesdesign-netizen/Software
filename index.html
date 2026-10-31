@@ -317,6 +317,37 @@ body.dzon{overflow:hidden}
 .d3-top{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;background:#fff;border-bottom:1px solid var(--line)} .d3-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;line-height:1.25} .d3-t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .d3-t span{font-size:12.5px;color:var(--soft)} .d3-b{display:flex;gap:6px}
 .d3-cv{position:relative;min-height:0;overflow:hidden} #d3c{display:block;touch-action:none;cursor:grab}
 
+/* apartment projects */
+.pjc h2{margin:0}
+.pjrow{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;padding:12px 14px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;color:var(--ink)}
+.pjrow b{font-size:16px} .pjrow span{font-size:13.5px;color:var(--soft)} .pjrow .stage{color:inherit}
+.pjstats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px} .pjstats div{background:#f4f6f9;border-radius:10px;padding:8px 4px;text-align:center} .pjstats b{display:block;font-size:20px;line-height:1.2} .pjstats span{font-size:11.5px;color:var(--soft)}
+@media(max-width:520px){ .pjstats{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.pjsel{margin:10px 0 6px} .pjsel2{align-items:center;gap:6px;margin:0 0 6px;flex-wrap:wrap;min-height:34px}
+.flist{padding:4px 8px} .frow{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:2px 0} .frow:last-of-type{border-bottom:0} .frow input[type=checkbox]{width:22px;height:22px;flex:0 0 auto;margin:0 2px}
+.fl{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:76px minmax(0,1fr) auto auto;align-items:center;gap:4px 10px;text-align:left;background:none;border:0;padding:9px 2px;cursor:pointer;color:var(--ink);font:inherit}
+.fl b{font-size:15px} .fo{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--soft);font-size:13.5px} .fm{text-align:right;font-size:13.5px;white-space:nowrap} .fl>.faint{display:none}
+@media(max-width:600px){ .fl{grid-template-columns:64px minmax(0,1fr) auto;grid-template-areas:"no own st" "no own fm"} .fl b{grid-area:no} .fo{grid-area:own;white-space:normal} .fl .stage{grid-area:st;justify-self:end} .fm{grid-area:fm} }
+.pjadd.hide{display:none}
+.flattop{padding:10px 14px}
+.bflat{border-top:1px solid var(--line);padding:10px 0} .bflat:first-of-type{border-top:0} .bflat .check{margin-top:6px}
+.pjst{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:10px}
+.pjst button{background:#f4f6f9;border:1.5px solid transparent;border-radius:10px;padding:8px 2px;text-align:center;cursor:pointer;color:var(--ink);font:inherit;min-width:0}
+.pjst button b{display:block;font-size:20px;line-height:1.2} .pjst button span{display:flex;align-items:center;justify-content:center;min-height:2.5em;font-size:11.5px;line-height:1.2;color:var(--soft)}
+.pjst button.on{border-color:var(--accent);background:#eef4ff} .pjst button.on span{color:var(--accent);font-weight:600} .pjst button.due b{color:var(--warn)} .pjst button:disabled{cursor:default;opacity:1}
+@media(max-width:720px){ .pjst{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.subtabs button small{color:var(--faint);font-weight:600} .subtabs button.on small{color:inherit;opacity:.8}
+.frow .fe{flex:0 0 auto;min-width:38px;font-size:17px;color:var(--soft)}
+.pjitem{margin-top:10px} .pjitem .pjrow{margin-top:0} .pjacts{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.pjnote{background:#fff7e6;border:1px solid #f1d39b;border-radius:10px;padding:9px 12px;margin:8px 0 10px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#pjbarw{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:4} .pjbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 10px;box-shadow:0 6px 22px rgba(0,0,0,.14);margin-top:8px}
+@media(min-width:1100px){ #pjbarw{bottom:14px} }
+.viewer.pjpop{background:rgba(15,20,30,.45);align-items:flex-start;overflow:auto;padding:6vh 0 30px}
+.pjpopc{max-width:560px;width:94vw;margin:0 auto} .pjpopf{gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.pjpop textarea{width:100%;box-sizing:border-box}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:4px 0 8px;font-size:14px;cursor:pointer} .chk input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0}
+.btlist{max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:2px 10px} .btlist .chk{margin:0;padding:9px 0;border-bottom:1px solid var(--line)} .btlist .chk:last-child{border-bottom:0} .btf.hide{display:none}
+
 /* back button */
 .top .tl{display:flex;align-items:center;gap:8px;flex:1 1 0}
 .backbtn{flex:none;width:40px;min-height:40px;padding:0;border-radius:50%;font-size:28px;line-height:1;font-weight:500;color:var(--ink);padding-bottom:3px}
@@ -401,10 +432,10 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 13:38';
+var APPV='31 Oct 2026, 15:55';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
-function migrate(d){ if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
+function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
   if((d.hwv||0)<3){ d.hwv=3; if(d.hw&&!d.hw.some(function(r){return r.basis==='sash';})) d.hw.push({name:'Casement hinges / friction stays',qty:2,basis:'sash'},{name:'Casement handle',qty:1,basis:'sash'}); }
   (d.orders||[]).forEach(function(o){ var cv=false; (o.items||[]).forEach(function(it){ if(it.oldType==='Openable'&&it.type==='Fixed'){ it.type='Openable'; it.hinge=it.hinge||'L'; it.loc=String(it.loc||'').replace(/ \(openable\)$/,''); delete it.oldType; cv=true; } }); if(cv&&o.notes) o.notes=String(o.notes).replace(/( · )?Openable windows shown as Fixed for now/,''); });
   if(d.heads&&!d.heads.some(function(h){return h.name==='Staff advance';})) d.heads.push({name:'Staff advance',grp:'Advances'}); (d.expenses||[]).forEach(function(e){ if(!e.head) e.head=e.cat==='Salary'?'Salary & wages':e.cat==='Material'?'Material purchase':(e.cat||'Office & misc'); if(!e.mode) e.mode='Cash'; if(!e.vno){ e.vno=d.vseq||1; d.vseq=(d.vseq||1)+1; } }); if(!d.brands||!d.brands.length) d.brands=JSON.parse(JSON.stringify(DEF.brands));
@@ -417,8 +448,8 @@ function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name==
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
 var saveT, DSIZE=0, STFULL=false;
-function keepLocal(){ var j=JSON.stringify(D); DSIZE=j.length; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
-function save(){ keepLocal(); try{ localStorage.setItem('wdirty','1'); }catch(e){} clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
+function keepLocal(){ var c0=Object.assign({},D); delete c0.flats; var j=JSON.stringify(c0); DSIZE=j.length; MAINJ=j; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
+function save(){ keepLocal(); if(MAINSENT===null||MAINJ!==MAINSENT){ try{ localStorage.setItem('wdirty','1'); }catch(e){} } if(D.flats) flatsTouch(); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
 
 function sbOn(){ return D.sb.url&&D.sb.key; }
 var SESS=(function(){ try{ return JSON.parse(localStorage.getItem('sbsess')||'null'); }catch(e){ return null; } })();
@@ -451,14 +482,15 @@ function loadUsers(){ S.ru='loading'; sbUsers().then(function(u){ S.ru=u; if(S.t
 var PUSHING=null, PUSHAGAIN=false;
 function cloudPush(){ if(!sbOn()||!SESS) return Promise.resolve(); if(PUSHING){ PUSHAGAIN=true; return PUSHING; }
   PUSHING=pushNow().then(function(){ PUSHING=null; if(PUSHAGAIN){ PUSHAGAIN=false; return cloudPush(); } }); return PUSHING; }
-function pushNow(){ var c=JSON.parse(JSON.stringify(D)); delete c.sb; var now=new Date().toISOString();
+function pushNow(){ var md=MAINSENT===null||MAINJ!==MAINSENT||!!localStorage.getItem('wdirty'); return (md?pushMain():Promise.resolve()).then(function(){ return flatsPush(); },function(){ return flatsPush(); }); }
+function pushMain(){ keepLocal(); var sentJ=MAINJ, c=JSON.parse(sentJ); delete c.sb; var now=new Date().toISOString();
   return sbRefresh().then(function(){
-    if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online'); }); }
-    return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&updated_at=eq.'+encodeURIComponent(LASTSEEN)),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:JSON.stringify({data:c,updated_at:now})}).then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('save '+r.status); if(!rows.length){ PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } LASTSEEN=now; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
+    if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; MAINSENT=sentJ; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online'); }); }
+    return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&updated_at=eq.'+encodeURIComponent(LASTSEEN)),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:JSON.stringify({data:c,updated_at:now})}).then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('save '+r.status); if(!rows.length){ PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } LASTSEEN=now; MAINSENT=sentJ; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
   }).catch(function(e){ setSync('Offline — saved on this device ('+(e&&e.message||'')+')'); }); }
 function cloudPull(force){ if(!sbOn()||!SESS) return Promise.resolve();
-  return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=data,updated_at'),{headers:sbHeaders()}); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } return r.json(); }).then(function(rows){ if(rows&&rows[0]&&rows[0].data){ if(!force&&rows[0].updated_at===LASTSEEN){ if(localStorage.getItem('wdirty')) cloudPush(); return; } var sb=D.sb; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); D.sb=sb; keepLocal(); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); render(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); }); }
-setInterval(function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT&&!PUSHING) cloudPull(); },45000);
+  return sbRefresh().then(function(){ return mainFetch(force); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } return r.json(); }).then(function(rows){ if(rows&&rows[0]&&rows[0].data){ if(!force&&rows[0].updated_at===LASTSEEN){ if(localStorage.getItem('wdirty')) cloudPush(); else if(MAINSENT===null){ keepLocal(); MAINSENT=MAINJ; } return; } var sb=D.sb, fl0=D.flats; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); D.sb=sb; D.flats=fl0; keepLocal(); MAINSENT=MAINJ; if(!PUSHING) localStorage.removeItem('wdirty'); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); render(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); }).then(function(){ return flatsPull().catch(function(){}); }).then(function(){ if(Object.keys(FL.dirty).length&&!FL.busy&&!PUSHING) return flatsPush(); }); }
+setInterval(function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT&&!PUSHING&&!FL.busy) cloudPull(); },45000);
 var syncMsg=''; function setSync(m){ syncMsg=m; var e=document.getElementById('sync'); if(e) e.textContent=m; }
 
 /* ============================================================
@@ -582,21 +614,26 @@ function nest(pieces,offcuts){ var L=D.stock, K=5, lens=[]; pieces.forEach(funct
     offBins=ob.filter(function(b){return b.pieces.length;}); offBins.forEach(function(b){ b.waste=b.cap-b.used; }); lens=rest; if(!lens.length) return offBins; }
   function fit(best){ var b=[]; lens.forEach(function(x){ var pick=-1,pv=Infinity; for(var i=0;i<b.length;i++){ var left=L-b[i].used-K-x.len; if(left>=0){ if(!best){pick=i;break;} if(left<pv){pv=left;pick=i;} } }
       if(pick<0) b.push({used:x.len,pieces:[x]}); else { b[pick].used+=x.len+K; b[pick].pieces.push(x); } }); return b; }
-  function maxfill(){ var rest=lens.slice(), b=[]; while(rest.length){
-      var cap=Math.floor((L+K)/K), dp=new Array(cap+1).fill(-1), from=[]; dp[0]=0; for(var c=0;c<=cap;c++) from[c]=-1;
-      for(var i=0;i<rest.length;i++){ var w=Math.ceil((rest[i].len+K)/K); for(var c2=cap;c2>=w;c2--){ if(dp[c2-w]>=0&&dp[c2-w]+w>dp[c2]){ dp[c2]=dp[c2-w]+w; from[c2]=i; } } }
+  function maxfill(){ var cap=Math.floor((L+K)/K), G={}, keys=[], b=[], guard=0;
+    lens.forEach(function(x){ if(!G[x.len]){ G[x.len]=[]; keys.push(x.len); } G[x.len].push(x); }); keys.sort(function(a,c){return c-a;});
+    var any=function(){ for(var i=0;i<keys.length;i++) if(G[keys[i]].length) return true; return false; };
+    while(any()&&guard++<200000){ var units=[]; keys.forEach(function(l){ var c=G[l].length, k=1, w=Math.ceil((l+K)/K); while(c>0){ var t=Math.min(k,c); units.push({l:l,t:t,w:t*w}); c-=t; k*=2; } });
+      var U=units.length, C1=cap+1, dp=new Int32Array(C1), take=new Uint8Array(U*C1);
+      for(var u=0;u<U;u++){ var w=units[u].w; if(w>cap) continue; for(var c=cap;c>=w;c--){ var v=dp[c-w]+w; if(v>dp[c]){ dp[c]=v; take[u*C1+c]=1; } } }
       var bc=0; for(var c3=0;c3<=cap;c3++) if(dp[c3]>dp[bc]) bc=c3;
-      var chosen={}, cur=bc, guard=0; while(cur>0&&from[cur]>=0&&guard++<5000){ var i2=from[cur]; if(chosen[i2]) break; chosen[i2]=1; cur-=Math.ceil((rest[i2].len+K)/K); }
-      var bar={used:0,pieces:[]}, left=[]; rest.forEach(function(x,i){ if(chosen[i]){ bar.pieces.push(x); bar.used+=x.len+K; } else left.push(x); });
-      if(!bar.pieces.length){ var f=left.shift(); bar.pieces.push(f); bar.used=f.len+K; }
-      bar.used-=K; bar.pieces.sort(function(a,b){return b.len-a.len;}); b.push(bar); rest=left; } return b; }
+      var pat={}, cur=bc; for(var u2=U-1;u2>=0&&cur>0;u2--){ if(take[u2*C1+cur]){ pat[units[u2].l]=(pat[units[u2].l]||0)+units[u2].t; cur-=units[u2].w; } }
+      var pk=Object.keys(pat);
+      if(!pk.length){ for(var i=0;i<keys.length;i++){ if(G[keys[i]].length){ var x0=G[keys[i]].shift(); b.push({used:x0.len,pieces:[x0]}); break; } } continue; }
+      var reps=Infinity; pk.forEach(function(l){ reps=Math.min(reps,Math.floor(G[l].length/pat[l])); }); reps=Math.max(1,reps);
+      for(var r=0;r<reps;r++){ var bar={used:0,pieces:[]}; pk.forEach(function(l){ for(var k2=0;k2<pat[l]&&G[l].length;k2++){ var x=G[l].shift(); bar.pieces.push(x); bar.used+=x.len+K; } }); bar.used-=K; bar.pieces.sort(function(a,c){return c.len-a.len;}); b.push(bar); } }
+    return b; }
   var plans=[fit(false),fit(true),maxfill()];
   plans.forEach(function(p){ p.forEach(function(x){ x.waste=L-x.used; }); p.sort(function(a,b){return a.waste-b.waste;}); });
   plans.sort(function(a,b){ return a.length-b.length || b[b.length-1].waste-a[a.length-1].waste; });
   plans[0].forEach(function(x){ x.cap=L; }); return offBins.concat(plans[0]); }
 function bars(pieces){ return nest(pieces).length; }
 /* everything the order needs, in one place */
-function material(o){
+function material0(o){
   var all=[],glass=[],mesh=[],fans=[];
   o.items.forEach(function(it,i){ var c=o.kind==='doors'?cutDoor(it):cutWindow(it); (c.fans||[]).forEach(function(f){ fans.push(Object.assign({loc:it.loc,i:(i+1)+(f.sub||''),win:i+1},f)); }); c.forEach(function(p){p.lab='W'+(i+1)+(p.sub||'')+(it.loc?' '+it.loc:'');p.win=i+1;}); all=all.concat(c);
     (c.glass||[]).forEach(function(g){glass.push(Object.assign({loc:it.loc,i:(i+1)+(g.sub||''),win:i+1,g:it.glass},g));}); (c.mesh||[]).forEach(function(g){mesh.push(Object.assign({loc:it.loc,i:(i+1)+(g.sub||''),win:i+1},g));}); });
@@ -634,8 +671,8 @@ function sketch(o,it,px){ px=px||64; var W=n(it.w)||1,H=n(it.h)||1, s=px/Math.ma
 var S={role:sessionStorage.getItem('role')||'',tab:'home',oid:null,sub:'items',filter:null,q:''};
 /* ---- back navigation ---- */
 var NAVLOCK=false, SKIPPOP=false, NAVSTACK=(function(){ try{ return JSON.parse(sessionStorage.getItem('navstack')||'[]'); }catch(e){ return []; } })();
-function navNow(){ var t=S.tab; return {tab:t, oid:t==='order'?S.oid:null, sub:t==='order'?S.sub:null, di:t==='order'&&S.di!=null?S.di:null, esub:t==='expenses'?(S.esub||'day'):null, filter:t==='orders'&&S.filter!=null?S.filter:null}; }
-function navKey(n){ return n?JSON.stringify([n.tab,n.oid,n.sub,n.di!=null,n.esub,n.filter]):''; }
+function navNow(){ var t=S.tab; return {tab:t, pid:t==='project'?S.pid:null, psub:t==='project'?(S.psub||null):null, oid:t==='order'?S.oid:null, sub:t==='order'?S.sub:null, di:t==='order'&&S.di!=null?S.di:null, esub:t==='expenses'?(S.esub||'day'):null, filter:t==='orders'&&S.filter!=null?S.filter:null}; }
+function navKey(n){ return n?JSON.stringify([n.tab,n.oid,n.sub,n.di!=null,n.esub,n.filter,n.pid||null,n.psub||null]):''; }
 function navKeep(){ try{ sessionStorage.setItem('navstack',JSON.stringify(NAVSTACK.slice(-60))); }catch(e){} }
 function navTrack(){ if(!S.role||NAVLOCK) return; var cur=navNow(), st=history.state;
   if(!st||!st.nav){ NAVSTACK=[cur]; navKeep(); history.replaceState({nav:cur,d:0},''); return; }
@@ -645,6 +682,7 @@ function navTrack(){ if(!S.role||NAVLOCK) return; var cur=navNow(), st=history.s
   NAVSTACK.length=d+1; NAVSTACK.push(cur); navKeep(); history.pushState({nav:cur,d:d+1},''); }
 function navApply(nav){ NAVLOCK=true; S.tab=nav.tab||'home';
   if(S.tab==='order'){ if(!byId(nav.oid)) S.tab='orders'; else { S.oid=nav.oid; S.sub=nav.sub||(prod()?'production':'items'); S.di=nav.di!=null&&byId(nav.oid).items[nav.di]?nav.di:null; } }
+  if(S.tab==='project'){ if(!projById(nav.pid)) S.tab='orders'; else { S.pid=nav.pid; if(nav.psub) S.psub=nav.psub; } }
   if(S.tab!=='order') S.di=null;
   if(S.tab==='expenses') S.esub=nav.esub||'day';
   if(S.tab==='orders') S.filter=nav.filter!=null?nav.filter:null;
@@ -655,7 +693,7 @@ window.addEventListener('popstate',function(e){ var st=e.state;
   var pop=document.querySelector('#d3')||document.querySelector('#dz')||document.querySelector('.viewer'); if(pop){ if(pop.id==='d3') d3Close(); else if(pop.id==='dz') dzClose(); else pop.remove(); var cur=navNow(); history.pushState({nav:cur,d:(st&&st.d||0)+1},''); NAVSTACK.length=(st&&st.d||0)+1; NAVSTACK.push(cur); navKeep(); return; }
   if(!S.role||!st||!st.nav) return; NAVSTACK.length=(st.d||0)+1; NAVSTACK[st.d||0]=st.nav; navKeep(); navApply(st.nav); });
 function go(tab,oid){ S.tab=tab; if(oid!==undefined){ S.oid=oid; S.sub=prod()?'production':'items'; } render(); window.scrollTo(0,0); }
-function order(){ for(var i=0;i<D.orders.length;i++) if(D.orders[i].id===S.oid) return D.orders[i]; return null; }
+function order(){ if(!S.oid) return null; for(var i=0;i<D.orders.length;i++) if(D.orders[i].id===S.oid) return D.orders[i]; return byId(S.oid)||null; }
 function roleFor(email){ var u=(D.users||[]).filter(function(x){return (x.email||'').toLowerCase()===(email||'').toLowerCase();})[0]; return u?u.role:((D.users||[]).length?'sales':'admin'); }
 function admin(){ return S.role==='admin'; }
 function canDel(){ return admin(); }
@@ -676,8 +714,8 @@ function render(){
   if(!S.role){ nav.innerHTML=''; document.body.setAttribute('data-tab','login'); app.innerHTML=viewLogin(); return; }
   document.body.setAttribute('data-tab',S.tab); navTrack();
   var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
-  nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&S.tab==='order'))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
-  var v={home:viewHome,orders:viewOrders,order:viewOrder,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
+  nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&(S.tab==='order'||S.tab==='project')))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
+  var v={home:viewHome,orders:viewOrders,order:viewOrder,project:viewProject,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
   var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+v;
   fixChips();
 }
@@ -733,7 +771,7 @@ function showShare(email,role){ var link=appLink(), v=document.createElement('di
     if(x==='share') navigator.share({title:D.company.name,text:msg}).catch(function(){});
     if(x==='copy'){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(copied,oldCopy); else oldCopy(); } }); }
 function photoCount(){ return D.orders.reduce(function(a,o){return a+(o.photos||[]).length;},0); }
-function spaceLine(){ if(!DSIZE) DSIZE=JSON.stringify(D).length; var mb=DSIZE/1048576, pc=Math.min(100,Math.round(mb/5*100)); return '<div style="margin-top:10px"><div class="faint">Space used: <b>'+(mb<0.1?Math.max(1,Math.round(DSIZE/1024))+' KB':mb.toFixed(1)+' MB')+'</b> of about 5 MB a phone can keep · '+D.orders.length+' orders · '+photoCount()+' photos</div><div style="height:8px;background:#eef1f5;border-radius:99px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,pc)+'%;background:'+(pc>70?'var(--warn)':'var(--accent)')+'"></div></div><div class="faint" style="margin-top:4px">An order without photos takes about 2 KB; each site photo about 80 KB.</div></div>'; }
+function spaceLine(){ if(!DSIZE) DSIZE=JSON.stringify(D).length; var mb=DSIZE/1048576, pc=Math.min(100,Math.round(mb/5*100)); return '<div style="margin-top:10px"><div class="faint">Space used: <b>'+(mb<0.1?Math.max(1,Math.round(DSIZE/1024))+' KB':mb.toFixed(1)+' MB')+'</b> of about 5 MB a phone can keep · '+D.orders.length+' orders'+(liveFlats().length?' + '+liveFlats().length+' flats (kept separately)':'')+' · '+photoCount()+' photos</div><div style="height:8px;background:#eef1f5;border-radius:99px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,pc)+'%;background:'+(pc>70?'var(--warn)':'var(--accent)')+'"></div></div><div class="faint" style="margin-top:4px">An order without photos takes about 2 KB; each site photo about 80 KB.</div></div>'; }
 function alertKey(a){ return (a.id||a.go||'')+'|'+String(a.txt).replace(/\d+ days?/g,'N days').replace(/[\d.]+ MB/g,'N MB'); }
 function dismissed(){ try{ return JSON.parse(localStorage.getItem('wdismiss')||'{}')||{}; }catch(e){ return {}; } }
 function setDismissed(m){ var cut=Date.now()-120*864e5; Object.keys(m).forEach(function(k){ if(m[k]<cut) delete m[k]; }); try{ localStorage.setItem('wdismiss',JSON.stringify(m)); }catch(e){} }
@@ -747,10 +785,10 @@ function viewHome(){
   if(prod()) return homeProd();
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
   var due=open.reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0);
-  var mo=D.orders.filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
+  var mo=allOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
   var sales=mo.reduce(function(a,o){return a+subTotal(o);},0), prof=mo.reduce(function(a,o){return a+profit(o);},0);
   var exp=monthExp(m);
-  var inn=D.orders.reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
+  var inn=allOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
   var kp='<div class="kpis"><div class="kpi"><span>Sales this month</span><b>'+money(sales)+'</b><i>'+pl(mo.length,'order')+' confirmed</i></div><div class="kpi good"><span>Received this month</span><b>'+money(inn)+'</b></div>'
    +'<div class="kpi'+(due>0?' warn':'')+'"><span>To collect</span><b>'+money(due)+'</b></div>'
    +(admin()?'<div class="kpi'+(prof-exp<0?' warn':' good')+'"><span>Profit this month</span><b>'+money(prof-exp)+'</b><i>after '+money(exp)+' expenses</i></div>':'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){return o.stage<3&&o.stage>0;}).reduce(function(a,o){return a+leftQty(o);},0)+'</b></div>')+'</div>';
@@ -783,10 +821,10 @@ function viewOrders(){
   var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
     return !q||(o.customer+' '+o.phone+' '+o.no+' '+o.address).toLowerCase().indexOf(q)>=0; }).sort(function(a,b){return b.no-a.no;});
   var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}),[['pay','₹ Pending'],['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
-  return '<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+(list.length?list.map(oRow).join(''):'<div class="empty">No orders here</div>')+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
+  return projCard()+'<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+(list.length?list.map(oRow).join(''):'<div class="empty">No orders here</div>')+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
 }
 
-function viewOrder(){
+function viewOrder0(){
   var o=order(); if(!o) return '<div class="card">Order not found. <button class="btn ghost" data-go="orders">Back</button></div>';
   var total=orderTotal(o), bal=balance(o);
   if(prod()){ var p=plan()[o.id];
@@ -1332,6 +1370,347 @@ function dz3D(){ var it=dzItem(); if(!it||$('#d3')) return; dzNumClose(); var v=
   if(window.ResizeObserver){ st.ro=new ResizeObserver(size); st.ro.observe(cv.parentNode); }
   size(); anim(-0.55,0.2,900); }
 
+/* ============================================================
+   APARTMENT PROJECTS — each flat is its own order (owner pays separately, measured flat by flat).
+   Flats live outside the main record: on the device in IndexedDB (big quota — an 800-flat site
+   would not fit in the 5 MB phone storage, iPhones allow only ~2.5 M characters there),
+   one row per flat online (shop_flats), so a change sends only that flat.
+   ============================================================ */
+var FL={sig:{},seen:{},dirty:{},since:'',busy:null,again:false,scanT:null,loaded:false,ready:Promise.resolve(),idb:true,db:null,wq:{},wt:null,lsk:{}};
+var MAINJ='', MAINSENT=null;
+function liveFlats(){ return (D.flats||[]).filter(function(f){return !f.del;}); }
+function allOrders(){ return D.orders.concat(liveFlats()); }
+function flatById(id){ var a=D.flats||[]; for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null; }
+function projById(id){ return (D.projects||[]).filter(function(p){return p.id===id;})[0]; }
+function projFlats(pid){ return liveFlats().filter(function(f){return f.proj===pid;}); }
+function typeById(id){ var ps=D.projects||[]; for(var i=0;i<ps.length;i++){ var t=(ps[i].types||[]).filter(function(x){return x.id===id;})[0]; if(t) return t; } return null; }
+/* ---- device storage ---- */
+function flatsMeta(){ try{ localStorage.setItem('wfseen',JSON.stringify(FL.seen)); localStorage.setItem('wfdirty',JSON.stringify(FL.dirty)); localStorage.setItem('wfsince',FL.since||''); }catch(e){} if(FL.loaded) flatsQueue('__dirty',JSON.stringify({__dirty:FL.dirty})); }
+function fdbOpen(){ if(FL.db) return FL.db; FL.db=new Promise(function(res,rej){ try{ if(!window.indexedDB) return rej(new Error('no indexedDB')); var rq=indexedDB.open('wshop-flats',1);
+    rq.onupgradeneeded=function(){ try{ rq.result.createObjectStore('flats'); }catch(e){} }; rq.onsuccess=function(){ var db=rq.result; db.onversionchange=function(){ db.close(); }; res(db); };
+    rq.onerror=function(){ rej(rq.error||new Error('indexedDB')); }; rq.onblocked=function(){ rej(new Error('indexedDB blocked')); }; }catch(e){ rej(e); } }); return FL.db; }
+function flatsStFull(){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online.':'free some space.')); STFULL=true; }
+function flatsBoot(){ D.flats=[]; FL.sig={}; FL.loaded=false; try{ FL.seen=JSON.parse(localStorage.getItem('wfseen')||'{}')||{}; FL.dirty=JSON.parse(localStorage.getItem('wfdirty')||'{}')||{}; FL.since=localStorage.getItem('wfsince')||''; }catch(e){ FL.seen={}; FL.dirty={}; FL.since=''; }
+  var lk=[], ls={}; for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,3)==='wf:') lk.push(k); } lk.forEach(function(k){ ls[k.slice(3)]=localStorage.getItem(k); FL.lsk[k.slice(3)]=1; });
+  var slow=new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('indexedDB slow')); },6000); });
+  FL.ready=Promise.race([fdbOpen().then(function(db){ return new Promise(function(res,rej){ var rq=db.transaction('flats','readonly').objectStore('flats').getAll(); rq.onsuccess=function(){ res(rq.result||[]); }; rq.onerror=function(){ rej(rq.error); }; }); }),slow])
+    .catch(function(){ FL.idb=false; return []; })
+    .then(function(vals){ var by={}, arr=[], had={}, dl=function(v){ try{ var x=JSON.parse(v); if(x&&x.__dirty) Object.keys(x.__dirty).forEach(function(id){ FL.dirty[id]=1; }); }catch(e){} };
+      vals.forEach(function(v){ try{ var f=JSON.parse(v); if(f&&f.__dirty) dl(v); else if(f&&f.id) by[f.id]=v; }catch(e){} });
+      Object.keys(ls).forEach(function(id){ if(id==='__dirty') dl(ls[id]); else if(ls[id]) by[id]=ls[id]; });   /* phone-storage copies are the newer ones */
+      Object.keys(by).forEach(function(id){ try{ var f=JSON.parse(by[id]); arr.push(f); FL.sig[f.id]=by[id]; had[f.id]=1; }catch(e){} });
+      (D.flats||[]).forEach(function(f){ if(!had[f.id]){ arr.push(f); had[f.id]=1; } }); D.flats=arr;
+      /* copies the phone lost (storage cleared, slow start): forget we had them, so the next refresh downloads them again */
+      var gone=Object.keys(FL.seen).filter(function(id){ return !had[id]; }); gone.forEach(function(id){ delete FL.seen[id]; delete FL.dirty[id]; }); Object.keys(FL.dirty).forEach(function(id){ if(!had[id]) delete FL.dirty[id]; });
+      if(gone.length) FL.since=''; FL.loaded=true; if(gone.length) flatsMeta();
+      if(FL.idb&&lk.length){ Object.keys(ls).forEach(function(id){ if(by[id]) FL.wq[id]=by[id]; }); flatsFlush(); }
+      if(S.role&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) render(); }); }
+function flatsQueue(id,s){ FL.wq[id]=s; if(!FL.wt) FL.wt=setTimeout(function(){ flatsFlush(); },0); }
+function flatsFlush(cb){ clearTimeout(FL.wt); FL.wt=null; var q=FL.wq, ids=Object.keys(q); FL.wq={}; if(!ids.length){ if(cb) cb(true); return; }
+  var done=false, toLs=function(){ if(done) return; done=true; ids.forEach(function(id){ try{ localStorage.setItem('wf:'+id,q[id]); FL.lsk[id]=1; }catch(e){ flatsStFull(); } }); if(cb) cb(false); };
+  if(!FL.idb) return toLs();
+  fdbOpen().then(function(db){ var tx=db.transaction('flats','readwrite'), st=tx.objectStore('flats'); ids.forEach(function(id){ st.put(q[id],id); });
+      tx.oncomplete=function(){ if(done) return; done=true; ids.forEach(function(id){ if(FL.lsk[id]){ delete FL.lsk[id]; try{ localStorage.removeItem('wf:'+id); }catch(e){} } }); if(cb) cb(true); };
+      tx.onerror=tx.onabort=function(){ FL.idb=false; toLs(); }; }).catch(function(){ FL.idb=false; toLs(); }); }
+function flatKeep(f){ var s=JSON.stringify(f); if(s===FL.sig[f.id]) return false; FL.sig[f.id]=s; FL.dirty[f.id]=1; flatsQueue(f.id,s); return true; }
+function flatsScan(){ if(!FL.loaded) return false; var ch=false; (D.flats||[]).forEach(function(f){ if(flatKeep(f)) ch=true; }); if(ch) flatsMeta(); return ch; }
+function flatsTouch(){ if(!FL.loaded) return; var o=S.oid&&flatById(S.oid); if(o&&flatKeep(o)) flatsMeta(); clearTimeout(FL.scanT); FL.scanT=setTimeout(function(){ FL.scanT=null; flatsScan(); },250); }
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden'&&D&&D.flats&&FL.loaded){ flatsScan(); flatsFlush(); } });
+/* ---- online: pull only what changed, push only changed flats ---- */
+function flatsPull(){ if(!FL.loaded) return FL.ready.then(function(){ return FL.loaded?flatsPull():null; }); if(!sbOn()||!SESS||FL.busy) return Promise.resolve();
+  var since=FL.since?new Date(new Date(FL.since).getTime()-60000).toISOString():'', top='', first=!Object.keys(FL.seen).length;
+  var chk=function(r){ if(r.status===404) return []; if(!r.ok) throw new Error('flats '+r.status); return r.json(); };
+  var page=function(sel,lim){ var got=[]; var step=function(off){ return fetch(sbUrl('/rest/v1/shop_flats?select='+sel+(since?'&updated_at=gt.'+encodeURIComponent(since):'')+'&order=updated_at.asc&limit='+lim+'&offset='+off),{headers:sbHeaders()}).then(chk).then(function(rows){ got=got.concat(rows||[]); return rows&&rows.length===lim?step(off+lim):got; }); }; return step(0); };
+  var byIds=function(ids){ var out=[], k=0, next=function(){ if(k>=ids.length) return Promise.resolve(out); var ch=ids.slice(k,k+150); k+=150; return fetch(sbUrl('/rest/v1/shop_flats?select=id,data,updated_at&id=in.('+ch.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(chk).then(function(rows){ out=out.concat(rows||[]); return next(); }); }; return next(); };
+  /* first time on a phone: everything in pages; after that: a short list of (id, time), then only the flats that changed */
+  return sbRefresh().then(function(){ if(first) return page('id,data,updated_at',500);
+      return page('id,updated_at',1000).then(function(list){ var need=[]; list.forEach(function(r){ if(!top||r.updated_at>top) top=r.updated_at; if(FL.seen[r.id]!==r.updated_at) need.push(r.id); }); return need.length?byIds(need):[]; }); })
+    .then(function(rows){ var ch=0, lost=[], idx={}; D.flats.forEach(function(f,i){ idx[f.id]=i; });
+    rows.forEach(function(r){ if(!FL.since||r.updated_at>FL.since) FL.since=r.updated_at; if(FL.seen[r.id]===r.updated_at) return; var f=r.data; if(!f||!f.id) return;
+      if(FL.dirty[r.id]&&FL.seen[r.id]) lost.push(f.no||r.id);
+      if(idx[f.id]!=null) D.flats[idx[f.id]]=f; else { idx[f.id]=D.flats.length; D.flats.push(f); }
+      var s=JSON.stringify(f); FL.sig[f.id]=s; flatsQueue(f.id,s); FL.seen[f.id]=r.updated_at; delete FL.dirty[f.id]; ch++; });
+    if(top&&(!FL.since||top>FL.since)) FL.since=top; flatsMeta(); if(lost.length) toast('⚠ Flat '+lost.slice(0,3).join(', ')+(lost.length>3?'…':'')+' was changed on another phone — loaded the latest. Check your last change.');
+    if(ch&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) render(); }); }
+function flatsPush(){ if(!FL.loaded) return FL.ready.then(function(){ return FL.loaded?flatsPush():null; }); if(!sbOn()||!SESS) return Promise.resolve(); if(FL.busy){ FL.again=true; return FL.busy; }
+  var ids=Object.keys(FL.dirty); if(!ids.length) return Promise.resolve(); var byF={}; (D.flats||[]).forEach(function(f){ byF[f.id]=f; }); ids=ids.filter(function(id){ return byF[id]; });
+  var sent={}, conflicts=[], fresh=ids.filter(function(id){return !FL.seen[id];}), old=ids.filter(function(id){return FL.seen[id];});
+  var done=function(id,ts){ FL.seen[id]=ts; if(FL.sig[id]===sent[id]) delete FL.dirty[id]; };
+  var insert=function(chunk){ chunk.forEach(function(id){ sent[id]=JSON.stringify(byF[id]); });
+    return fetch(sbUrl('/rest/v1/shop_flats'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=representation'}),body:'['+chunk.map(function(id){ return '{"id":'+JSON.stringify(id)+',"proj":'+JSON.stringify(byF[id].proj||'')+',"data":'+sent[id]+'}'; }).join(',')+']'})
+      .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('flats save '+r.status); var got={}; (rows||[]).forEach(function(x){ got[x.id]=1; done(x.id,x.updated_at); });
+        var miss=chunk.filter(function(id){ return !got[id]; }); if(!miss.length) return;
+        return fetch(sbUrl('/rest/v1/shop_flats?select=id,updated_at&id=in.('+miss.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r2){ if(!r2.ok) throw new Error('flats check '+r2.status); return r2.json(); })
+          .then(function(ex){ (ex||[]).forEach(function(x){ FL.seen[x.id]=x.updated_at; q.push(x.id); }); }); }); }); };
+  var update=function(id){ sent[id]=JSON.stringify(byF[id]);
+    return fetch(sbUrl('/rest/v1/shop_flats?id=eq.'+encodeURIComponent(id)+'&updated_at=eq.'+encodeURIComponent(FL.seen[id])),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:'{"proj":'+JSON.stringify(byF[id].proj||'')+',"data":'+sent[id]+'}'})
+      .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('flats save '+r.status); if(rows&&rows.length) done(id,rows[0].updated_at); else conflicts.push(id); }); }); };
+  var chain=Promise.resolve(); for(var i=0;i<fresh.length;i+=100){ (function(ch){ chain=chain.then(function(){ return insert(ch); }); })(fresh.slice(i,i+100)); }
+  var q=old.slice(), worker=function(){ var id=q.shift(); return id?update(id).then(worker):Promise.resolve(); };
+  FL.busy=sbRefresh().then(function(){ return chain; }).then(function(){ return Promise.all([worker(),worker(),worker(),worker()]); })
+    .then(function(){ if(!conflicts.length) return; return fetch(sbUrl('/rest/v1/shop_flats?select=id,data,updated_at&id=in.('+conflicts.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error('flats load '+r.status); return r.json(); }).then(function(rows){ var nm=[], back={};
+        (rows||[]).forEach(function(x){ back[x.id]=1; var i=D.flats.findIndex(function(f){return f.id===x.id;}); if(i>=0) D.flats[i]=x.data; var s=JSON.stringify(x.data); FL.sig[x.id]=s; flatsQueue(x.id,s); FL.seen[x.id]=x.updated_at; delete FL.dirty[x.id]; nm.push(x.data.no||x.id); });
+        conflicts.forEach(function(id){ if(!back[id]){ delete FL.seen[id]; FL.again=true; } });
+        if(nm.length){ toast('⚠ Flat '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+' was saved first on another phone — loaded theirs. Please redo your last change there.'); render(); } }); })
+    .then(function(){ flatsMeta(); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); },function(e){ flatsMeta(); setSync('Offline — flats saved on this device ('+(e&&e.message||'')+')'); })
+    .then(function(){ FL.busy=null; if(FL.again){ FL.again=false; return flatsPush(); } });
+  return FL.busy; }
+function mainFetch(force){ var full=function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=data,updated_at'),{headers:sbHeaders()}); };
+  if(force||!LASTSEEN) return full();
+  return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=updated_at'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) return r; return r.json().then(function(rows){ if(rows&&rows[0]&&rows[0].updated_at===LASTSEEN) return {status:200,ok:true,json:function(){ return Promise.resolve([{data:{__same:1},updated_at:LASTSEEN}]); }}; return full(); }); }); }
+
+function flatsMerge(cur,inc){ cur=cur||[]; if(!Array.isArray(inc)) return cur; var ix={}; cur.forEach(function(f,i){ ix[f.id]=i; }); inc.forEach(function(f){ if(!f||!f.id) return; if(ix[f.id]!=null) cur[ix[f.id]]=f; else { ix[f.id]=cur.length; cur.push(f); } }); return cur; }
+/* ---- project helpers ---- */
+function pad2(v){ v=String(v); return v.length<2?'0'+v:v; }
+function flatNo(t,fl,u){ return (t?t+'-':'')+fl+pad2(u); }
+function flatSort(a,b){ return (a.tower||'')<(b.tower||'')?-1:(a.tower||'')>(b.tower||'')?1:(n(a.floor)-n(b.floor))||(n(a.unit)-n(b.unit))||((a.no||'')<(b.no||'')?-1:1); }
+function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Ready':f.stage===2?'In production':f.stage===1?'Advance paid':f.measured?'Measured':'Not measured'; }
+var FSTC={'Not measured':'s0','Measured':'s1','Advance paid':'s1','In production':'s2','Ready':'s3','Delivered':'s4'};
+function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(f.stage>=1) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.measured||f.stage>=1) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
+function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
+  o.items.forEach(function(it){ it.made=false; }); o.address='Flat '+o.no+', '+p.name+(p.site?', '+p.site:''); return o; }
+function batchById(id){ var ps=D.projects||[]; for(var i=0;i<ps.length;i++){ var b=(ps[i].batches||[]).filter(function(x){return x.id===id;})[0]; if(b) return {p:ps[i],b:b}; } return null; }
+function batchFlats(b){ return b.flats.map(flatById).filter(function(f){return f&&!f.del;}).sort(flatSort); }
+/* a batch behaves like one big order for the cutting list (a fresh copy every time) */
+function batchOrder(id){ var r=batchById(id); if(!r) return null; var fl=batchFlats(r.b), items=[];
+  fl.forEach(function(f){ f.items.forEach(function(it){ items.push(Object.assign({},it,{loc:f.no+(it.loc?' '+it.loc:'')})); }); });
+  return {id:'B:'+id,bat:r.b,proj:r.p.id,kind:'windows',no:r.b.name,customer:r.p.name,phone:'',address:'',notes:'',due:'',stage:r.b.stage||2,items:items,payments:[],discount:0,created:r.b.created,consumed:!!r.b.consumed}; }
+
+
+/* ============================================================
+   PROJECT SCREENS — everything editable (✎) and deletable (🗑, admin only), kept simple:
+   status boxes are the filters, one popup for each edit.
+   ============================================================ */
+var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['Advance paid','Advance paid'],['In production','In production'],['Ready','Ready'],['Delivered','Delivered'],['pend','₹ Due']];
+function pjCounts(fl){ var c={'':fl.length,pend:0}; fl.forEach(function(f){ var s=flatStatus(f); c[s]=(c[s]||0)+1; if(f.stage>0&&balance(f)>0.5) c.pend++; }); return c; }
+function pjAddr(no,p){ return 'Flat '+no+', '+p.name+(p.site?', '+p.site:''); }
+function batchRange(b){ var fl=batchFlats(b); return fl.length?fl[0].no+(fl.length>1?' – '+fl[fl.length-1].no:'')+' · '+fl.length+' flat'+(fl.length>1?'s':''):'no flats yet'; }
+function pjFresh(){ S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; S.padd=false; S.fa_t='A'; S.fa_ty=null; S.fa_f1=null; S.fa_f2=null; S.fa_n=4; S.fa_u=1; }
+function pjSelIds(){ var s=S.psel||{}; return Object.keys(s).filter(function(k){ var f=s[k]&&flatById(k); return f&&!f.del&&f.proj===S.pid; }); }
+function itemsSig(items){ return JSON.stringify((items||[]).map(function(it){ var c=Object.assign({},it); delete c.made; return c; })); }
+/* flats of a type that are not measured yet and still have a different window list than the type */
+function tplOutdated(t){ var ts=itemsSig(t.items); return projFlats(t.proj).filter(function(f){ return f.ftype===t.id&&!f.measured&&f.stage===0&&itemsSig(f.items)!==ts; }); }
+function copyItems(f,t){ f.items=JSON.parse(JSON.stringify(t.items||[])); f.items.forEach(function(i){ i.made=false; }); }
+/* deleted flats keep only a small marker, so every phone removes them too */
+function flatTomb(f){ var r=f.batch&&batchById(f.batch); if(r) r.b.flats=r.b.flats.filter(function(x){return x!==f.id;}); var i=D.flats.indexOf(f); if(i>=0) D.flats[i]={id:f.id,proj:f.proj,no:f.no,del:true,delOn:today()}; if(S.psel) delete S.psel[f.id]; }
+
+/* ---- popup (phone Back button closes it) ---- */
+function pjPop(title,body,foot){ pjPopX(); var v=document.createElement('div'); v.className='viewer pjpop';
+  v.innerHTML='<div class="card pjpopc" role="dialog" aria-label="'+esc(title.replace(/<[^>]*>/g,''))+'"><div class="row between" style="margin-bottom:10px"><h2 style="margin:0">'+title+'</h2><button class="btn sm ghost" data-pjx="1" aria-label="Close">✕</button></div>'+body+'<div class="row pjpopf">'+foot+'</div></div>';
+  v.addEventListener('click',function(e){ if(e.target===v||e.target.closest('[data-pjx]')) v.remove(); }); document.body.appendChild(v); return v; }
+function pjPopX(){ var v=document.querySelector('.viewer.pjpop'); if(v) v.remove(); }
+function pjFld(id,label,val,type,extra){ return '<label class="f"><span>'+label+'</span><input type="'+(type||'text')+'" id="'+id+'" value="'+esc(val==null?'':val)+'"'+(extra||'')+'></label>'; }
+function pjV(id){ var e=document.getElementById(id); return e?String(e.value||'').trim():''; }
+
+/* ---- Orders page card ---- */
+function projCard(){ var all=D.projects||[], live=all.filter(function(p){return !p.archived;}), ar=all.length-live.length, list=S.pjarch?all.filter(function(p){return p.archived;}):live;
+  if(!all.length&&!admin()) return '';
+  return '<div class="card pjc"><div class="row between"><h2>🏢 Apartment projects</h2>'+(admin()?'<button class="btn sm" data-act="pnew">+ New project</button>':'')+'</div>'
+   +(list.length?list.map(function(p){ var fl=projFlats(p.id), st=projStats(p,fl); return '<button class="pjrow" data-proj="'+p.id+'"><b>'+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</b><span>'+fl.length+' flats · '+st.measured+' measured · '+st.paid+' advance paid · '+st.delivered+' delivered'+(p.site?' · '+esc(p.site):'')+'</span>'+(prod()?'':'<span class="faint">'+money(st.received)+' received of '+money(st.billed)+'</span>')+'</button>'; }).join('')
+     :'<div class="faint" style="margin-top:6px">'+(S.pjarch?'No archived projects.':'For apartment jobs: each flat is its own order with the owner, measured sizes and payments.')+'</div>')
+   +(ar||S.pjarch?'<button class="btn ghost sm" data-act="pjarchlist" style="margin-top:8px;padding-left:2px">'+(S.pjarch?'‹ Active projects':'Archived projects ('+ar+')')+'</button>':'')+'</div>'; }
+
+/* ---- project page ---- */
+function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">Project not found. <button class="btn ghost" data-go="orders">Back</button></div>';
+  if(!FL.loaded) return '<div class="card"><h2>🏢 '+esc(p.name)+'</h2><div class="faint">Loading flats…</div></div>';
+  var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), sub=prod()?'batches':(S.psub==='types'||S.psub==='batches'?S.psub:'flats'), F=S.pf||(S.pf={tower:'',st:'',q:''});
+  var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>'+(prod()?'':'<button class="btn sm" data-act="pjedit">✎ Edit project</button>')+'</div>'
+   +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+'</div>':'')
+   +'<div class="pjst">'+PJST.map(function(x){ var on=sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='pend'?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('')+'</div>'
+   +(prod()?'':'<div class="muted" style="margin-top:8px">Billed '+money(st.billed)+' · received <b class="goodt">'+money(st.received)+'</b> · pending <b class="warnt">'+money(Math.max(0,st.billed-st.received))+'</b> · '+st.windows+' windows</div>')+'</div>';
+  var subs=prod()?[['batches','Batches',(p.batches||[]).length]]:[['flats','Flats',fl.length],['types','Flat types',(p.types||[]).length],['batches','Batches',(p.batches||[]).length]];
+  return head+'<div class="subtabs">'+subs.map(function(s){return '<button data-psub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+' <small>'+s[2]+'</small></button>';}).join('')+'</div>'+({flats:pjFlats,types:pjTypes,batches:pjBatches}[sub])(p,fl); }
+function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').toLowerCase();
+  return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st==='free'){ if(f.batch) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
+    return !q||(f.no+' '+(f.customer||'')+' '+(f.phone||'')).toLowerCase().indexOf(q)>=0; }).sort(flatSort); }
+function pjRows(p,list,lim){ var sel=S.psel||(S.psel={});
+  return list.slice(0,lim).map(function(f){ var st=flatStatus(f), b=balance(f), ty=typeById(f.ftype);
+    return '<div class="frow"><input type="checkbox" data-fsel="'+f.id+'"'+(sel[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="fl" data-open="'+f.id+'"><b>'+esc(f.no)+'</b><span class="fo">'+esc([f.customer,ty&&ty.name,f.batch&&batchById(f.batch)&&batchById(f.batch).b.name].filter(Boolean).join(' · ')||'—')+'</span><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span><span class="fm">'+(f.measured||f.stage>0?money(orderTotal(f))+(f.stage>0||paid(f)>0?'<br><small class="'+(b>0.5?'warnt':'goodt')+'">'+(b>0.5?'due '+money(b):'paid')+'</small>':''):'<small class="faint">'+qty(f)+' windows</small>')+'</span></button>'
+     +'<button class="btn sm ghost fe" data-fedit="'+f.id+'" aria-label="Edit '+esc(f.no)+'" title="Edit flat">✎</button></div>'; }).join(''); }
+function pjSelBar(){ var ids=pjSelIds(), k=ids.length; if(!k) return '';
+  return '<div class="pjbar"><b>'+k+' selected</b><span class="grow"></span><button class="btn sm primary" data-act="pbatch">Make batch</button><button class="btn sm" data-act="pjseltype">Change type</button>'+(admin()?'<button class="btn sm danger" data-act="pjseldel">🗑 Delete</button>':'')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div>'; }
+function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(function(f){return f.tower||'';}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(), list=pjFilter(p,fl), lim=S.plim||60, types=p.types||[], empty=fl.filter(function(f){return !f.items||!f.items.length;}).length;
+  var tyOpt=types.map(function(t){return '<option value="'+t.id+'"'+(S.fa_ty===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join('');
+  var add='<div class="card pjadd'+(S.padd||!fl.length?'':' hide')+'" id="pjadd"><div class="row between"><h2>Add flats</h2>'+(fl.length?'<button class="btn sm ghost" data-act="paddx" aria-label="Close">✕</button>':'')+'</div>'+(types.length?'':'<div class="pjnote">First make a flat type — the list of windows in one flat. <button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div>')
+   +'<div class="grid2"><label class="f"><span>Tower / block</span><input type="text" id="fa_t" value="'+esc(S.fa_t||'A')+'" maxlength="6"></label><label class="f"><span>Flat type</span><select id="fa_ty">'+tyOpt+'</select></label>'
+   +'<label class="f"><span>From floor</span><input type="number" id="fa_f1" value="'+(S.fa_f1!=null?S.fa_f1:1)+'"></label><label class="f"><span>To floor</span><input type="number" id="fa_f2" value="'+(S.fa_f2!=null?S.fa_f2:1)+'"></label>'
+   +'<label class="f"><span>Flats on each floor</span><input type="number" id="fa_n" value="'+(S.fa_n||4)+'"></label><label class="f"><span>First flat number</span><input type="number" id="fa_u" value="'+(S.fa_u||1)+'"></label></div>'
+   +'<div class="muted" id="fa_prev" style="margin:4px 0 10px">'+faPreview(p)+'</div><button class="btn primary" data-act="padd"'+(types.length?'':' disabled')+'>Add flats</button></div>';
+  var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
+  var note=empty?'<div class="pjnote">⚠ '+empty+' flat'+(empty>1?'s have':' has')+' no windows yet. Add the windows to the flat type, then tap <b>Update</b> on the flat type page.'+(types.length?' <button class="btn sm" data-psub="types">Open flat types</button>':'')+'</div>':'';
+  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'"><button class="btn" data-act="paddshow">+ Add flats</button></div>';
+  var stl=(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
+  var cnt='<div class="row pjsel2"><span class="muted">'+list.length+' flat'+(list.length===1?'':'s')+(F.st?' · '+esc(stl)+' <button class="btn ghost sm" data-pst="">show all</button>':'')+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+'</div>';
+  return add+note+bar+tw+cnt+'<div class="card flist">'+(pjRows(p,list,lim)||'<div class="empty">'+(fl.length?'No flats match':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin-top:8px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
+function faRead(){ return {t:String(($('#fa_t')||{}).value||'').trim().toUpperCase(),ty:($('#fa_ty')||{}).value,f1:Math.round(n(($('#fa_f1')||{}).value)),f2:Math.round(n(($('#fa_f2')||{}).value)),n:Math.round(n(($('#fa_n')||{}).value)),u:Math.max(0,Math.round(n(($('#fa_u')||{}).value)))}; }
+function faPreview(p){ var a=$('#fa_t')?faRead():{t:S.fa_t||'A',ty:S.fa_ty,f1:S.fa_f1!=null?S.fa_f1:1,f2:S.fa_f2!=null?S.fa_f2:1,n:S.fa_n||4,u:S.fa_u||1}; var fls=Math.max(0,a.f2-a.f1+1), tot=fls*Math.max(0,a.n);
+  if(!tot) return 'Nothing to add — check the floors and flats per floor.'; if(tot>400) return '⚠ '+tot+' flats at once is a lot — add up to 400 at a time.';
+  var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var skip=0; for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++) if(ex[flatNo(a.t,fl,a.u+u)]) skip++;
+  var ty=(p.types||[]).filter(function(t){return t.id===a.ty;})[0]||(p.types||[])[0];
+  return 'Will add <b>'+flatNo(a.t,a.f1,a.u)+'</b> … <b>'+flatNo(a.t,a.f2,a.u+a.n-1)+'</b> · <b>'+(tot-skip)+' flats</b>'+(skip?' ('+skip+' already there, skipped)':'')+(ty&&!qty(ty)?'<br><span class="warnt">⚠ '+esc(ty.name)+' has no windows yet — the flats will be empty until you add them to the type and tap Update.</span>':''); }
+function pjTypes(p,fl){ var types=p.types||[];
+  return '<div class="card"><div class="row between"><h2>Flat types</h2><button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div><p class="faint">One window list per flat layout (2BHK, 3BHK…). New flats copy it; each flat then gets its own measured sizes.</p>'
+   +(types.length?types.map(function(t){ var used=fl.filter(function(f){return f.ftype===t.id;}).length, nw=qty(t);
+     return '<div class="pjitem"><button class="pjrow" data-open="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+(nw?nw+' window'+(nw===1?'':'s')+' · '+fmt(t.items.reduce(function(a,it){return a+sqft(it.w,it.h)*n(it.qty);},0))+' sq ft · typical '+money(subTotal(t)):'<b class="warnt" style="font-size:13.5px">No windows yet — tap to add them</b>')+'</span><span class="faint">'+used+' flat'+(used===1?'':'s')+' use it</span></button>'
+      +'<div class="pjacts"><button class="btn sm" data-open="'+t.id+'">✎ Edit</button><button class="btn sm" data-tyc="'+t.id+'">⧉ Copy</button>'+(admin()?'<button class="btn sm danger" data-tyd="'+t.id+'">🗑 Delete</button>':'')+'</div></div>'; }).join(''):'<div class="empty">No flat types yet</div>')+'</div>'; }
+function pjBatches(p,fl){ var bs=(p.batches||[]).slice().reverse();
+  return '<div class="card"><h2>Batches</h2><p class="faint">Tick flats in the Flats tab → <b>Make batch</b>. Each batch has one cutting list and its own production ticks.</p>'
+   +(bs.length?bs.map(function(b){ var bf=batchFlats(b), w=bf.reduce(function(a,f){return a+qty(f);},0), m=bf.reduce(function(a,f){return a+f.items.filter(function(i){return i.made;}).reduce(function(x,i){return x+n(i.qty);},0);},0), dl=bf.filter(function(f){return f.stage>=4;}).length, done=dl===bf.length&&bf.length, rd=m>=w&&w;
+       return '<div class="pjitem"><button class="pjrow" data-open="B:'+b.id+'"><b>'+esc(b.name)+'</b><span>'+esc(batchRange(b))+' · '+w+' windows · '+m+' made'+(dl?' · '+dl+' delivered':'')+'</span><span class="stage '+(done?'s4':rd?'s3':'s2')+'">'+(done?'Delivered':rd?'Ready':'In production')+'</span><span class="faint">made '+dShort(b.created)+'</span></button>'
+        +(prod()?'':'<div class="pjacts"><button class="btn sm" data-btr="'+b.id+'">✎ Rename</button>'+(admin()?'<button class="btn sm danger" data-btd="'+b.id+'">🗑 Delete</button>':'')+'</div>')+'</div>'; }).join(''):'<div class="empty">No batches yet</div>')+'</div>'; }
+/* a flat type opens like an order but shows only its windows */
+function tplView(o){ var p=projById(o.proj), fl=p?projFlats(p.id).filter(function(f){return f.ftype===o.id;}):[], old=tplOutdated(o);
+  return '<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-proj="'+(p?p.id:'')+'" data-psubgo="types">‹ '+esc(p?p.name:'Project')+'</button><span class="row" style="gap:6px"><button class="btn sm" data-tyc="'+o.id+'">⧉ Copy</button>'+(admin()?'<button class="btn sm danger" data-tyd="'+o.id+'">🗑 Delete</button>':'')+'</span></div>'
+   +'<label class="f" style="margin-top:8px"><span>Flat type name</span><input type="text" data-tpn="1" value="'+esc(o.name||'')+'" placeholder="2BHK – Type A"></label>'
+   +'<div class="muted">'+fl.length+' flat'+(fl.length===1?'':'s')+' use this type · '+qty(o)+' windows each</div>'
+   +(old.length?'<div class="pjnote">'+old.length+' flat'+(old.length>1?'s':'')+' not measured yet '+(old.length>1?'have':'has')+' a different window list. <button class="btn sm primary" data-act="ptypeapply">Update '+(old.length>1?'them':'it')+' to this list</button></div>':'')
+   +'</div>'+subItems(o); }
+/* a flat = an owner's order, with the project around it */
+function flatTop(o){ var p=projById(o.proj), ty=typeById(o.ftype), all=p?projFlats(p.id).sort(flatSort):[], i=all.indexOf(o), nx=all[i+1], pv=all[i-1], bt=o.batch&&batchById(o.batch);
+  return '<div class="card flattop"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-proj="'+(p?p.id:'')+'">‹ '+esc(p?p.name:'Project')+'</button><span class="row" style="gap:6px">'+(pv?'<button class="btn sm" data-open="'+pv.id+'" title="Previous flat">‹ '+esc(pv.no)+'</button>':'')+(nx?'<button class="btn sm" data-open="'+nx.id+'" title="Next flat">'+esc(nx.no)+' ›</button>':'')+'</span></div>'
+   +'<div class="row between" style="margin-top:6px;gap:6px;flex-wrap:wrap"><div class="muted">Flat <b>'+esc(o.no)+'</b>'+(ty?' · '+esc(ty.name):'')+(bt?' · '+esc(bt.b.name):'')+'</div><span class="row" style="gap:6px;flex-wrap:wrap">'
+   +(o.measured?'<span class="stage s1">📏 Measured'+(o.measuredOn?' '+dShort(o.measuredOn):'')+(o.measuredBy?' · '+esc(o.measuredBy):'')+'</span>'+(o.stage===0?'<button class="btn sm ghost" data-act="pmeas">Undo</button>':''):'<button class="btn sm primary" data-act="pmeas">📏 Mark measured</button>')
+   +(prod()?'':'<button class="btn sm" data-fedit="'+o.id+'">✎ Edit flat</button>')+(admin()?'<button class="btn sm danger" data-act="fedel" data-fid="'+o.id+'">🗑 Delete</button>':'')+'</span></div></div>'; }
+/* a batch: flats, production ticks, one cutting list */
+function batchView(o){ var r=batchById(o.bat.id), b=r.b, p=r.p, fl=batchFlats(b), w=fl.reduce(function(a,f){return a+qty(f);},0), m=fl.reduce(function(a,f){return a+f.items.filter(function(i){return i.made;}).reduce(function(x,i){return x+n(i.qty);},0);},0), dl=fl.filter(function(f){return f.stage>=4;}).length, sub=S.bsub||'production';
+  var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-proj="'+p.id+'" data-psubgo="batches">‹ '+esc(p.name)+'</button><span class="row" style="gap:6px">'+(prod()?'':'<button class="btn sm" data-btr="'+b.id+'">✎ Rename</button>')+(admin()?'<button class="btn sm danger" data-btd="'+b.id+'">🗑 Delete</button>':'')+'</span></div>'
+   +'<h2 style="margin-top:4px;font-size:24px">'+esc(b.name)+'</h2>'
+   +'<div class="muted">'+esc(batchRange(b))+' · '+w+' windows · <b>'+m+' made</b>'+(dl?' · '+dl+' delivered':'')+' · started '+dShort(b.created)+'</div>'
+   +'<div class="row" style="margin-top:10px">'+(!fl.length?'<span class="muted">No flats in this batch.</span>':m<w?'<span class="muted">Tick windows as they are made.</span>':fl.some(function(f){return f.stage<3;})?'<button class="btn primary" data-act="bready">All made → mark flats ready</button>':'')+(fl.some(function(f){return f.stage===3;})&&!prod()?'<button class="btn" data-act="bdeliv">Delivered → mark all flats delivered</button>':'')+'</div></div>';
+  var subs=[['production','Production'],['cutting','Cutting list'],['flats','Flats ('+fl.length+')']];
+  var tabs='<div class="subtabs osub">'+subs.map(function(s){return '<button data-bsub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
+  if(sub==='cutting') return head+tabs+(fl.length?subCutting(o):'<div class="card empty">No flats in this batch</div>');
+  if(sub==='flats') return head+tabs+'<div class="card flist">'+(prod()?'':'<div class="row" style="padding:6px 0 8px"><button class="btn sm primary" data-act="btaddshow" data-bid="'+b.id+'">+ Add flats to this batch</button></div>')+(fl.map(function(f){ return '<div class="frow"><button class="fl" data-open="'+f.id+'"><b>'+esc(f.no)+'</b><span class="fo">'+esc(f.customer||'—')+'</span><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span><span class="fm">'+qty(f)+' windows</span></button>'+(prod()?'':'<button class="btn sm ghost" data-bout="'+f.id+'" title="Take out of this batch" aria-label="Take '+esc(f.no)+' out of this batch">✕</button>')+'</div>'; }).join('')||'<div class="empty">No flats yet</div>')+'</div>';
+  return head+tabs+'<div class="card"><p class="faint">Tick each window when it is welded, beaded and glazed.</p>'+(fl.map(function(f){ var mm=f.items.filter(function(i){return i.made;}).length;
+      return '<div class="bflat"><div class="row between"><b>'+esc(f.no)+' <span class="faint">'+esc(f.customer||'')+'</span></b><span class="row" style="gap:6px"><span class="faint">'+mm+'/'+f.items.length+'</span><button class="btn sm" data-bfall="'+f.id+'">'+(mm<f.items.length?'Tick all':'Untick all')+'</button></span></div>'
+       +f.items.map(function(it,k){ return '<button class="check'+(it.made?' done':'')+'" data-bmade="'+f.id+'|'+k+'"><i>'+(it.made?'✓':'')+'</i>'+sketch(f,it,30)+'<span>'+esc(it.loc||'Window '+(k+1))+' · '+esc(it.type)+' · '+it.w+' × '+it.h+(n(it.qty)>1?' × '+it.qty:'')+'</span></button>'; }).join('')+'</div>'; }).join('')||'<div class="empty">No flats yet — add them in the Flats tab above</div>')+'</div>'; }
+
+/* ---- popups ---- */
+function projPop(p){ var nw=!p; p=p||{};
+  var body='<div class="grid2">'+pjFld('pj_name','Project name',p.name,'text',' placeholder="Golden Arena"')+pjFld('pj_site','Site / area',p.site,'text',' placeholder="Whitefield, Bengaluru"')+pjFld('pj_builder','Builder',p.builder)+pjFld('pj_bphone','Builder phone',p.bphone,'tel')+'</div><label class="f"><span>Notes</span><textarea id="pj_notes" rows="2">'+esc(p.notes||'')+'</textarea></label>';
+  var foot='<button class="btn primary" data-act="pjsave"'+(nw?'':' data-pid="'+p.id+'"')+'>'+(nw?'Create project':'Save')+'</button><span class="grow"></span>'+(!nw&&admin()?'<button class="btn" data-act="pjarch" data-pid="'+p.id+'">'+(p.archived?'Bring back':'Archive')+'</button><button class="btn danger" data-act="pjdel" data-pid="'+p.id+'">🗑 Delete project</button>':'');
+  pjPop(nw?'New apartment project':'Edit project',body,foot); }
+function flatPop(f){ var p=projById(f.proj), types=p?p.types||[]:[], meas=f.measured||f.stage>0;
+  var body='<div class="grid2">'+pjFld('fe_no','Flat number',f.no)+pjFld('fe_t','Tower / block',f.tower,'text',' maxlength="6"')+pjFld('fe_fl','Floor',f.floor,'number')
+   +'<label class="f"><span>Flat type</span><select id="fe_ty"><option value="">— none —</option>'+types.map(function(t){return '<option value="'+t.id+'"'+(f.ftype===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join('')+'</select></label>'
+   +pjFld('fe_c','Owner name',f.customer)+pjFld('fe_ph','Owner phone',f.phone,'tel')+'</div>'
+   +'<label class="chk"><input type="checkbox" id="fe_cp"'+(meas?'':' checked')+'><span>If the flat type changes, copy its windows into this flat'+(meas?' <small class="warnt">(measured — its own sizes would be replaced)</small>':'')+'</span></label>';
+  var foot='<button class="btn primary" data-act="fesave" data-fid="'+f.id+'">Save</button>'+(S.tab==='order'&&S.oid===f.id?'':'<button class="btn" data-open="'+f.id+'" data-pjx="1">Open flat</button>')+'<span class="grow"></span>'+(admin()?'<button class="btn danger" data-act="fedel" data-fid="'+f.id+'">🗑 Delete flat</button>':'');
+  pjPop('Edit flat '+esc(f.no),body,foot); }
+function selTypePop(p,ids){ var types=p.types||[]; if(!types.length){ toast('Make a flat type first'); return; }
+  pjPop('Change flat type','<label class="f"><span>New flat type for '+ids.length+' flat'+(ids.length>1?'s':'')+'</span><select id="st_ty">'+types.map(function(t){return '<option value="'+t.id+'">'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join('')+'</select></label><label class="chk"><input type="checkbox" id="st_cp" checked><span>Copy its windows into the flats that are not measured yet (measured flats keep their own sizes)</span></label>',
+    '<button class="btn primary" data-act="pjtypeset">Change type</button>'); }
+function batchAddPop(r){ var b=r.b, cand=projFlats(r.p.id).filter(function(f){ return !(f.batch&&batchById(f.batch)); }).sort(flatSort);
+  if(!cand.length){ toast('All flats are already in batches'); return; }
+  pjPop('Add flats to '+esc(b.name),'<input type="text" id="bt_q" placeholder="Search flat no or owner" style="width:100%;margin-bottom:8px"><div class="btlist">'+cand.map(function(f){ return '<label class="chk btf" data-q="'+esc((f.no+' '+(f.customer||'')).toLowerCase())+'"><input type="checkbox" data-bap="'+f.id+'"><span><b>'+esc(f.no)+'</b> <span class="faint">'+esc(f.customer||'')+' · '+flatStatus(f)+'</span></span></label>'; }).join('')+'</div>',
+    '<button class="btn primary" data-act="btadd" data-bid="'+b.id+'">Add ticked flats</button><button class="btn" data-act="btall">Tick all shown</button>'); }
+
+/* ---- actions ---- */
+function pjAddFlats(p){ if(!FL.loaded){ toast('Loading flats… try again in a moment'); return; } var a=faRead(), ty=(p.types||[]).filter(function(t){return t.id===a.ty;})[0]; if(!ty){ toast('Pick a flat type'); return; }
+  var tot=Math.max(0,a.f2-a.f1+1)*Math.max(0,a.n); if(!tot){ toast('Check floors and flats per floor'); return; } if(tot>400){ toast('Add up to 400 flats at a time'); return; }
+  var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var added=0;
+  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ var no=flatNo(a.t,fl,a.u+u); if(ex[no]) continue; D.flats.push(newFlat(p,ty,a.t,fl,a.u+u)); ex[no]=1; added++; }
+  S.fa_t=a.t; S.fa_ty=a.ty; S.fa_f1=a.f2+1; S.fa_f2=a.f2+1+(a.f2-a.f1); S.fa_n=a.n; S.fa_u=a.u; S.padd=false; save(); render(); toast(added+' flats added'); }
+/* put flats into a batch: in production, material taken from stock once per flat */
+function pjIntoBatch(p,b,fl){ fl.forEach(function(f){ var o=f.batch&&batchById(f.batch); if(o&&o.b!==b) o.b.flats=o.b.flats.filter(function(x){return x!==f.id;}); f.batch=b.id; if(b.flats.indexOf(f.id)<0) b.flats.push(f.id); if(f.stage<2){ if(!f.confirmedOn) f.confirmedOn=today(); f.stage=2; } });
+  var toTake=fl.filter(function(f){return !f.consumed;}), took=0; if(toTake.length){ var po={id:'B:'+b.id,kind:'windows',no:b.name,customer:p.name,items:[],payments:[],discount:0,consumed:false}; toTake.forEach(function(f){ f.items.forEach(function(it){ po.items.push(Object.assign({},it,{loc:f.no+(it.loc?' '+it.loc:'')})); }); }); took=consumeOrder(po); toTake.forEach(function(f){ f.consumed=true; }); } return took; }
+function pjMakeBatch(p){ var fl=pjSelIds().map(flatById); if(!fl.length) return;
+  var busy=fl.filter(function(f){ return f.batch&&batchById(f.batch); }); if(busy.length&&!confirm(busy.length+' of these flats are already in another batch ('+busy.slice(0,4).map(function(f){return f.no;}).join(', ')+(busy.length>4?'…':'')+'). Move them to the new batch?')) return;
+  var unpaid=fl.filter(function(f){return f.stage<1;}); if(unpaid.length&&!confirm(unpaid.length+' flat'+(unpaid.length>1?'s have':' has')+' not paid the advance yet ('+unpaid.slice(0,4).map(function(f){return f.no;}).join(', ')+(unpaid.length>4?'…':'')+'). Make the batch anyway?')) return;
+  var notm=fl.filter(function(f){return !f.measured;}); if(notm.length&&!confirm(notm.length+' flat'+(notm.length>1?'s are':' is')+' not marked measured ('+notm.slice(0,4).map(function(f){return f.no;}).join(', ')+(notm.length>4?'…':'')+'). Their sizes may be the typical ones. Continue?')) return;
+  fl.sort(flatSort); p.batches=p.batches||[]; p.bseq=Math.max(p.bseq||0,p.batches.length)+1; var b={id:uid(),name:'Batch '+p.bseq,flats:[],created:today(),stage:2,consumed:true};
+  var took=pjIntoBatch(p,b,fl); p.batches.push(b); S.psel={}; save(); go('order','B:'+b.id); toast('Batch made — '+fl.length+' flats'+(took?' · stock updated':'')); }
+function pjDelete(o){ if(!admin()) return; if(o.tpl) return tyDelete(o);
+  var pd=paid(o); if(!confirm('Delete flat '+o.no+'?'+(pd?'\nIts payments ('+money(pd)+') will be removed from accounts too.':'')+'\nThis cannot be undone.')) return;
+  var pid=o.proj; flatTomb(o); pjPopX(); save(); S.tab='project'; S.pid=pid; render(); toast('Flat '+o.no+' deleted'); }
+function tyDelete(t){ if(!admin()) return; var p=projById(t.proj); if(!p) return; var used=projFlats(p.id).filter(function(f){return f.ftype===t.id;});
+  if(!confirm('Delete flat type "'+t.name+'"?'+(used.length?'\n'+used.length+' flat'+(used.length>1?'s use':' uses')+' it — they keep their own windows.':'')+'\nThis cannot be undone.')) return;
+  used.forEach(function(f){ f.ftype=''; }); p.types=p.types.filter(function(x){return x.id!==t.id;}); save(); S.tab='project'; S.pid=p.id; S.psub='types'; render(); toast('Flat type deleted'); }
+function tyCopy(t){ var p=projById(t.proj); if(!p) return; var c=JSON.parse(JSON.stringify(t)); c.id=uid(); c.name=t.name+' (copy)'; c.created=today(); p.types.push(c); save(); go('order',c.id); toast('Copied — rename it and change its windows'); }
+function btDelete(r){ if(!admin()) return; var b=r.b, p=r.p, bf=batchFlats(b);
+  if(!confirm('Delete '+b.name+'?\nIts '+bf.length+' flat'+(bf.length===1?'':'s')+' go back to "not in a batch". Their windows, ticks and payments stay.')) return;
+  bf.forEach(function(f){ delete f.batch; if(f.stage===2&&!f.items.some(function(i){return i.made;})) f.stage=paid(f)>0?1:0; });
+  p.batches=p.batches.filter(function(x){return x.id!==b.id;}); save(); S.tab='project'; S.pid=p.id; S.psub='batches'; render(); toast(b.name+' deleted'); }
+
+/* clicks for projects (the main handler ignores these attributes) */
+document.addEventListener('click',function(e){ var t=e.target.closest('[data-proj],[data-psub],[data-pft],[data-pfs],[data-pst],[data-act],[data-bsub],[data-bmade],[data-bfall],[data-bout],[data-nestshow],[data-fedit],[data-tyc],[data-tyd],[data-btr],[data-btd]'); if(!t) return; var d=t.dataset;
+  if(d.nestshow!==undefined){ var on=order(); if(!on) return; var Mn=material(on), rn=Mn.bom[+d.nestshow], box=t.nextElementSibling; if(rn&&box){ box.innerHTML=nestRows(rn); t.remove(); } return; }
+  if(d.proj!==undefined){ if(!projById(d.proj)) return; if(S.pid!==d.proj) pjFresh(); S.tab='project'; S.pid=d.proj; if(d.psubgo) S.psub=d.psubgo; S.psel=S.psel||{}; S.plim=60; render(); window.scrollTo(0,0); return; }
+  if(d.psub){ S.psub=d.psub; render(); return; }
+  if(d.pft!==undefined){ (S.pf=S.pf||{}).tower=d.pft; S.plim=60; render(); return; }
+  if(d.pfs!==undefined||d.pst!==undefined){ if(prod()) return; (S.pf=S.pf||{}).st=d.pst!==undefined?d.pst:d.pfs; S.psub='flats'; S.plim=60; render(); return; }
+  if(d.bsub){ S.bsub=d.bsub; render(); return; }
+  if(d.bmade){ var q=d.bmade.split('|'), f=flatById(q[0]); if(!f||f.del||!f.items||!f.items[+q[1]]) return; f.items[+q[1]].made=!f.items[+q[1]].made; save(); render(); return; }
+  if(d.bfall){ var f2=flatById(d.bfall); if(!f2||f2.del||!f2.items) return; var all=f2.items.every(function(i){return i.made;}); f2.items.forEach(function(i){ i.made=!all; }); save(); render(); return; }
+  if(d.bout){ if(prod()) return; var f3=flatById(d.bout); if(!f3||f3.del) return; var r3=batchById(f3.batch); if(r3&&confirm('Take '+f3.no+' out of '+r3.b.name+'?')){ r3.b.flats=r3.b.flats.filter(function(x){return x!==f3.id;}); delete f3.batch; if(f3.stage===2&&!f3.items.some(function(i){return i.made;})) f3.stage=paid(f3)>0?1:0; save(); render(); } return; }
+  if(d.fedit){ if(prod()) return; var fe=flatById(d.fedit); if(fe&&!fe.del) flatPop(fe); return; }
+  if(d.tyc){ var tc=typeById(d.tyc); if(tc&&!prod()) tyCopy(tc); return; }
+  if(d.tyd){ var td=typeById(d.tyd); if(td) tyDelete(td); return; }
+  if(d.btr){ if(prod()) return; var rr=batchById(d.btr); if(!rr) return; var bn=prompt('Batch name',rr.b.name); if(bn==null||!bn.trim()) return; rr.b.name=bn.trim(); save(); render(); return; }
+  if(d.btd){ var rd=batchById(d.btd); if(rd) btDelete(rd); return; }
+  var a=d.act; if(!a) return; var p=projById(S.pid), o=order();
+  if(a==='pnew'){ if(admin()) projPop(null); return; }
+  if(a==='pjarchlist'){ S.pjarch=!S.pjarch; render(); return; }
+  if(a==='pjedit'&&p&&!prod()){ projPop(p); return; }
+  if(a==='pjsave'){ var nm=pjV('pj_name'); if(!nm){ toast('Enter the project name'); return; } var pp=d.pid?projById(d.pid):null, nw=!pp; if(nw&&!admin()) return;
+    if(nw){ pp={id:uid(),name:nm,created:today(),types:[],batches:[]}; D.projects=D.projects||[]; D.projects.push(pp); pjFresh(); }
+    var oa=pjAddr('\u0001',pp); pp.name=nm; pp.site=pjV('pj_site'); pp.builder=pjV('pj_builder'); pp.bphone=pjV('pj_bphone'); pp.notes=(($('#pj_notes')||{}).value||'');
+    if(!nw) projFlats(pp.id).forEach(function(f){ if(!f.address||f.address===oa.replace('\u0001',f.no)) f.address=pjAddr(f.no,pp); });
+    pjPopX(); save(); if(nw){ S.tab='project'; S.pid=pp.id; S.psub='types'; S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; render(); window.scrollTo(0,0); toast('Project made — now add its flat types'); } else { render(); toast('Project saved'); } return; }
+  if(a==='pjarch'){ var pa=projById(d.pid); if(!pa||!admin()) return; pa.archived=!pa.archived; pjPopX(); save(); if(pa.archived){ S.pjarch=false; go('orders'); toast(pa.name+' archived — find it under Archived projects'); } else { render(); toast(pa.name+' is back'); } return; }
+  if(a==='pjdel'){ var pd=projById(d.pid); if(!pd||!admin()) return; var pf=projFlats(pd.id), got=pf.reduce(function(x,f){return x+paid(f);},0);
+    if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+'\n\nThis cannot be undone.')) return;
+    var cf=prompt('To confirm, type DELETE'); if(!cf||cf.trim().toUpperCase()!=='DELETE'){ toast('Not deleted'); return; }
+    pf.forEach(flatTomb); D.projects=D.projects.filter(function(x){return x.id!==pd.id;}); pjPopX(); save(); S.pjarch=false; go('orders'); toast('Project '+pd.name+' deleted'); return; }
+  if(a==='paddshow'){ S.padd=true; render(); var el=$('#pjadd'); if(el) el.scrollIntoView({block:'start'}); return; }
+  if(a==='paddx'){ S.padd=false; render(); return; }
+  if(a==='padd'&&p){ pjAddFlats(p); return; }
+  if(a==='pmore'){ S.plim=(S.plim||60)+120; render(); return; }
+  if(a==='pselall'&&p){ S.psel=S.psel||{}; pjFilter(p,projFlats(p.id)).forEach(function(f){ S.psel[f.id]=true; }); render(); return; }
+  if(a==='pselnone'){ S.psel={}; render(); return; }
+  if(a==='pbatch'&&p){ pjMakeBatch(p); return; }
+  if(a==='pjseltype'&&p){ var si=pjSelIds(); if(si.length) selTypePop(p,si); return; }
+  if(a==='pjtypeset'&&p){ var nt=typeById(pjV('st_ty')), cp=($('#st_cp')||{}).checked, sf=pjSelIds().map(flatById); if(!nt||!sf.length) return; var nc=0;
+    sf.forEach(function(f){ f.ftype=nt.id; if(cp&&!f.measured&&f.stage===0){ copyItems(f,nt); nc++; } }); pjPopX(); S.psel={}; save(); render(); toast(sf.length+' flats → '+nt.name+(nc?' · windows copied into '+nc:'')); return; }
+  if(a==='pjseldel'&&p&&admin()){ var df=pjSelIds().map(flatById), dp=df.reduce(function(x,f){return x+paid(f);},0); if(!df.length) return;
+    if(!confirm('Delete '+df.length+' flat'+(df.length>1?'s':'')+' ('+df.sort(flatSort).slice(0,6).map(function(f){return f.no;}).join(', ')+(df.length>6?'…':'')+')?'+(dp?'\nTheir payments ('+money(dp)+') will be removed from accounts too.':'')+'\nThis cannot be undone.')) return;
+    df.forEach(flatTomb); S.psel={}; save(); render(); toast(df.length+' flat'+(df.length>1?'s':'')+' deleted'); return; }
+  if(a==='fesave'){ var f4=flatById(d.fid); if(!f4||f4.del) return; var p4=projById(f4.proj), no=pjV('fe_no'); if(!no){ toast('Enter the flat number'); return; }
+    if(projFlats(f4.proj).some(function(x){ return x.id!==f4.id&&x.no.toLowerCase()===no.toLowerCase(); })){ toast('Flat '+no+' is already there'); return; }
+    var oldAddr=p4?pjAddr(f4.no,p4):'', tyId=pjV('fe_ty'), ty4=tyId?typeById(tyId):null;
+    f4.no=no; f4.tower=pjV('fe_t').toUpperCase(); f4.floor=Math.round(n(pjV('fe_fl'))); var mu=no.match(/(\d{1,2})$/); if(mu) f4.unit=+mu[1];
+    if(tyId!==(f4.ftype||'')){ f4.ftype=tyId; if(ty4&&($('#fe_cp')||{}).checked) copyItems(f4,ty4); }
+    f4.customer=pjV('fe_c'); f4.phone=pjV('fe_ph'); if(p4&&(!f4.address||f4.address===oldAddr)) f4.address=pjAddr(f4.no,p4);
+    pjPopX(); save(); render(); toast('Flat '+f4.no+' saved'); return; }
+  if(a==='fedel'){ var f5=flatById(d.fid); if(f5&&!f5.del) pjDelete(f5); return; }
+  if(a==='btaddshow'){ var rb=batchById(d.bid); if(rb&&!prod()) batchAddPop(rb); return; }
+  if(a==='btall'){ [].slice.call(document.querySelectorAll('.pjpop .btf:not(.hide) input[data-bap]')).forEach(function(x){ x.checked=true; }); return; }
+  if(a==='btadd'){ var ra=batchById(d.bid); if(!ra) return; var af=[].slice.call(document.querySelectorAll('.pjpop input[data-bap]:checked')).map(function(x){return flatById(x.dataset.bap);}).filter(function(f){return f&&!f.del;}); if(!af.length){ toast('Tick the flats to add'); return; }
+    var tk=pjIntoBatch(ra.p,ra.b,af); pjPopX(); save(); render(); toast(af.length+' flat'+(af.length>1?'s':'')+' added to '+ra.b.name+(tk?' · stock updated':'')); return; }
+  if(a==='ptypenew'&&p){ var tn=prompt('Flat type name (e.g. 2BHK – Type A)'); if(!tn||!tn.trim()) return; var ty={id:uid(),tpl:true,proj:p.id,name:tn.trim(),no:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today()}; p.types=p.types||[]; p.types.push(ty); save(); go('order',ty.id); toast('Add the windows of one '+ty.name+' flat'); return; }
+  if(a==='ptypeapply'&&o&&o.tpl){ var tf=tplOutdated(o); if(!tf.length) return; if(!confirm('Give '+tf.length+' flat'+(tf.length>1?'s':'')+' (not measured yet) this window list?')) return; tf.forEach(function(f){ copyItems(f,o); }); save(); render(); toast(tf.length+' flats updated'); return; }
+  if(a==='pmeas'&&o&&o.proj&&!o.tpl){ if(o.measured){ o.measured=false; delete o.measuredOn; delete o.measuredBy; } else { o.measured=true; o.measuredOn=today(); o.measuredBy=SESS&&SESS.email?SESS.email.split('@')[0]:(S.role||''); } save(); render(); return; }
+  if((a==='bready'||a==='bdeliv')&&o&&o.bat){ var bf=batchFlats(o.bat); if(a==='bready'){ bf.forEach(function(f){ if(f.stage<3) f.stage=3; }); toast('Flats marked ready'); } else { var due=bf.filter(function(f){return balance(f)>0.5;}); if(due.length&&!confirm(due.length+' owner'+(due.length>1?'s still have':' still has')+' a balance pending. Mark all delivered anyway?')) return; bf.forEach(function(f){ if(f.stage===3) f.stage=4; }); toast('Flats marked delivered'); } save(); render(); return; } });
+document.addEventListener('input',function(e){ var t=e.target;
+  if(t.id==='pq'){ (S.pf=S.pf||{}).q=t.value; S.plim=60; var p=projById(S.pid); if(!p) return; var tmp=document.createElement('div'); tmp.innerHTML=pjFlats(p,projFlats(p.id)); var a=$('.card.flist'), b=tmp.querySelector('.card.flist'); if(a&&b) a.innerHTML=b.innerHTML; var c=$('.pjsel2'), d2=tmp.querySelector('.pjsel2'); if(c&&d2) c.innerHTML=d2.innerHTML; return; }
+  if(t.id==='bt_q'){ var qq=t.value.trim().toLowerCase(); [].slice.call(document.querySelectorAll('.pjpop .btf')).forEach(function(l){ l.classList.toggle('hide',!!qq&&l.dataset.q.indexOf(qq)<0); }); return; }
+  if(/^fa_/.test(t.id||'')){ var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; } });
+document.addEventListener('change',function(e){ var t=e.target, d=t.dataset;
+  if(d.fsel){ (S.psel=S.psel||{})[d.fsel]=t.checked; var w=$('#pjbarw'); if(w) w.innerHTML=pjSelBar(); return; }
+  if(d.tpn){ var o=order(); if(o&&o.tpl){ o.name=t.value; save(); } return; }
+  if(t.id==='fa_ty'){ S.fa_ty=t.value; var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; } });
+
+function bigNest(M,forPrint){ return !forPrint&&M.bom.reduce(function(a,r){return a+r.nest.length;},0)>150; }
+function nestRows(r){ return '<table><tbody>'+nestGroups(r).map(function(g){ var bar=g.bar, c=g.n, labs=g.labs;
+      return '<tr><td style="white-space:nowrap;width:76px;vertical-align:top;padding-top:10px"><b'+(bar.off?' style="color:var(--good)"':'')+'>'+g.name+'</b>'+(c>1&&!bar.off?'<div class="faint">'+c+(r.two?' pairs':' bars')+' alike</div>':'')+(r.two?'<div class="faint">together</div>':'')+(bar.off?'<div class="faint">from rack</div>':'')+'</td><td>'+barSvg(bar,r.rule)+(r.two?'<div style="margin-top:3px;opacity:.55">'+barSvg(bar,r.rule)+'</div>':'')+'<div class="faint" style="margin-top:2px">'+(c>1?'<b>each bar:</b> '+bar.pieces.map(function(p){return p.len;}).join(' · ')+' <small>— for '+labs.slice(0,14).map(esc).join(', ')+(labs.length>14?' … +'+(labs.length-14)+' more':'')+'</small>':bar.pieces.map(function(p){return p.len+' <small>('+esc(p.lab.trim())+')</small>';}).join(' · '))+(r.two?' · <small>each ×2</small>':'')+'</div></td><td class="num faint" style="white-space:nowrap;vertical-align:top;padding-top:10px">waste '+bar.waste+(c>1?' each':'')+'</td></tr>';}).join('')+'</tbody></table>'; }
+function nestGroups(r){ var gs=[], bi=0; r.nest.forEach(function(bar){ var key=(bar.off?"o"+bar.cap:"b")+"|"+bar.pieces.map(function(p){return p.len;}).join(","), g=gs[gs.length-1]; if(g&&g.key===key){ g.n++; bar.pieces.forEach(function(p){ var l=p.lab.split(" ")[0]; if(g.labs.indexOf(l)<0) g.labs.push(l); }); } else gs.push({key:key,bar:bar,n:1,labs:bar.pieces.map(function(p){return p.lab.split(" ")[0];}).filter(function(v,i,a){return a.indexOf(v)===i;})}); });
+  gs.forEach(function(g){ if(g.bar.off){ g.name="Offcut "+g.bar.cap+(g.n>1?" ×"+g.n:""); return; } var a=bi+1, z=bi+g.n; g.name=r.two?(g.n>1?"Bars "+(2*a-1)+"–"+(2*z):"Bars "+(2*a-1)+"+"+(2*a)):(g.n>1?"Bars "+a+"–"+z:"Bar "+a); bi+=g.n; }); return gs; }
+function viewOrder(){ var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
+  var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o); var h=viewOrder0();
+  if(o&&o.proj){ h=flatTop(o)+h.replace('<button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>','').replace('>Customer</button>','>Owner</button>').replace('>Delete this order</button>','>🗑 Delete this flat</button>').replace('id="oh">#'+esc(o.no)+' · New order</h2>','id="oh">Flat '+esc(o.no)+'</h2>').replace('id="oh">#','id="oh">Flat ').replace(/Customer said yes/g,'Owner said yes'); } return h; }
+var MATC=null; function material(o){ if(MATC&&MATC.o===o) return MATC.M; var M=material0(o); MATC={o:o,M:M}; setTimeout(function(){ MATC=null; },0); return M; }
+flatsBoot();
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
@@ -1406,17 +1785,17 @@ function subCutting(o,forPrint){
   var gl=M.glass.length?'<div class="card pg"><h2>Glass cutting sizes</h2><table><thead><tr><th>Window</th><th>Glass</th><th class="num">W × H mm</th><th class="num">Qty</th></tr></thead><tbody>'+M.glass.map(function(g){return '<tr><td>'+g.i+'. '+esc(g.loc)+'</td><td>'+esc(g.g)+(g.fan?' <b>+ '+esc(g.fan)+'</b>':'')+(g.shaped?' <b class="warnt">◠ shaped — cut to template</b>':'')+'</td><td class="num">'+Math.round(g.w)+' × '+Math.round(g.h)+'</td><td class="num">'+g.cnt+'</td></tr>';}).join('')+'</tbody></table></div>':'';
   var me=M.mesh.length?'<div class="card pg"><h2>Mesh cutting sizes</h2><table><tbody>'+M.mesh.map(function(g){return '<tr><td>'+g.i+'. '+esc(g.loc)+'</td><td>'+esc(g.m||'')+'</td><td class="num">'+Math.round(g.w)+' × '+Math.round(g.h)+'</td><td class="num">× '+g.cnt+'</td></tr>';}).join('')+'</tbody></table></div>':'';
   var nestH='<div class="card"><h2>Nesting — bar by bar</h2><p class="faint">Double-head saw: each piece is cut at both ends in one go. Trapezoid = 45° piece (length on the outer edge, mitres inward, small triangle offcut between pieces); rectangle = straight cut. Hatched tail = waste. W1, W2… = window number. Profiles cut 2 bars at a time show both bars with the same pattern. 5 mm saw allowance.</p>'
-   +M.bom.map(function(r){return '<div class="pg"><h3 style="margin:12px 0 4px">'+esc(r.code)+' · '+esc(r.prof)+' · '+r.bars+' bar'+(r.bars==1?'':'s')+' <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+ruleTxt(r.rule)+'</span></h3><table><tbody>'+r.nest.map(function(bar,i){ var bi0=r.nest.slice(0,i).filter(function(z){return !z.off;}).length, nm=bar.off?'Offcut '+bar.cap:(r.two?'Bars '+(2*bi0+1)+'+'+(2*bi0+2):'Bar '+(bi0+1));
-      return '<tr><td style="white-space:nowrap;width:64px;vertical-align:top;padding-top:10px"><b'+(bar.off?' style="color:var(--good)"':'')+'>'+nm+'</b>'+(r.two?'<div class="faint">together</div>':'')+(bar.off?'<div class="faint">from rack</div>':'')+'</td><td>'+barSvg(bar,r.rule)+(r.two?'<div style="margin-top:3px;opacity:.55">'+barSvg(bar,r.rule)+'</div>':'')+'<div class="faint" style="margin-top:2px">'+bar.pieces.map(function(p){return p.len+' <small>('+esc(p.lab.trim())+')</small>';}).join(' · ')+(r.two?' · <small>each ×2</small>':'')+'</div></td><td class="num faint" style="white-space:nowrap;vertical-align:top;padding-top:10px">waste '+bar.waste+'</td></tr>';}).join('')+'</tbody></table></div>';}).join('')+'</div>';
+   +M.bom.map(function(r){return '<div class="pg"><h3 style="margin:12px 0 4px">'+esc(r.code)+' · '+esc(r.prof)+' · '+r.bars+' bar'+(r.bars==1?'':'s')+' <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+ruleTxt(r.rule)+'</span></h3>'+(bigNest(M,forPrint)?'<button class="btn sm" data-nestshow="'+M.bom.indexOf(r)+'">Show the bar plan ('+r.bars+' bars)</button><div class="nestbox"></div>':nestRows(r))+'</div>';}).join('')+'</div>';
   var cl=gridHtml(o);
   return bom+nestH+cl+gl+me;
 }
 /* wide grid: one row per window, one column per piece */
 var COLS=[['Outer frame','width'],['Outer frame','height'],['Shutter','glass shutter width'],['Shutter','glass shutter height'],['Mesh shutter','width'],['Mesh shutter','height'],['Mesh frame','width'],['Mesh frame','height'],['Interlock',''],['Ventilator','louver rail'],['Ventilator','louver stile'],['Mullion','between louver and fan'],['Mullion','vertical'],['Mullion','transom'],['Glass bead','bead width'],['Glass bead','bead height'],['Door frame','side'],['Door frame','top']];
 var COLN={'Outer frame|width':'Frame W','Outer frame|height':'Frame H','Shutter|glass shutter width':'Shutter W','Shutter|glass shutter height':'Shutter H','Mesh shutter|width':'Mesh shutter W','Mesh shutter|height':'Mesh shutter H','Mesh frame|width':'Mesh frame W','Mesh frame|height':'Mesh frame H','Interlock|':'Interlock','Ventilator|louver rail':'Vent rail','Ventilator|louver stile':'Vent stile','Mullion|between louver and fan':'Mullion','Mullion|vertical':'Mullion V','Mullion|transom':'Transom','Glass bead|bead width':'Bead W','Glass bead|bead height':'Bead H','Door frame|side':'Frame side','Door frame|top':'Frame top'};
-function grid(o){ var M=material(o), used={}, rows=[];
-  o.items.forEach(function(it,i){ var mk=function(itx,lab,sb){ var r={it:itx,i:lab,cells:{},code:{}}; M.all.filter(function(p){return p.win===i+1&&p.len&&(p.sub||'')===sb;}).forEach(function(p){ var k=p.prof+'|'+p.note; used[k]=1; r.cells[k]=p; });
-      r.glass=(M.glass.filter(function(g){return g.win===i+1&&(g.sub||'')===sb;})[0]); r.mesh=(M.mesh.filter(function(g){return g.win===i+1&&(g.sub||'')===sb;})[0]); rows.push(r); };
+function grid(o){ var M=material(o), used={}, rows=[], byW={}, gW={}, mW={};
+  M.all.forEach(function(p){ if(!p.len) return; var k=p.win+'|'+(p.sub||''); (byW[k]=byW[k]||[]).push(p); }); M.glass.forEach(function(g){ var k=g.win+'|'+(g.sub||''); if(!gW[k]) gW[k]=g; }); M.mesh.forEach(function(g){ var k=g.win+'|'+(g.sub||''); if(!mW[k]) mW[k]=g; });
+  o.items.forEach(function(it,i){ var mk=function(itx,lab,sb){ var r={it:itx,i:lab,cells:{},code:{}}, kw=(i+1)+'|'+sb; (byW[kw]||[]).forEach(function(p){ var k=p.prof+'|'+p.note; used[k]=1; r.cells[k]=p; });
+      r.glass=gW[kw]; r.mesh=mW[kw]; rows.push(r); };
     if(o.kind!=='doors'&&splitOn(it)) splitParts(it,i+1).forEach(function(sp){ mk({loc:it.loc,type:partName(sp.t,sp.hinge),series:it.series,brand:it.brand,w:sp.w,h:sp.h,qty:it.qty},sp.label,sp.sub); }); else mk(it,i+1,''); });
   var cols=COLS.filter(function(c){return used[c[0]+'|'+c[1]];}).map(function(c){return c[0]+'|'+c[1];});
   return {rows:rows,cols:cols,M:M}; }
@@ -1453,7 +1832,7 @@ function subProduction(o){
    +(o.items.length?'<div class="row" style="margin-top:10px"><button class="btn sm" data-act="allmade">Tick all</button></div>':'<div class="empty">No items</div>')+'</div>';
 }
 
-function receipts(){ var out=[]; D.orders.forEach(function(o){ (o.payments||[]).forEach(function(p){ out.push({on:p.on,kind:'Receipt',vno:'R-'+o.no,head:'Customer receipt',party:o.customer,mode:p.mode||'Cash',narr:p.note||'',amt:n(p.amt),oid:o.id}); }); }); return out; }
+function receipts(){ var out=[]; allOrders().forEach(function(o){ (o.payments||[]).forEach(function(p){ out.push({on:p.on,kind:'Receipt',vno:'R-'+o.no,head:'Customer receipt',party:(o.customer||'')+(o.proj?' · Flat '+o.no:''),mode:p.mode||'Cash',narr:p.note||'',amt:n(p.amt),oid:o.id}); }); }); return out; }
 function vouchers(){ var v=receipts().concat(D.expenses.map(function(e,i){ return {on:e.on,kind:'Payment',vno:'P-'+e.vno,head:e.head,party:e.party||'',mode:e.mode||'Cash',narr:e.note||'',amt:n(e.amt),ei:i}; })); v.sort(function(a,b){ return a.on<b.on?-1:a.on>b.on?1:0; }); return v; }
 function viewExpenses(){
   var m=S.em||today().slice(0,7), sub=S.esub||'day', months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
@@ -1596,9 +1975,9 @@ function slipsHtml(ym){ var c=D.company; return D.staff.map(function(st){ var r=
    +'<div class="sign" style="margin-top:28px"><span>Employee signature</span><span>For '+esc(c.name)+'</span></div></div>'; }).join('')||'<p>No salary for '+mLabel(ym)+'</p>'; }
 function viewReports(){
   var months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
-  var rows=months.map(function(m){ var os=D.orders.filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
+  var rows=months.map(function(m){ var os=allOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
     var sales=os.reduce(function(a,o){return a+subTotal(o);},0), cost=os.reduce(function(a,o){return a+orderCost(o);},0), w=os.filter(function(o){return o.kind==='windows';}).reduce(function(a,o){return a+qty(o);},0), dr=os.filter(function(o){return o.kind==='doors';}).reduce(function(a,o){return a+qty(o);},0);
-    var inn=D.orders.reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
+    var inn=allOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
     var exp=monthExp(m);
     return {m:m,n:os.length,w:w,d:dr,sales:sales,cost:cost,inn:inn,exp:exp,net:sales-cost-exp}; });
   var T=rows.reduce(function(a,r){ for(var k in r) if(typeof r[k]==='number') a[k]=(a[k]||0)+r[k]; return a; },{});
@@ -1702,7 +2081,7 @@ function newOrder(){ var o={id:uid(),no:D.seq++,kind:'windows',customer:'',phone
 function newItem(o){ var l=o.items[o.items.length-1];
   return o.kind==='doors'?{loc:'',type:l?l.type:'PVC',brand:l?l.brand:D.brands[0].name,w:l?l.w:900,h:l?l.h:2100,price:brandOf(l?l.brand:'').doorRate[l?l.type:'PVC'],qty:1}
    :{loc:'',type:l?l.type:'2 Track',brand:l?l.brand:D.brands[0].name,series:l?l.series:'80',w:l?l.w:1200,h:l?l.h:1200,glass:l?l.glass:GLASS[0],mesh:l?l.mesh:MESH[0],qty:1}; }
-function byId(id){ return D.orders.filter(function(y){return y.id===id;})[0]; }
+function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
@@ -1781,6 +2160,7 @@ document.addEventListener('click',function(e){
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
   if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); go('orders'); }
   if(a==='unarchive'&&o){ o.archived=false; save(); render(); }
+  if(a==='delete'&&o&&admin()&&(o.proj||o.tpl)){ pjDelete(o); return; }
   if(a==='delete'&&o&&admin()){ if(confirm('Delete order #'+o.no+'? This cannot be undone.')){ D.orders=D.orders.filter(function(x){return x.id!==o.id;}); save(); go('orders'); } }
   if(a==='payadv'&&o){ $('#pamt').value=Math.max(0,advanceDue(o)-paid(o)); $('#pnote').value='Advance'; $('#pamt').focus(); }
   if(a==='paybal'&&o){ $('#pamt').value=Math.max(0,balance(o)); $('#pnote').value='Balance'; $('#pamt').focus(); }
@@ -1887,7 +2267,7 @@ function shrink(file,cb){ var img=new Image(), u=URL.createObjectURL(file); img.
 document.addEventListener('change',function(e){ var t=e.target;
   if(t.dataset&&t.dataset.rurole){ sbUserSave(t.dataset.rurole,t.value).then(function(){ toast('Role updated'); loadUsers(); }).catch(function(e2){ toast(e2.message); }); return; }
   if(t.dataset&&t.dataset.ded){ var ymC=S.am||today().slice(0,7), stC=D.staff.filter(function(x){return x.id===t.dataset.ded;})[0]; if(stC){ var rC=salRow(ymC,stC); if(n(t.value)!==rC.ded){ t.value=rC.ded; D.saladj[ymC][t.dataset.ded]=rC.ded; save(); var c2=$('#sn-'+t.dataset.ded); if(c2) c2.textContent=money(rC.net); toast('Deduction limited to '+money(rC.ded)); } } return; }
-  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) o.photos.push({src:src,cap:'',on:today()}); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); save(); toast('Backup restored'); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
+  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) o.photos.push({src:src,cap:'',on:today()}); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); save(); toast('Backup restored'); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
   if(t.tagName==='SELECT') onInput(e); });
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
 function refreshTotals(o){ var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
