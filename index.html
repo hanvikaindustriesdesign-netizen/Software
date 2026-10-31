@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Window Shop</title>
+<title>Hanvika Industries — Windows & Doors</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f6feb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hanvika">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
   --bg:#f4f5f7; --panel:#fff; --ink:#1b1f24; --soft:#5b6472; --faint:#98a1ad; --line:#e3e6ea;
@@ -299,6 +308,9 @@ body.dzon{overflow:hidden}
 /* new-version banner */
 .updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));width:min(560px,calc(100% - 20px));z-index:25;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #bfd3fb;border-left:5px solid var(--accent);border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:14px}
 
+/* wrong-file guard */
+.wrongcopy{position:relative;z-index:40;background:#b42318;color:#fff;padding:10px 14px calc(10px);font-size:14px;line-height:1.45}
+.wrongnote{background:#fef3f2;border:1px solid #fda29b;color:#912018;border-radius:10px;padding:8px 10px;margin:0 0 10px;font-size:13.5px;line-height:1.45}
 /* send-link box */
 .viewer.share{align-items:flex-start;overflow:auto;padding:24px 0 calc(24px + env(safe-area-inset-bottom));background:rgba(0,0,0,.55)}
 .viewer.share textarea{min-height:230px}
@@ -350,7 +362,7 @@ function plev(o){ return o.plevel||'Normal'; } function plBadge(o){ return plev(
 var BASIS={window:'per window / door',slider:'per sliding window',gshutter:'per glass shutter',mshutter:'per mesh shutter / frame',fixed:'per fixed pane',vent:'per ventilator',sash:'per openable sash',fan:'per exhaust fan',door:'per door',frameM:'per metre of outer frame',shutterM:'per metre of shutter',profM:'per metre of all profile',beadM:'per metre of glass bead'};
 
 var DEF={
-  company:{name:'My uPVC Windows',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
+  company:{name:'Hanvika Industries',phone:'',address:'',gst:'',terms:'50% advance with order, balance before delivery. Delivery in 15 working days from advance. Quote valid 15 days.'},
   pins:{admin:'1234',sales:'0000',production:'1111'},
   gstPct:0, advancePct:50,
   brands:[{name:'Standard',
@@ -364,19 +376,19 @@ var DEF={
           door:{PVC:'DF-PVC',WPC:'DF-WPC'}}}],
   hw:[{name:'Rollers (glass shutter)',qty:2,basis:'gshutter'},{name:'Mesh rollers',qty:2,basis:'mshutter'},{name:'Touch lock / handle',qty:1,basis:'slider'},{name:'Interlock end caps',qty:2,basis:'gshutter'},
       {name:'Shutter stopper / bumper',qty:2,basis:'slider'},{name:'Drain caps',qty:2,basis:'window'},{name:'Frame fixing screws 4×45 + plugs',qty:3,basis:'frameM'},{name:'Shutter assembly screws 4×25',qty:6,basis:'gshutter'},
-      {name:'GI reinforcement (m)',qty:1,basis:'profM'},{name:'Wool pile / weather strip (m)',qty:2,basis:'shutterM'},{name:'Glass gasket (m)',qty:1,basis:'beadM'},{name:'Silicone (tubes)',qty:0.5,basis:'window'},{name:'Door hinges',qty:3,basis:'door'},{name:'Door lock + handle',qty:1,basis:'door'},{name:'Exhaust fan',qty:1,basis:'fan'},{name:'Casement hinges / friction stays',qty:2,basis:'sash'},{name:'Casement handle',qty:1,basis:'sash'}],hwv:2,
+      {name:'GI reinforcement (m)',qty:1,basis:'profM'},{name:'Wool pile / weather strip (m)',qty:2,basis:'shutterM'},{name:'Glass gasket (m)',qty:1,basis:'beadM'},{name:'Silicone (tubes)',qty:0.5,basis:'window'},{name:'Door hinges',qty:3,basis:'door'},{name:'Door lock + handle',qty:1,basis:'door'},{name:'Exhaust fan',qty:1,basis:'fan'},{name:'Casement hinges / friction stays',qty:2,basis:'sash'},{name:'Casement handle',qty:1,basis:'sash'}],
   cutRule:{frame:{bars:1,angle:45},shutter:{bars:2,angle:45},sash:{bars:2,angle:45},meshShutter:{bars:2,angle:45},meshFrame:{bars:1,angle:45},interlock:{bars:1,angle:90},bead:{bars:2,angle:45},vent:{bars:1,angle:45},mullion:{bars:1,angle:90},door:{bars:1,angle:90}},
   stock:5800, perDay:{windows:4,doors:3},
   sb:{url:'',key:''}, users:[],
   heads:[{name:'Material purchase',grp:'Direct'},{name:'Glass',grp:'Direct'},{name:'Hardware',grp:'Direct'},{name:'Salary & wages',grp:'Direct'},{name:'Transport',grp:'Direct'},{name:'Rent',grp:'Indirect'},{name:'Electricity',grp:'Indirect'},{name:'Machine / tools',grp:'Indirect'},{name:'Office & misc',grp:'Indirect'},{name:'Owner drawings',grp:'Capital'},{name:'Staff advance',grp:'Advances'}],
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
-var BAKED={url:'',key:''};
-var APPV='dev';
+var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
+var APPV='31 Oct 2026, 12:03';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
-  if(!d.hwv){ d.hwv=2; if(d.hw&&!d.hw.some(function(r){return r.basis==='sash';})) d.hw.push({name:'Casement hinges / friction stays',qty:2,basis:'sash'},{name:'Casement handle',qty:1,basis:'sash'}); }
+  if((d.hwv||0)<3){ d.hwv=3; if(d.hw&&!d.hw.some(function(r){return r.basis==='sash';})) d.hw.push({name:'Casement hinges / friction stays',qty:2,basis:'sash'},{name:'Casement handle',qty:1,basis:'sash'}); }
   (d.orders||[]).forEach(function(o){ var cv=false; (o.items||[]).forEach(function(it){ if(it.oldType==='Openable'&&it.type==='Fixed'){ it.type='Openable'; it.hinge=it.hinge||'L'; it.loc=String(it.loc||'').replace(/ \(openable\)$/,''); delete it.oldType; cv=true; } }); if(cv&&o.notes) o.notes=String(o.notes).replace(/( · )?Openable windows shown as Fixed for now/,''); });
   if(d.heads&&!d.heads.some(function(h){return h.name==='Staff advance';})) d.heads.push({name:'Staff advance',grp:'Advances'}); (d.expenses||[]).forEach(function(e){ if(!e.head) e.head=e.cat==='Salary'?'Salary & wages':e.cat==='Material'?'Material purchase':(e.cat||'Office & misc'); if(!e.mode) e.mode='Cash'; if(!e.vno){ e.vno=d.vseq||1; d.vseq=(d.vseq||1)+1; } }); if(!d.brands||!d.brands.length) d.brands=JSON.parse(JSON.stringify(DEF.brands));
   if(d.cut){ d.brands[0].cut=merge(d.brands[0].cut,d.cut); delete d.cut; } if(d.prof){ d.brands[0].prof=merge(d.brands[0].prof,d.prof); delete d.prof; }
@@ -641,7 +653,9 @@ function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){
 /* ============================================================
    VIEWS
    ============================================================ */
-function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px"></div><p class="faint" style="margin-top:14px">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p><button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button></div>';
+function pinOK(){ try{ return localStorage.getItem('pinok')==='1'||localStorage.getItem('sbrole')==='admin'; }catch(e){ return false; } }
+function wrongCopy(){ return !BAKED.url&&/^https?:$/.test(location.protocol)&&window.top===window&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!/claude|anthropic/.test(location.hostname); }
+function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px"></div><p class="faint" style="margin-top:14px">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
   return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
@@ -668,7 +682,7 @@ function shareMsg(email,role,pw,link){ return 'Hi, please use our '+D.company.na
   +'Please do not share your password with anyone.'; }
 function showShare(email,role){ var link=appLink(), v=document.createElement('div'); v.className='viewer share';
   v.innerHTML='<div class="card" style="max-width:520px;width:94vw;margin:auto"><div class="row between"><h2>📤 Send app link</h2><button class="btn sm" data-x="close">Close</button></div>'
-   +'<div class="muted" style="margin:2px 0 10px">To <b>'+esc(email)+'</b> · '+esc(ROLEDESC[role]||role)+'</div>'
+   +'<div class="muted" style="margin:2px 0 10px">To <b>'+esc(email)+'</b> · '+esc(ROLEDESC[role]||role)+'</div>'+(wrongCopy()?'<div class="wrongnote">⚠ Your website has the <b>preview copy</b>, so this link opens a PIN screen on new phones. Upload the right <b>index.html</b> first (see the red bar).</div>':'')
    +(link?'':'<label class="f"><span>App link (your website address)</span><input type="text" id="shlink" placeholder="https://….github.io/Software/"></label>')
    +'<label class="f"><span>Password (optional — not saved anywhere; or tell it by phone)</span><input type="text" id="shpw" autocomplete="off" autocapitalize="off" spellcheck="false"></label>'
    +'<label class="f"><span>Message</span><textarea id="shmsg" rows="12"></textarea></label>'
@@ -1447,7 +1461,7 @@ document.addEventListener('click',function(e){
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
-  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
+  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
   if(a==='logout'){ NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
@@ -1573,7 +1587,9 @@ document.addEventListener('change',function(e){ var t=e.target;
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
 function refreshTotals(o){ var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
 
+if(localStorage.getItem('sbrole')==='admin') localStorage.setItem('pinok','1');
 if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); render(); } }).catch(function(){}); }
+if(wrongCopy()){ (function(){ var wb=document.createElement('div'); wb.className='wrongcopy'; wb.innerHTML='⚠ <b>Wrong file on the website.</b> This is the <b>preview copy</b> — new phones get a PIN screen and can\'t sign in with email, and updates won\'t show. Upload the <b>index.html</b> that was sent as an attachment (not the preview).'; document.body.insertBefore(wb,document.body.firstChild); })(); }
 /* ---- app install (PWA) ---- */
 var INSTALL=null, isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent), isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); INSTALL=e; render(); });
