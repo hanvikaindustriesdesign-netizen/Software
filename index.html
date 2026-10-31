@@ -349,14 +349,20 @@ body.dzon{overflow:hidden}
 .pjmoney{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px} .pjmoney button{background:#f4f6f9;border:1.5px solid transparent;border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;color:var(--ink);font:inherit;min-width:0}
 .pjmoney span{display:block;font-size:12px;color:var(--soft)} .pjmoney b{display:block;font-size:18px;line-height:1.25} .pjmoney small{display:block;font-size:11.5px;color:var(--soft)} .pjmoney .good b{color:var(--good)} .pjmoney .warn b{color:var(--warn)} .pjmoney .on{border-color:var(--accent);background:#eef4ff}
 .ft{padding:0 0 4px;overflow:hidden} .fth,.ftm{display:grid;grid-template-columns:76px 92px minmax(0,1.5fr) 132px 106px 132px 100px;gap:4px 12px;align-items:center}
-.fth{padding:10px 54px 8px 14px;font-size:12px;font-weight:650;color:var(--soft);border-bottom:1px solid var(--line)} .fth .r,.pyh .r{text-align:right}
+.fth{padding:10px 54px 8px 46px;font-size:12px;font-weight:650;color:var(--soft);border-bottom:1px solid var(--line)} .fth .r,.pyh .r{text-align:right}
 .ftr{display:flex;align-items:center;border-bottom:1px solid var(--line)} .ftr:last-of-type{border-bottom:0}
-.ftm{flex:1 1 auto;min-width:0;background:none;border:0;padding:10px 4px 10px 14px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .ftm:hover{background:#f8fafc}
+.ftm{flex:1 1 auto;min-width:0;background:none;border:0;padding:10px 4px 10px 10px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .ftm:hover{background:#f8fafc}
 .ftm small{display:block;font-size:12px;color:var(--faint);font-weight:400} .ftm b.c-no{font-size:15px} .c-ty{color:var(--soft);font-size:13.5px} .c-ow{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .c-bill,.c-rec,.c-due{text-align:right;font-size:14px} .ftr .fe{flex:0 0 auto;margin-right:6px;min-width:38px;font-size:17px;color:var(--soft)}
 @media(max-width:760px){ .fth{display:none} .ftm{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"no ty st" "ow ow ow" "bill rec due";gap:4px 10px;padding:10px 2px 10px 12px}
   .c-no{grid-area:no} .c-ty{grid-area:ty} .c-st{grid-area:st;justify-self:end} .c-ow{grid-area:ow} .c-ow small{display:inline;margin-left:6px}
   .c-bill{grid-area:bill;text-align:left} .c-rec{grid-area:rec;text-align:center} .c-due{grid-area:due} .c-bill::before,.c-rec::before,.c-due::before{content:attr(data-l);display:block;font-size:11px;color:var(--faint)} }
+.ftr .fsel{width:22px;height:22px;flex:0 0 auto;margin:0 0 0 12px;cursor:pointer} .ftr.sel{background:#f2f7ff}
+.pjbar{flex-wrap:wrap;gap:8px 10px} .pjbt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 230px} .pjbt span{font-size:13px;color:var(--soft)} .pjbb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stlist{border:1px solid var(--line);border-radius:10px;padding:0 12px} .stlist .stopt{margin:0;padding:11px 0;border-bottom:1px solid var(--line)} .stlist .stopt:last-child{border-bottom:0} .stopt input{margin-top:2px}
+.pdt{border:1px solid var(--line);border-radius:10px;overflow:hidden} .pdr{display:grid;grid-template-columns:72px minmax(0,1.3fr) 124px 168px minmax(0,1fr);gap:4px 10px;align-items:center;width:100%;padding:9px 12px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .pdr:last-child{border-bottom:0} .pdr:hover{background:#f8fafc}
+.pdr .c-ow{overflow:hidden;text-overflow:ellipsis} .pdr .c-ow small{color:var(--faint);margin-left:4px} .pdr .c-bl{text-align:right} .pdr .c-bl small{display:block;font-size:11.5px;color:var(--faint)} .pdr .c-lp{font-size:12.5px;color:var(--soft)}
+@media(max-width:700px){ .pdr{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"fn ow bl" "st lp bl"} .pdr .c-fn{grid-area:fn} .pdr .c-ow{grid-area:ow} .pdr .c-bl{grid-area:bl} .pdr .c-st{grid-area:st} .pdr .c-lp{grid-area:lp} }
 .pyt{border:1px solid var(--line);border-radius:10px;overflow:hidden} .pyh,.pyr{display:grid;grid-template-columns:84px 80px minmax(0,1.2fr) minmax(0,1fr) 70px 110px;gap:4px 10px;align-items:center;padding:9px 12px}
 .pyh{font-size:12px;font-weight:650;color:var(--soft);background:#f7f9fc;border-bottom:1px solid var(--line)} .pyr{width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .pyr:last-child{border-bottom:0} .pyr:hover{background:#f8fafc}
 .pyr .c-am{text-align:right} .pyr .c-nt,.pyr .c-ow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .pyr .c-md,.pyr .c-dt{color:var(--soft);font-size:13.5px}
@@ -454,7 +460,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 18:19';
+var APPV='31 Oct 2026, 19:41';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1488,8 +1494,8 @@ function flatsMerge(cur,inc){ cur=cur||[]; if(!Array.isArray(inc)) return cur; v
 function pad2(v){ v=String(v); return v.length<2?'0'+v:v; }
 function flatNo(t,fl,u){ return (t?t+'-':'')+fl+pad2(u); }
 function flatSort(a,b){ return (a.tower||'')<(b.tower||'')?-1:(a.tower||'')>(b.tower||'')?1:(n(a.floor)-n(b.floor))||(n(a.unit)-n(b.unit))||((a.no||'')<(b.no||'')?-1:1); }
-function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Ready':f.stage===2?'In production':f.stage===1?(paid(f)>0.5?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
-var FSTC={'Not measured':'s0','Measured':'s1','Confirmed':'s1','Advance paid':'s1','In production':'s2','Ready':'s3','Delivered':'s4'};
+function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Production done':f.stage===2?'In production':f.stage===1?(paid(f)>0.5?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
+var FSTC={'Not measured':'s0','Measured':'s1','Confirmed':'s1','Advance paid':'s1','In production':'s2','Production done':'s3','Ready':'s3','Delivered':'s4'};
 function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(paid(f)>0.5) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.measured||f.stage>=1) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
 function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
   o.items.forEach(function(it){ it.made=false; }); o.address='Flat '+o.no+', '+p.name+(p.site?', '+p.site:''); return o; }
@@ -1505,7 +1511,7 @@ function batchOrder(id){ var r=batchById(id); if(!r) return null; var fl=batchFl
    PROJECT SCREENS — everything editable (✎) and deletable (🗑, admin only), kept simple:
    status boxes are the filters, one popup for each edit.
    ============================================================ */
-var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['Confirmed','No advance yet'],['Advance paid','Advance paid'],['In production','In production'],['Ready','Ready'],['Delivered','Delivered']];
+var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['Confirmed','No advance yet'],['Advance paid','Advance paid'],['In production','In production'],['Production done','Production done'],['Delivered','Delivered']];
 function pjCounts(fl){ var c={'':fl.length,pend:0}; fl.forEach(function(f){ var s=flatStatus(f); c[s]=(c[s]||0)+1; if(f.stage>0&&balance(f)>0.5) c.pend++; }); return c; }
 function pjAddr(no,p){ return 'Flat '+no+', '+p.name+(p.site?', '+p.site:''); }
 function batchRange(b){ var fl=batchFlats(b); return fl.length?fl[0].no+(fl.length>1?' – '+fl[fl.length-1].no:'')+' · '+fl.length+' flat'+(fl.length>1?'s':''):'no flats yet'; }
@@ -1554,7 +1560,7 @@ function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').t
   return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
     return !q||(f.no+' '+(f.customer||'')+' '+(f.phone||'')).toLowerCase().indexOf(q)>=0; }).sort(flatSort); }
 function pjRow(f){ var ty=typeById(f.ftype), st=flatStatus(f), pd=paid(f), lp=lastPay(f), meas=f.measured||f.stage>0, bal=balance(f);
-  return '<div class="ftr"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
+  return '<div class="ftr'+((S.psel||{})[f.id]?' sel':'')+'"><input type="checkbox" class="fsel" data-fsel="'+f.id+'"'+((S.psel||{})[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
    +'<span class="c-ow">'+(f.customer?esc(f.customer):'<span class="faint">No owner yet</span>')+(f.phone?'<small>'+esc(f.phone)+'</small>':'')+'</span>'
    +'<span class="c-st"><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span></span>'
    +'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+'</span>'
@@ -1574,24 +1580,61 @@ function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(
   var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'">'+(prod()?'':'<button class="btn" data-act="paddshow">+ Add flats</button>'+(many&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':''))+'</div>';
   var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
   var stl=F.st==='pend'?'Pending payment':(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
-  var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':''))+'</span><span class="grow"></span>'+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
+  var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':''))+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+(pjSelIds().length?'<button class="btn sm ghost" data-act="pselnone">Clear</button>':'')+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
   var rows=list.slice(0,lim).map(pjRow).join('');
-  return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span><span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span></div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div>'; }
+  return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span><span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span></div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
+/* ---- ticked flats: what they are (confirmed / production done / pending) and what to do with them ---- */
+var STOPT=[[0,'Not confirmed yet','owner has not said yes'],[1,'Confirmed','owner said yes'],[2,'In production',''],[3,'Production done','all windows made — ready to deliver'],[4,'Delivered','']];
+function pendRows(fl){ return fl.filter(function(f){ return f.stage>0&&balance(f)>0.5; }).sort(function(a,b){ return (balance(b)-balance(a))||flatSort(a,b); }); }
+function pjSelBar(){ var ids=pjSelIds(); if(!ids.length) return ''; var fl=ids.map(flatById), k=fl.length, cf=fl.filter(function(f){return f.stage>=1;}).length, done=fl.filter(function(f){return f.stage>=3;}).length, pr=pendRows(fl), pa=pr.reduce(function(a,f){return a+balance(f);},0);
+  return '<div class="pjbar"><div class="pjbt"><b>'+k+' flat'+(k>1?'s':'')+' selected</b><span>'+cf+' confirmed · '+done+' production done · <b class="'+(pa>0.5?'warnt':'goodt')+'">'+money(pa)+' pending</b>'+(pr.length?' ('+pr.length+' flat'+(pr.length>1?'s':'')+')':'')+'</span></div>'
+   +'<div class="pjbb">'+(prod()?'<button class="btn sm primary" data-act="pjdone">✔ Production done</button>':'<button class="btn sm primary" data-act="pjstat">✔ Set status</button><button class="btn sm" data-act="pjpend">₹ Pending details</button><button class="btn sm" data-act="pjxlsel">⬇ Excel</button>')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div></div>'; }
+function statPop(ids){ var fl=ids.map(flatById), opts=prod()?STOPT.filter(function(x){return x[0]===2||x[0]===3;}):STOPT;
+  pjPop('Set status — '+ids.length+' flat'+(ids.length>1?'s':''),'<div class="stlist">'+opts.map(function(x){ var now=fl.filter(function(f){return Math.min(4,f.stage)===x[0];}).length; return '<label class="chk stopt"><input type="radio" name="pjst" value="'+x[0]+'"'+(x[0]===(prod()?3:1)?' checked':'')+'><span><b>'+x[1]+'</b>'+(x[2]?' <small class="faint">— '+x[2]+'</small>':'')+(now?' <small class="faint">· '+now+' now</small>':'')+'</span></label>'; }).join('')+'</div><p class="faint" style="margin:6px 0 0">Material is taken from stock once per flat, when it goes into production.</p>',
+    '<button class="btn primary" data-act="pjstatset">Apply to '+ids.length+' flat'+(ids.length>1?'s':'')+'</button>'); }
+function setFlatStage(f,st){ var took=0; st=Math.max(0,Math.min(4,st));
+  if(st>=1&&!f.confirmedOn) f.confirmedOn=today(); if(st===0) delete f.confirmedOn;
+  if(st>=2&&!f.consumed){ if(consumeOrder(f)) took=1; }
+  if(st>=3) f.items.forEach(function(i){ i.made=true; }); else if(st<=1&&f.stage>=2) f.items.forEach(function(i){ i.made=false; });
+  if(st===4){ if(!f.deliveredOn) f.deliveredOn=today(); } else delete f.deliveredOn;
+  f.stage=st; return took; }
+function applyStage(fl,st){ var lab=STOPT[st][1], warn=[];
+  if(st===4){ var due=fl.filter(function(f){return balance(f)>0.5;}); if(due.length) warn.push(due.length+' flat'+(due.length>1?'s still have ':' still has ')+money(due.reduce(function(a,f){return a+balance(f);},0))+' pending'); }
+  if(st>=2){ var nm=fl.filter(function(f){return !f.measured;}); if(nm.length) warn.push(nm.length+' flat'+(nm.length>1?'s are':' is')+' not marked measured ('+nm.slice(0,5).map(function(f){return f.no;}).join(', ')+(nm.length>5?'…':'')+')'); }
+  if(st>=1){ var no=fl.filter(function(f){return !f.customer;}); if(no.length) warn.push(no.length+' flat'+(no.length>1?'s have':' has')+' no owner name yet'); }
+  if(warn.length&&!confirm(warn.join('\n')+'\n\nSet '+(fl.length>1?'them':'it')+' to "'+lab+'" anyway?')) return false;
+  var ch=0, took=0; fl.forEach(function(f){ if(Math.min(4,f.stage)===st) return; took+=setFlatStage(f,st); ch++; });
+  pjPopX(); save(); render(); toast(ch?ch+' flat'+(ch>1?'s':'')+' → '+lab+(took?' · stock updated':''):'Already '+lab); return true; }
+/* who still has to pay: bill, received, pending, last payment */
+function pendHtml(rows,pop){ return rows.map(function(f){ var lp=lastPay(f); return '<button class="pdr" data-fpay="'+f.id+'"'+(pop?' data-pjx="1"':'')+'><b class="c-fn">'+esc(f.no)+'</b><span class="c-ow">'+esc(f.customer||'—')+(f.phone?' <small>'+esc(f.phone)+'</small>':'')+'</span><span class="c-st"><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></span><span class="c-bl"><small>bill '+money(orderTotal(f))+' · paid '+money(paid(f))+'</small><b class="warnt">'+money(balance(f))+'</b></span><span class="c-lp">'+(lp?'last paid '+dShort(lp.on)+' · '+esc(lp.mode||'Cash'):'<span class="warnt">no payment yet</span>')+'</span></button>'; }).join(''); }
+function pendText(p,rows){ var tot=rows.reduce(function(a,f){return a+balance(f);},0);
+  return p.name+' — payments pending ('+dShort(today())+')\n'+rows.map(function(f){ return f.no+(f.customer?' '+f.customer:'')+(f.phone?' '+f.phone:'')+' — '+money(balance(f))+' ('+flatStatus(f)+')'; }).join('\n')+'\nTotal pending: '+money(tot)+' from '+rows.length+' flat'+(rows.length===1?'':'s'); }
+var PENDIDS=[];
+function pendPop(p,fl,title){ var rows=pendRows(fl), tot=rows.reduce(function(a,f){return a+balance(f);},0), np=rows.filter(function(f){return paid(f)<0.5;}).length; PENDIDS=rows.map(function(f){return f.id;});
+  pjPop('₹ Pending — '+esc(title),'<div class="muted" style="margin-bottom:8px">'+(rows.length?'<b class="warnt">'+money(tot)+'</b> pending from '+rows.length+' flat'+(rows.length>1?'s':'')+(np?' · '+np+' with no advance yet':''):'Nothing pending for these flats 👍')+(fl.length>rows.length?' <span class="faint">· '+(fl.length-rows.length)+' other'+(fl.length-rows.length>1?'s':'')+' paid in full or not confirmed</span>':'')+'</div>'
+    +(rows.length?'<div class="pdt">'+pendHtml(rows,true)+'</div>':''),
+    rows.length?'<button class="btn primary" data-act="pjpendshare">📤 Share / copy list</button><button class="btn" data-act="pjpendxls">⬇ Excel</button>':''); }
+function pjShare(text){ if(navigator.share){ navigator.share({text:text}).catch(function(){}); return; } var done=function(){ toast('Copied — paste it in WhatsApp'); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done,function(){ pjCopyOld(text); done(); }); else { pjCopyOld(text); done(); } }
+function pjCopyOld(text){ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); }
 /* every advance / payment of every flat, with its details */
 function pjPays(p,fl){ var all=pjPayRows(fl), q=(S.pyq||'').trim().toLowerCase(), rows=q?all.filter(function(r){ return (r.f.no+' '+(r.f.customer||'')+' '+(r.x.note||'')+' '+(r.x.mode||'')).toLowerCase().indexOf(q)>=0; }):all, lim=S.pylim||100;
   var tot=rows.reduce(function(a,r){return a+n(r.x.amt);},0), by={}; rows.forEach(function(r){ var m=r.x.mode||'Cash'; by[m]=(by[m]||0)+n(r.x.amt); });
-  var noAdv=fl.filter(function(f){ return f.stage>=1&&paid(f)<0.5; });
-  return '<div class="card"><div class="row between"><h2>Advance & payments</h2>'+(all.length?'<button class="btn sm" data-act="pjxls">⬇ Excel</button>':'')+'</div>'
+  var noAdv=fl.filter(function(f){ return f.stage>=1&&paid(f)<0.5; }), pr=pendRows(fl), ptot=pr.reduce(function(a,f){return a+balance(f);},0);
+  var pend='<div class="card"><div class="row between"><h2>Pending from owners</h2>'+(pr.length?'<span class="row" style="gap:6px"><button class="btn sm" data-act="pjpendall">📤 Share / copy</button></span>':'')+'</div>'
+   +(pr.length?'<div class="muted" style="margin-bottom:8px"><b class="warnt">'+money(ptot)+'</b> pending from '+pr.length+' flat'+(pr.length>1?'s':'')+'</div><div class="pdt">'+pendHtml(pr.slice(0,S.pdlim||50),false)+'</div>'+(pr.length>(S.pdlim||50)?'<button class="btn" data-act="pdmore" style="margin-top:8px">Show more ('+(pr.length-(S.pdlim||50))+' more)</button>':''):'<div class="empty">Nothing pending 👍</div>')+'</div>';
+  return pend+'<div class="card"><div class="row between"><h2>Received</h2>'+(all.length?'<button class="btn sm" data-act="pjxls">⬇ Excel</button>':'')+'</div>'
    +'<div class="muted" style="margin-bottom:8px"><b class="goodt">'+money(tot)+'</b> received in '+rows.length+' payment'+(rows.length===1?'':'s')+(Object.keys(by).length?' · '+Object.keys(by).map(function(m){return esc(m)+' '+money(by[m]);}).join(' · '):'')+'</div>'
    +(noAdv.length?'<div class="pjnote">⚠ '+noAdv.length+' confirmed flat'+(noAdv.length>1?'s have':' has')+' no advance yet: '+noAdv.slice(0,8).map(function(f){return '<button class="btn sm" data-fpay="'+f.id+'">'+esc(f.no)+'</button>';}).join(' ')+(noAdv.length>8?' …':'')+'</div>':'')
    +'<input type="text" id="pyq" placeholder="Search flat no, owner, note" value="'+esc(S.pyq||'')+'" style="width:100%;margin-bottom:8px">'
    +'<div class="pyt"><div class="pyh"><span>Date</span><span>Flat</span><span>Owner</span><span>Note</span><span>Mode</span><span class="r">Amount</span></div>'
    +(rows.slice(0,lim).map(function(r){ return '<button class="pyr" data-fpay="'+r.f.id+'"><span class="c-dt">'+dShort(r.x.on)+'</span><b class="c-fn">'+esc(r.f.no)+'</b><span class="c-ow">'+esc(r.f.customer||'—')+'</span><span class="c-nt">'+esc(r.x.note||'')+'</span><span class="c-md">'+esc(r.x.mode||'Cash')+'</span><b class="c-am goodt">'+money(r.x.amt)+'</b></button>'; }).join('')||'<div class="empty">'+(all.length?'No payments match':'No advance received yet — open a flat → Payments to add one')+'</div>')
    +(rows.length>lim?'<button class="btn" data-act="pymore" style="margin-top:8px">Show more ('+(rows.length-lim)+' more)</button>':'')+'</div></div>'; }
-function pjXls(p){ var fl=projFlats(p.id).sort(flatSort), pr=pjPayRows(fl);
+function pjXls(p,ids,name){ var fl=(ids?ids.map(flatById).filter(function(f){return f&&!f.del;}):projFlats(p.id)).sort(flatSort), pr=pjPayRows(fl), pe=pendRows(fl);
   var A=[['Flat','Tower','Floor','Type','Owner','Phone','Status','Measured on','Windows','Bill','Received','Due','Last payment','Mode']].concat(fl.map(function(f){ var lp=lastPay(f), ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',flatStatus(f),f.measuredOn||'',qty(f),Math.round(orderTotal(f)),Math.round(paid(f)),f.stage>0||paid(f)>0.5?Math.round(Math.max(0,balance(f))):'',lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
   var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',r.x.note||'',r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
-  download((p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - flats.xlsx',xlsx([['Flats',A],['Payments',B]])); }
+  var C=[['Flat','Owner','Phone','Status','Bill','Received','Pending','Last payment','Mode']].concat(pe.map(function(f){ var lp=lastPay(f); return [f.no,f.customer||'',f.phone||'',flatStatus(f),Math.round(orderTotal(f)),Math.round(paid(f)),Math.round(balance(f)),lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
+  download((p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - '+(name||'flats')+'.xlsx',xlsx([['Flats',A],['Pending',C],['Payments',B]])); }
 function faRead(){ var g=function(id){ return ($('#'+id)||{}).value; };
   var a={t:String(g('fa_t')||'').trim().toUpperCase(),ty:g('fa_ty'),f1:Math.round(n(g('fa_f1'))),f2:Math.round(n(g('fa_f2'))),n:Math.min(30,Math.round(n(g('fa_n')))),u:Math.max(0,Math.round(n(g('fa_u'))))};
   a.pt=(S.fa_pt||[]).slice(); [].slice.call(document.querySelectorAll('[data-fapt]')).forEach(function(x){ a.pt[+x.dataset.fapt]=x.value; }); return a; }
@@ -1757,6 +1800,15 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
     [].slice.call(document.querySelectorAll('.pjpop [data-ppu]')).forEach(function(x){ if(x.value) map[x.dataset.ppu]=x.value; });
     var ch=0, cw=0; projFlats(p.id).forEach(function(f){ if(T&&(f.tower||'')!==T) return; var fn=n(f.floor); if(fn<pf1||fn>pf2) return; var tid=map[String(n(f.unit))]; if(!tid||f.ftype===tid) return; var nt=typeById(tid); if(!nt) return; f.ftype=tid; ch++; if(pcp&&!f.measured&&f.stage===0){ copyItems(f,nt); cw++; } });
     pjPopX(); save(); render(); toast(ch?ch+' flat'+(ch>1?'s':'')+' got their type'+(cw?' · windows copied into '+cw:''):'Nothing to change — the flats already have these types'); return; }
+  if(a==='pjstat'&&p&&!prod()){ var sx=pjSelIds(); if(sx.length) statPop(sx); return; }
+  if(a==='pjstatset'&&p){ var rr=document.querySelector('.pjpop input[name="pjst"]:checked'); if(!rr) return; var stv=+rr.value; if(prod()&&stv!==2&&stv!==3) return; applyStage(pjSelIds().map(flatById),stv); return; }
+  if(a==='pjdone'&&p){ var dn=pjSelIds().map(flatById).filter(function(f){return f.stage>=1&&f.stage<3;}); if(!dn.length){ toast('Pick flats that are confirmed or in production'); return; } if(!confirm('Mark '+dn.length+' flat'+(dn.length>1?'s':'')+' production done (all windows made)?')) return; applyStage(dn,3); return; }
+  if(a==='pjpend'&&p){ var px=pjSelIds(); if(px.length) pendPop(p,px.map(flatById),px.length+' selected flat'+(px.length>1?'s':'')); return; }
+  if(a==='pjpendshare'&&p){ pjShare(pendText(p,PENDIDS.map(flatById).filter(function(f){return f&&!f.del;}))); return; }
+  if(a==='pjpendall'&&p){ pjShare(pendText(p,pendRows(projFlats(p.id)))); return; }
+  if(a==='pjpendxls'&&p){ pjXls(p,PENDIDS,'pending'); return; }
+  if(a==='pjxlsel'&&p){ pjXls(p,pjSelIds(),'selected flats'); return; }
+  if(a==='pdmore'){ S.pdlim=(S.pdlim||50)+200; render(); return; }
   if(a==='pjseltype'&&p){ var si=pjSelIds(); if(si.length) selTypePop(p,si); return; }
   if(a==='pjtypeset'&&p){ var nt=typeById(pjV('st_ty')), cp=($('#st_cp')||{}).checked, sf=pjSelIds().map(flatById); if(!nt||!sf.length) return; var nc=0;
     sf.forEach(function(f){ f.ftype=nt.id; if(cp&&!f.measured&&f.stage===0){ copyItems(f,nt); nc++; } }); pjPopX(); S.psel={}; save(); render(); toast(sf.length+' flats → '+nt.name+(nc?' · windows copied into '+nc:'')); return; }
@@ -1786,6 +1838,7 @@ document.addEventListener('input',function(e){ var t=e.target;
   if(/^fa_/.test(t.id||'')){ var p2=projById(S.pid), pv=$('#fa_prev'), pl=$('#fa_plan'); if(!p2) return;
     if(t.id==='fa_t') S.fa_t=t.value; else if(/^fa_(f1|f2|n|u)$/.test(t.id)) S[t.id]=t.value===''?null:Math.round(n(t.value));   /* a redraw keeps what was typed */ if(pl&&/^fa_(n|u|t|f1)$/.test(t.id)){ S.fa_pt=faRead().pt; pl.innerHTML=faPlanHtml(p2); } if(pv) pv.innerHTML=faPreview(p2); return; } });
 document.addEventListener('change',function(e){ var t=e.target, d=t.dataset;
+  if(d.fsel){ S.psel=S.psel||{}; if(t.checked) S.psel[d.fsel]=true; else delete S.psel[d.fsel]; var row=t.closest('.ftr'); if(row) row.classList.toggle('sel',t.checked); var w=$('#pjbarw'); if(w) w.innerHTML=pjSelBar(); return; }
   if(d.tpn){ var o=order(); if(o&&o.tpl){ o.name=t.value; save(); } return; }
   if(t.id==='fa_ty'){ S.fa_ty=t.value; var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; }
   if(d.fapt!==undefined){ (S.fa_pt=S.fa_pt||[])[+d.fapt]=t.value; var p3=projById(S.pid), pv3=$('#fa_prev'); if(p3&&pv3) pv3.innerHTML=faPreview(p3); return; }
