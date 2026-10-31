@@ -376,6 +376,8 @@ body.dzon{overflow:hidden}
 .geoaddr{display:block;margin-bottom:12px} .geoaddr textarea{min-height:92px} .geoaddr>.row>span{font-size:12.5px;color:var(--soft)} .geoaddr textarea{width:100%;box-sizing:border-box}
 .pjgeo{display:flex;gap:8px;align-items:flex-end} .pjgeo label.f{flex:1 1 auto;margin-bottom:10px} .pjgeo .btn{margin-bottom:10px}
 
+.lockl{font-size:13px;color:var(--soft);background:#f4f7fb;border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin:0 0 10px}
+
 /* back button */
 .top .tl{display:flex;align-items:center;gap:8px;flex:1 1 0}
 .backbtn{flex:none;width:40px;min-height:40px;padding:0;border-radius:50%;font-size:28px;line-height:1;font-weight:500;color:var(--ink);padding-bottom:3px}
@@ -406,6 +408,8 @@ body.dzon{overflow:hidden}
   .doc .cut h3{margin:12px 0 4px;color:#000} .doc .pg{page-break-inside:avoid}
   .doc .card{border:0;padding:0;margin:0 0 10px;box-shadow:none;background:none} .doc .tscroll{overflow:visible;margin:0;padding:0} .doc table.grid{font-size:11px} .doc table{font-size:11.5px} .doc .btn,.doc button{display:none} .doc svg text{fill:#000} .doc .faint,.doc .muted{color:#444}
 }
+#netbar:empty{display:none} .netbar{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fcd34d;font-size:13.5px;line-height:1.45} .netbar.bad{background:#fef2f2;border-color:#fca5a5} .netbar .btn{margin-left:4px;vertical-align:middle;min-height:30px}
+.snapopt{margin:0 0 12px} .snapopt .btn{width:100%;margin-bottom:6px} .ph .phup{position:absolute;top:4px;left:4px;background:rgba(255,255,255,.92);border-radius:99px;font-size:12px;padding:1px 6px;line-height:18px}
 </style>
 </head>
 <body>
@@ -460,7 +464,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 19:41';
+var APPV='31 Oct 2026, 22:20';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -476,8 +480,8 @@ function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name==
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
 var saveT, DSIZE=0, STFULL=false;
-function keepLocal(){ var c0=Object.assign({},D); delete c0.flats; var j=JSON.stringify(c0); DSIZE=j.length; MAINJ=j; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
-function save(){ keepLocal(); if(MAINSENT===null||MAINJ!==MAINSENT){ try{ localStorage.setItem('wdirty','1'); }catch(e){} } if(D.flats) flatsTouch(); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
+function keepLocal(){ var c0=Object.assign({},D); delete c0.flats; if(typeof ORS!=='undefined'&&ORS.loaded) delete c0.orders; var j=JSON.stringify(c0); DSIZE=j.length; MAINJ=j; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
+function save(){ keepLocal(); if(MAINSENT===null||MAINJ!==MAINSENT){ try{ localStorage.setItem('wdirty','1'); }catch(e){} } if(D.flats) flatsTouch(); if(typeof ORS!=='undefined') ORS.touch(); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
 
 function sbOn(){ return D.sb.url&&D.sb.key; }
 var SESS=(function(){ try{ return JSON.parse(localStorage.getItem('sbsess')||'null'); }catch(e){ return null; } })();
@@ -489,18 +493,35 @@ function sbRefresh(){ if(!SESS||!SESS.refresh_token) return Promise.reject(new E
   return fetch(sbUrl('/auth/v1/token?grant_type=refresh_token'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:SESS.refresh_token})}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error('Session expired'); j.exp=Date.now()+(j.expires_in||3600)*1000; j.email=(j.user||{}).email||SESS.email; sbSave(j); return j; }); }); }
 function sbLogout(){ SESS=null; localStorage.removeItem('sbsess'); }
 var LASTSEEN=localStorage.getItem('sbseen')||'';
-function setupSql(owner){ return ["create table if not exists public.shop_data (id text primary key, data jsonb, updated_at timestamptz default now());",
+function sqlPol(name,tbl,cmd,using,check){ var t=tbl.split('.'); return "do $$ begin if not exists (select 1 from pg_policies where schemaname = '"+t[0]+"' and tablename = '"+t[1]+"' and policyname = '"+name+"') then create policy \""+name+"\" on "+tbl+" for "+cmd+" to authenticated"+(using?" using ("+using+")":"")+(check?" with check ("+check+")":"")+"; end if; end $$;"; }
+function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin()', P="bucket_id = 'photos' and ";
+  return ["-- Hanvika app: tables, rules and the photo store. Safe to run again.",
+ "create table if not exists public.shop_data (id text primary key, data jsonb, updated_at timestamptz default now());",
  "create table if not exists public.app_users (email text primary key, role text not null default 'sales' check (role in ('admin','sales','production')));",
+ "create table if not exists public.shop_flats (id text primary key, proj text not null default '', data jsonb not null, updated_at timestamptz not null default now());",
+ "create table if not exists public.shop_orders (id text primary key, data jsonb not null, updated_at timestamptz not null default now());",
+ "create table if not exists public.shop_backups (id text primary key, created_at timestamptz not null default now(), by text not null default '', size integer not null default 0, data jsonb not null);",
+ "create table if not exists public.shop_archive (id text primary key, kind text not null default '', created_at timestamptz not null default now(), data jsonb not null);",
+ "create index if not exists shop_flats_proj_idx on public.shop_flats (proj); create index if not exists shop_flats_updated_idx on public.shop_flats (updated_at); create index if not exists shop_orders_updated_at on public.shop_orders (updated_at);",
  "create schema if not exists ws_private; revoke all on schema ws_private from public, anon; grant usage on schema ws_private to authenticated;",
  "create or replace function ws_private.is_member() returns boolean language sql stable security definer set search_path = public as $$ select exists(select 1 from public.app_users where email = lower(auth.jwt()->>'email')) $$;",
  "create or replace function ws_private.is_admin() returns boolean language sql stable security definer set search_path = public as $$ select exists(select 1 from public.app_users where email = lower(auth.jwt()->>'email') and role = 'admin') $$;",
  "revoke execute on function ws_private.is_member(), ws_private.is_admin() from public, anon; grant execute on function ws_private.is_member(), ws_private.is_admin() to authenticated;",
- "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; revoke all on public.shop_data, public.app_users from anon;",
- "create policy \"ws members read data\" on public.shop_data for select to authenticated using (ws_private.is_member());",
- "create policy \"ws members add data\" on public.shop_data for insert to authenticated with check (ws_private.is_member());",
- "create policy \"ws members change data\" on public.shop_data for update to authenticated using (ws_private.is_member()) with check (ws_private.is_member());",
- "create policy \"ws members see users\" on public.app_users for select to authenticated using (ws_private.is_member());",
- "create policy \"ws admins manage users\" on public.app_users for all to authenticated using (ws_private.is_admin()) with check (ws_private.is_admin());",
+ "create or replace function ws_private.flats_touch() returns trigger language plpgsql set search_path = '' as $$ begin new.updated_at := clock_timestamp(); return new; end $$;",
+ "create or replace function ws_private.backups_prune() returns trigger language plpgsql security definer set search_path = '' as $$ begin delete from public.shop_backups where created_at < now() - interval '21 days'; return null; end $$;",
+ "create or replace trigger shop_flats_touch before insert or update on public.shop_flats for each row execute function ws_private.flats_touch();",
+ "create or replace trigger shop_orders_touch before insert or update on public.shop_orders for each row execute function ws_private.flats_touch();",
+ "create or replace trigger shop_backups_prune after insert on public.shop_backups for each statement execute function ws_private.backups_prune();",
+ "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; alter table public.shop_flats enable row level security; alter table public.shop_orders enable row level security; alter table public.shop_backups enable row level security; alter table public.shop_archive enable row level security;",
+ "revoke all on public.shop_data, public.app_users, public.shop_flats, public.shop_orders, public.shop_backups, public.shop_archive from anon;",
+ sqlPol('ws members read data','public.shop_data','select',M), sqlPol('ws members add data','public.shop_data','insert','',M), sqlPol('ws members change data','public.shop_data','update',M,M),
+ sqlPol('ws members see users','public.app_users','select',M), sqlPol('ws admins manage users','public.app_users','all',A,A),
+ sqlPol('ws members read flats','public.shop_flats','select',M), sqlPol('ws members add flats','public.shop_flats','insert','',M), sqlPol('ws members change flats','public.shop_flats','update',M,M),
+ sqlPol('ws members read orders','public.shop_orders','select',M), sqlPol('ws members add orders','public.shop_orders','insert','',M), sqlPol('ws members change orders','public.shop_orders','update',M,M),
+ sqlPol('ws admins read backups','public.shop_backups','select',A), sqlPol('ws members add backups','public.shop_backups','insert','',M),
+ sqlPol('ws members read archive','public.shop_archive','select',M), sqlPol('ws members add archive','public.shop_archive','insert','',M),
+ "insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values ('photos', 'photos', false, 5242880, array['image/jpeg','image/png','image/webp']) on conflict (id) do nothing;",
+ sqlPol('ws members read photos','storage.objects','select',P+M), sqlPol('ws members add photos','storage.objects','insert','',P+M), sqlPol('ws admins remove photos','storage.objects','delete',P+A),
  "insert into public.app_users(email, role) values ('"+String(owner||'your@email.com').toLowerCase().replace(/'/g,"")+"','admin') on conflict (email) do update set role = 'admin';"].join('\n'); }
 function sbRole(email){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/app_users?select=role&email=eq.'+encodeURIComponent((email||'').toLowerCase())),{headers:sbHeaders()}); }).then(function(r){ if(!r.ok) throw new Error('role '+r.status); return r.json(); }).then(function(rows){ return rows&&rows[0]?rows[0].role:null; }); }
 function sbUsers(){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/app_users?select=email,role&order=email'),{headers:sbHeaders()}); }).then(function(r){ if(!r.ok) throw new Error('users '+r.status); return r.json(); }); }
@@ -510,15 +531,17 @@ function loadUsers(){ S.ru='loading'; sbUsers().then(function(u){ S.ru=u; if(S.t
 var PUSHING=null, PUSHAGAIN=false;
 function cloudPush(){ if(!sbOn()||!SESS) return Promise.resolve(); if(PUSHING){ PUSHAGAIN=true; return PUSHING; }
   PUSHING=pushNow().then(function(){ PUSHING=null; if(PUSHAGAIN){ PUSHAGAIN=false; return cloudPush(); } }); return PUSHING; }
-function pushNow(){ var md=MAINSENT===null||MAINJ!==MAINSENT||!!localStorage.getItem('wdirty'); return (md?pushMain():Promise.resolve()).then(function(){ return flatsPush(); },function(){ return flatsPush(); }); }
+function pushNow(){ return ORS.push().catch(function(){}).then(function(){ var md=MAINSENT===null||MAINJ!==MAINSENT||!!localStorage.getItem('wdirty'); return md?pushMain():null; }).then(function(){ return flatsPush(); },function(){ return flatsPush(); }); }
 function pushMain(){ keepLocal(); var sentJ=MAINJ, c=JSON.parse(sentJ); delete c.sb; var now=new Date().toISOString();
   return sbRefresh().then(function(){
-    if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; MAINSENT=sentJ; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online'); }); }
-    return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&updated_at=eq.'+encodeURIComponent(LASTSEEN)),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:JSON.stringify({data:c,updated_at:now})}).then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('save '+r.status); if(!rows.length){ PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } LASTSEEN=now; MAINSENT=sentJ; localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
+    if(!LASTSEEN&&!MAINNONE){ setSync('Loading from online first…'); return cloudPull(true); }
+    if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; setBase(sentJ); localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online'); }); }
+    return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&updated_at=eq.'+encodeURIComponent(LASTSEEN)),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:JSON.stringify({data:c,updated_at:now})}).then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('save '+r.status); if(!rows.length){ var tries=(pushMain.tries||0)+1; pushMain.tries=tries; if(tries<=3) return mainMerge(sentJ).then(function(){ setSync('Merged with changes from another phone'); toast('✓ Saved — changes from another phone were kept too'); return pushMain(); }).catch(function(){ pushMain.tries=0; PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); });
+      pushMain.tries=0; PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } pushMain.tries=0; LASTSEEN=now; setBase(sentJ); localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
   }).catch(function(e){ setSync('Offline — saved on this device ('+(e&&e.message||'')+')'); }); }
 function cloudPull(force){ if(!sbOn()||!SESS) return Promise.resolve();
-  return sbRefresh().then(function(){ return mainFetch(force); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } return r.json(); }).then(function(rows){ if(rows&&rows[0]&&rows[0].data){ if(!force&&rows[0].updated_at===LASTSEEN){ if(localStorage.getItem('wdirty')) cloudPush(); else if(MAINSENT===null){ keepLocal(); MAINSENT=MAINJ; } return; } var sb=D.sb, fl0=D.flats; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); D.sb=sb; D.flats=fl0; keepLocal(); MAINSENT=MAINJ; if(!PUSHING) localStorage.removeItem('wdirty'); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); render(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); }).then(function(){ return flatsPull().catch(function(){}); }).then(function(){ if(Object.keys(FL.dirty).length&&!FL.busy&&!PUSHING) return flatsPush(); }); }
-setInterval(function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT&&!PUSHING&&!FL.busy) cloudPull(); },45000);
+  return sbRefresh().then(function(){ return mainFetch(force); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } if(!r.ok) throw new Error('server '+r.status); return r.json(); }).then(function(rows){ PULLOK=true; netOk(); if(rows&&rows[0]&&rows[0].data){ if(!force&&rows[0].updated_at===LASTSEEN){ if(localStorage.getItem('wdirty')) cloudPush(); else if(MAINSENT===null){ keepLocal(); setBase(MAINJ); } return; } if(localStorage.getItem('wdirty')&&MAINSENT!==null){ keepLocal(); mainMergeRow(rows[0],MAINJ,MAINSENT); try{ localStorage.setItem('wdirty','1'); }catch(e){} setSync('Loaded from online — changes from this phone kept'); setTimeout(function(){ cloudPush(); },300); return; } var sb=D.sb, fl0=D.flats, or0=D.orders; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); var lg=D.orders; D.sb=sb; D.flats=fl0; D.orders=or0; ORS.legacy(lg); keepLocal(); setBase(MAINJ); if(lg&&lg.length&&ORS.loaded){ try{ localStorage.setItem('wdirty','1'); }catch(e){} setTimeout(function(){ cloudPush(); },300); } if(!PUSHING&&!(lg&&lg.length&&ORS.loaded)) localStorage.removeItem('wdirty'); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); render(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); MAINNONE=Array.isArray(rows); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); netBad(e); }).then(function(){ return Promise.all([flatsPull().catch(function(){}),ORS.pull().catch(function(){})]); }).then(function(){ if(PUSHING) return; var w=[]; if(Object.keys(FL.dirty).length&&!FL.busy) w.push(flatsPush()); if(ORS.unsent()&&!ORS.busy) w.push(ORS.push()); return Promise.all(w); }).then(function(){ lockOldSoon(); cloudAfter(); }); }
+setInterval(function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT&&!PUSHING&&!FL.busy&&!ORS.busy) cloudPull(); },45000);
 var syncMsg=''; function setSync(m){ syncMsg=m; var e=document.getElementById('sync'); if(e) e.textContent=m; }
 
 /* ============================================================
@@ -554,12 +577,11 @@ function ventLayout(it){ var W=n(it.w), H=n(it.h), fw=Math.min(fanSec(it),W-150)
 function ensureCustom(it){ if(it.type==='Custom') return; if(hasFan(it)){ it.layout=ventLayout(it); it.type='Custom'; } }
 function hasFan(it){ return it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'; }
 function cellType(t){ return t==='Vent + fan'||t==='Fan'?'Ventilator':t; }
-function itemPrice(o,it){ if(o.kind==='doors') return n(it.price)*n(it.qty); if(it.fixed!=null&&it.fixed!=='') return Math.round(n(it.fixed)*n(it.qty)); var R=brandOf(it.brand).rate;
-  if(it.type==='Custom') return cellsOf(it).reduce(function(a,cl){return a+Math.round(sqft(cl.w,cl.h)*((R[cellType(cl.t)]||{})[it.series]||0));},0)*n(it.qty);
-  return Math.round(sqft(it.w,it.h)*((R[it.type]||{})[it.series]||0))*n(it.qty); }
-function itemCost(o,it){ if(o.kind==='doors') return (brandOf(it.brand).doorCost[it.type]||0)*n(it.qty); var C=brandOf(it.brand).cost;
-  if(it.type==='Custom') return cellsOf(it).reduce(function(a,cl){return a+Math.round(sqft(cl.w,cl.h)*((C[cellType(cl.t)]||{})[it.series]||0));},0)*n(it.qty);
-  return Math.round(sqft(it.w,it.h)*((C[it.type]||{})[it.series]||0))*n(it.qty); }
+function itemPrice(o,it){ if(o.kind==='doors') return n(it.price)*n(it.qty); if(it.fixed!=null&&it.fixed!=='') return Math.round(n(it.fixed)*n(it.qty)); if(it.type==='Custom') return cellsOf(it).reduce(function(a,cl){return a+Math.round(sqft(cl.w,cl.h)*(lkVal(o,it.brand,'rate',cellType(cl.t),it.series)||0));},0)*n(it.qty);
+  return Math.round(sqft(it.w,it.h)*(lkVal(o,it.brand,'rate',it.type,it.series)||0))*n(it.qty); }
+function itemCost(o,it){ if(o.kind==='doors') return (lkDoor(o,it.brand,it.type)||0)*n(it.qty);
+  if(it.type==='Custom') return cellsOf(it).reduce(function(a,cl){return a+Math.round(sqft(cl.w,cl.h)*(lkVal(o,it.brand,'cost',cellType(cl.t),it.series)||0));},0)*n(it.qty);
+  return Math.round(sqft(it.w,it.h)*(lkVal(o,it.brand,'cost',it.type,it.series)||0))*n(it.qty); }
 function subTotal(o){ return o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)-n(o.discount); }
 function gstOf(o){ return o&&o.gstPct!=null&&o.gstPct!==''?n(o.gstPct):n(D.gstPct); }
 function gstAmt(o){ return Math.round(subTotal(o)*gstOf(o)/100); }
@@ -711,7 +733,7 @@ function navTrack(){ if(!S.role||NAVLOCK) return; var cur=navNow(), st=history.s
   if(d>0&&NAVSTACK[d-1]&&navKey(NAVSTACK[d-1])===navKey(cur)){ SKIPPOP=true; history.back(); return; }   // closing something = one step back
   NAVSTACK.length=d+1; NAVSTACK.push(cur); navKeep(); history.pushState({nav:cur,d:d+1},''); }
 function navApply(nav){ NAVLOCK=true; S.tab=nav.tab||'home';
-  if(S.tab==='order'){ if(!byId(nav.oid)) S.tab='orders'; else { S.oid=nav.oid; S.sub=nav.sub||(prod()?'production':'items'); S.di=nav.di!=null&&byId(nav.oid).items[nav.di]?nav.di:null; } }
+  if(S.tab==='order'){ if(!byId(nav.oid)&&typeof ORS!=='undefined'&&(!ORS.loaded||!FL.loaded)){ var nv=nav; Promise.all([ORS.ready,FL.ready]).then(function(){ if(S.tab==='order'&&S.oid===nv.oid) navApply(nv); }); S.oid=nav.oid; S.sub=nav.sub||(prod()?'production':'items'); } else if(!byId(nav.oid)) S.tab='orders'; else { S.oid=nav.oid; S.sub=nav.sub||(prod()?'production':'items'); S.di=nav.di!=null&&byId(nav.oid).items[nav.di]?nav.di:null; } }
   if(S.tab==='project'){ if(!projById(nav.pid)) S.tab='orders'; else { S.pid=nav.pid; if(nav.psub) S.psub=nav.psub; } }
   if(S.tab!=='order') S.di=null;
   if(S.tab==='expenses') S.esub=nav.esub||'day';
@@ -746,7 +768,7 @@ function render(){
   var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
   nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&(S.tab==='order'||S.tab==='project')))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
   var v={home:viewHome,orders:viewOrders,order:viewOrder,project:viewProject,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
-  var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+v;
+  var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+netBarHtml()+v;
   fixChips();
 }
 
@@ -771,8 +793,8 @@ function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWor
     if(o.stage===1&&paid(o)<0.5) al.push(['y',o.id,oTitleT(o)+' — confirmed but no advance received']); });
   if(admin()){ var lows=lowStock(); if(lows.length) al.push(['y','','inventory',lows.length+' item'+(lows.length>1?'s':'')+' low in stock — '+lows.slice(0,3).map(function(k){return D.inv[k].name;}).join(', ')+(lows.length>3?'…':'')]);
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
-    if(DSIZE>3.5*1048576) al.push(['y','','settings','App data is '+(DSIZE/1048576).toFixed(1)+' MB — close to the phone limit. Remove old site photos (Settings → App version).']);
-    if(!sbOn()){ var lb=D.lastBackup||''; if(!lb||Math.round((new Date(t)-new Date(lb))/864e5)>7) al.push(['y','','settings','No backup for '+(lb?Math.round((new Date(t)-new Date(lb))/864e5)+' days':'a while')+' — download one from Settings']); } }
+    if(DSIZE>3.5*1048576) al.push(['y','','settings','Shared data is '+(DSIZE/1048576).toFixed(1)+' MB — close to the phone limit (Settings → App version → Space used).']);
+    var lb=D.lastBackup||'', lbd=lb?Math.round((new Date(t)-new Date(lb))/864e5):0; if(!lb||lbd>(sbOn()?14:7)) al.push(['y','','settings','No backup file for '+(lb?lbd+' days':'a while')+' — download one from Settings → Backup']); var lc=lastCountDay(), lcd=lc?Math.round((new Date(t)-new Date(lc))/864e5):0; if(Object.keys(D.inv).length&&lc&&lcd>31) al.push(['y','','inventory','Stock not counted for '+lcd+' days — count it and use Adjust in the Stock tab']); }
   return al.map(function(a){ return a.length===4?{c:a[0],go:a[2],txt:a[3]}:{c:a[0],id:a[1],txt:a[2]}; }); }
 /* ---- send the app link to a staff member ---- */
 var ROLEDESC={admin:'Admin — everything',sales:'Sales — orders, quotes, payments',production:'Production — floor work, cutting lists'};
@@ -800,8 +822,6 @@ function showShare(email,role){ var link=appLink(), v=document.createElement('di
     if(x==='wa') window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
     if(x==='share') navigator.share({title:D.company.name,text:msg}).catch(function(){});
     if(x==='copy'){ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(copied,oldCopy); else oldCopy(); } }); }
-function photoCount(){ return D.orders.reduce(function(a,o){return a+(o.photos||[]).length;},0); }
-function spaceLine(){ if(!DSIZE) DSIZE=JSON.stringify(D).length; var mb=DSIZE/1048576, pc=Math.min(100,Math.round(mb/5*100)); return '<div style="margin-top:10px"><div class="faint">Space used: <b>'+(mb<0.1?Math.max(1,Math.round(DSIZE/1024))+' KB':mb.toFixed(1)+' MB')+'</b> of about 5 MB a phone can keep · '+D.orders.length+' orders'+(liveFlats().length?' + '+liveFlats().length+' flats (kept separately)':'')+' · '+photoCount()+' photos</div><div style="height:8px;background:#eef1f5;border-radius:99px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,pc)+'%;background:'+(pc>70?'var(--warn)':'var(--accent)')+'"></div></div><div class="faint" style="margin-top:4px">An order without photos takes about 2 KB; each site photo about 80 KB.</div></div>'; }
 function alertKey(a){ return (a.id||a.go||'')+'|'+String(a.txt).replace(/\d+ days?/g,'N days').replace(/[\d.]+ MB/g,'N MB'); }
 function dismissed(){ try{ return JSON.parse(localStorage.getItem('wdismiss')||'{}')||{}; }catch(e){ return {}; } }
 function setDismissed(m){ var cut=Date.now()-120*864e5; Object.keys(m).forEach(function(k){ if(m[k]<cut) delete m[k]; }); try{ localStorage.setItem('wdismiss',JSON.stringify(m)); }catch(e){} }
@@ -882,7 +902,8 @@ function nextBtn(o){
   return '<button class="btn big" data-act="archive">Move to archive</button>';
 }
 
-function subItems(o){
+function subItems(o){ return lockLine(o)+subItems0(o); }
+function subItems0(o){
   var head,rows,cols;
   if(o.kind==='doors'){ cols=8;
     head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th class="num">W mm</th><th class="num">H mm</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Amount</th><th></th></tr>';
@@ -1401,90 +1422,134 @@ function dz3D(){ var it=dzItem(); if(!it||$('#d3')) return; dzNumClose(); var v=
   size(); anim(-0.55,0.2,900); }
 
 /* ============================================================
+   ROW STORE — a list kept one record per row: IndexedDB on the phone, one table row online.
+   A change sends only that record; refreshes download only records that changed.
+   Used for flats (D.flats) and orders (D.orders).
+   c = {name, word, table, dbn, store, ls, mp, get(), set(a), label(x), cols(x), cur(), deletes, clear}
+   deletes: a record taken out of the list is a deletion (saved online as a small marker).
+   ============================================================ */
+function RowStore(c){
+  var R={c:c,sig:{},seen:{},dirty:{},since:'',busy:null,again:false,scanT:null,loaded:false,ready:Promise.resolve(),idb:true,db:null,wq:{},wt:null,lsk:{},tomb:{},warned:false};
+  var L=function(){ var a=c.get(); if(!a){ a=[]; c.set(a); } return a; };
+  var busyInput=function(){ return document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName); };
+  var full=function(){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online.':'free some space.')); STFULL=true; };
+  R.meta=function(){ try{ localStorage.setItem(c.mp+'seen',JSON.stringify(R.seen)); localStorage.setItem(c.mp+'dirty',JSON.stringify(R.dirty)); localStorage.setItem(c.mp+'since',R.since||''); }catch(e){} if(R.loaded) R.queue('__dirty',JSON.stringify({__dirty:R.dirty})); };
+  R.open=function(){ if(R.db) return R.db; R.db=new Promise(function(res,rej){ try{ if(!window.indexedDB) return rej(new Error('no indexedDB')); var rq=indexedDB.open(c.dbn,1);
+      rq.onupgradeneeded=function(){ try{ rq.result.createObjectStore(c.store); }catch(e){} }; rq.onsuccess=function(){ var db=rq.result; db.onversionchange=function(){ db.close(); }; res(db); };
+      rq.onerror=function(){ rej(rq.error||new Error('indexedDB')); }; rq.onblocked=function(){ rej(new Error('indexedDB blocked')); }; }catch(e){ rej(e); } }); return R.db; };
+  R.boot=function(){ if(c.clear) c.set([]); R.sig={}; R.tomb={}; R.loaded=false;
+    try{ R.seen=JSON.parse(localStorage.getItem(c.mp+'seen')||'{}')||{}; R.dirty=JSON.parse(localStorage.getItem(c.mp+'dirty')||'{}')||{}; R.since=localStorage.getItem(c.mp+'since')||''; }catch(e){ R.seen={}; R.dirty={}; R.since=''; }
+    var lk=[], ls={}, pl=c.ls.length; for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,pl)===c.ls) lk.push(k); } lk.forEach(function(k){ ls[k.slice(pl)]=localStorage.getItem(k); R.lsk[k.slice(pl)]=1; });
+    var slow=new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('indexedDB slow')); },6000); });
+    R.ready=Promise.race([R.open().then(function(db){ return new Promise(function(res,rej){ var rq=db.transaction(c.store,'readonly').objectStore(c.store).getAll(); rq.onsuccess=function(){ res(rq.result||[]); }; rq.onerror=function(){ rej(rq.error); }; }); }),slow])
+      .catch(function(){ R.idb=false; return []; })
+      .then(function(vals){ var by={}, arr=[], had={}, dl=function(v){ try{ var x=JSON.parse(v); if(x&&x.__dirty) Object.keys(x.__dirty).forEach(function(id){ R.dirty[id]=1; }); }catch(e){} };
+        vals.forEach(function(v){ try{ var f=JSON.parse(v); if(f&&f.__dirty) dl(v); else if(f&&f.id) by[f.id]=v; }catch(e){} });
+        Object.keys(ls).forEach(function(id){ if(id==='__dirty') dl(ls[id]); else if(ls[id]) by[id]=ls[id]; });   /* phone-storage copies are the newer ones */
+        Object.keys(by).forEach(function(id){ try{ var f=JSON.parse(by[id]); R.sig[f.id]=by[id]; had[f.id]=1; if(c.deletes&&f.del) R.tomb[f.id]=1; else arr.push(f); }catch(e){} });
+        /* records already in the list (made before loading, or older copies kept in the shared record) */
+        L().forEach(function(f){ if(f&&f.id&&!had[f.id]){ arr.push(f); had[f.id]=1; } }); c.set(arr);
+        /* copies the phone lost (storage cleared, slow start): forget we had them, so the next refresh downloads them again */
+        var gone=Object.keys(R.seen).filter(function(id){ return !had[id]; }); gone.forEach(function(id){ delete R.seen[id]; delete R.dirty[id]; }); Object.keys(R.dirty).forEach(function(id){ if(!had[id]) delete R.dirty[id]; });
+        if(gone.length) R.since=''; R.loaded=true; if(gone.length) R.meta();
+        if(R.idb&&lk.length){ Object.keys(ls).forEach(function(id){ if(by[id]) R.wq[id]=by[id]; }); R.flush(); }
+        R.scan();
+        if(c.after) c.after();
+        if(S.role&&!busyInput()) render(); });
+    return R.ready; };
+  R.queue=function(id,s){ R.wq[id]=s; if(!R.wt) R.wt=setTimeout(function(){ R.flush(); },0); };
+  R.flush=function(cb){ clearTimeout(R.wt); R.wt=null; var q=R.wq, ids=Object.keys(q); R.wq={}; if(!ids.length){ if(cb) cb(true); return; }
+    var done=false, toLs=function(){ if(done) return; done=true; ids.forEach(function(id){ try{ localStorage.setItem(c.ls+id,q[id]); R.lsk[id]=1; }catch(e){ full(); } }); if(cb) cb(false); };
+    if(!R.idb) return toLs();
+    R.open().then(function(db){ var tx=db.transaction(c.store,'readwrite'), st=tx.objectStore(c.store); ids.forEach(function(id){ st.put(q[id],id); });
+        tx.oncomplete=function(){ if(done) return; done=true; ids.forEach(function(id){ if(R.lsk[id]){ try{ if(localStorage.getItem(c.ls+id)===q[id]){ localStorage.removeItem(c.ls+id); delete R.lsk[id]; } }catch(e){} } }); if(cb) cb(true); };
+        tx.onerror=tx.onabort=function(){ R.idb=false; toLs(); }; }).catch(function(){ R.idb=false; toLs(); }); };
+  R.jot=function(id,s){ try{ localStorage.setItem(c.ls+id,s); R.lsk[id]=1; }catch(e){} };
+  R.keep=function(f){ var s=JSON.stringify(f); if(s===R.sig[f.id]) return false; R.sig[f.id]=s; R.dirty[f.id]=1; delete R.tomb[f.id]; R.queue(f.id,s); R.jot(f.id,s); return true; };
+  R.scan=function(){ if(!R.loaded) return false; var ch=false, here={}; L().forEach(function(f){ if(!f||!f.id) return; here[f.id]=1; if(R.keep(f)) ch=true; });
+    if(c.deletes){ var miss=Object.keys(R.sig).filter(function(id){ return !here[id]&&!R.tomb[id]; });
+      if(miss.length){ var known=Object.keys(R.sig).length-Object.keys(R.tomb).length;
+        if(miss.length>2||(!Object.keys(here).length&&known>1)){ /* several at once, or the whole list gone, is never a person deleting — put them back */ var a=L(); miss.forEach(function(id){ try{ a.push(JSON.parse(R.sig[id])); }catch(e){} }); if(!R.warned){ R.warned=true; try{ console.warn(c.name+': '+miss.length+' went missing from the list — kept them'); }catch(e){} } }
+        else miss.forEach(function(id){ var old={}; try{ old=JSON.parse(R.sig[id]); }catch(e){} var t=JSON.stringify({id:id,del:true,no:old.no,delOn:today()}); R.sig[id]=t; R.tomb[id]=1; R.dirty[id]=1; R.queue(id,t); R.jot(id,t); ch=true; }); } }
+    if(ch) R.meta(); return ch; };
+  R.touch=function(){ if(!R.loaded) return; var o=c.cur&&c.cur(); if(o&&o.id&&R.keep(o)) R.meta(); clearTimeout(R.scanT); R.scanT=setTimeout(function(){ R.scanT=null; R.scan(); },250); };
+  /* records seen in an older shared record: add the ones this phone does not know (never brings back deleted ones) */
+  R.legacy=function(arr){ if(!Array.isArray(arr)||!arr.length) return 0; var here={}, k=0; L().forEach(function(f){ if(f&&f.id) here[f.id]=1; });
+    arr.forEach(function(f){ if(f&&f.id&&!here[f.id]&&!R.sig[f.id]){ L().push(f); here[f.id]=1; k++; } }); if(k&&R.loaded) R.scan(); return k; };
+  var apply=function(rows,lostMsg){ var ch=0, lost=[], idx={}, dels={}, a=L(); a.forEach(function(f,i){ if(f&&f.id) idx[f.id]=i; });
+    rows.forEach(function(r){ var f=r.data; if(!f||!f.id) return; if(lostMsg&&R.dirty[r.id]&&R.seen[r.id]) lost.push(c.label(f)||r.id);
+      if(c.deletes&&f.del){ dels[f.id]=1; R.tomb[f.id]=1; } else { if(idx[f.id]!=null) a[idx[f.id]]=f; else { idx[f.id]=a.length; a.push(f); } delete R.tomb[f.id]; }
+      var s=JSON.stringify(f); R.sig[f.id]=s; R.queue(f.id,s); if(R.lsk[f.id]) R.jot(f.id,s); R.seen[f.id]=r.updated_at; delete R.dirty[f.id]; ch++; });
+    if(Object.keys(dels).length) c.set(a.filter(function(f){ return !(f&&dels[f.id]); }));
+    return {ch:ch,lost:lost}; };
+  /* ---- online: pull only what changed ---- */
+  R.pull=function(){ if(!R.loaded) return R.ready.then(function(){ return R.loaded?R.pull():null; }); if(!sbOn()||!SESS||R.busy) return Promise.resolve();
+    var since=R.since?new Date(new Date(R.since).getTime()-60000).toISOString():'', top='', first=!Object.keys(R.seen).length;
+    var chk=function(r){ if(r.status===404){ R.missing=true; return []; } R.missing=false; if(!r.ok) throw new Error(c.name+' '+r.status); return r.json(); };   /* 404: the table is missing online — shown to the admin */
+    var page=function(sel,lim){ var got=[]; var step=function(off){ return fetch(sbUrl('/rest/v1/'+c.table+'?select='+sel+(since?'&updated_at=gt.'+encodeURIComponent(since):'')+'&order=updated_at.asc&limit='+lim+'&offset='+off),{headers:sbHeaders()}).then(chk).then(function(rows){ got=got.concat(rows||[]); return rows&&rows.length===lim?step(off+lim):got; }); }; return step(0); };
+    var byIds=function(ids){ var out=[], k=0, next=function(){ if(k>=ids.length) return Promise.resolve(out); var ch=ids.slice(k,k+150); k+=150; return fetch(sbUrl('/rest/v1/'+c.table+'?select=id,data,updated_at&id=in.('+ch.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(chk).then(function(rows){ out=out.concat(rows||[]); return next(); }); }; return next(); };
+    /* first time on a phone: everything in pages; after that: a short list of (id, time), then only what changed */
+    return sbRefresh().then(function(){ if(first) return page('id,data,updated_at',500);
+        return page('id,updated_at',1000).then(function(list){ var need=[]; list.forEach(function(r){ if(!top||r.updated_at>top) top=r.updated_at; if(R.seen[r.id]!==r.updated_at) need.push(r.id); }); return need.length?byIds(need):[]; }); })
+      .then(function(rows){ R.okAt=Date.now(); rows=rows.filter(function(r){ if(!R.since||r.updated_at>R.since) R.since=r.updated_at; return R.seen[r.id]!==r.updated_at; });
+        var res=apply(rows,true);
+        if(top&&(!R.since||top>R.since)) R.since=top; R.meta(); if(res.lost.length) toast('⚠ '+c.word+' '+res.lost.slice(0,3).join(', ')+(res.lost.length>3?'…':'')+' was changed on another phone — loaded the latest. Check your last change.');
+        if(res.ch&&!busyInput()) render(); }); };
+  /* ---- online: push only changed records ---- */
+  R.push=function(){ if(!R.loaded) return R.ready.then(function(){ return R.loaded?R.push():null; }); if(!sbOn()||!SESS) return Promise.resolve(); if(R.busy){ R.again=true; return R.busy; }
+    var ids=Object.keys(R.dirty); if(!ids.length) return Promise.resolve(); var byF={}; L().forEach(function(f){ if(f&&f.id) byF[f.id]=f; });
+    var body=function(id){ if(R.tomb[id]) return R.sig[id]||null; return byF[id]?JSON.stringify(byF[id]):null; };
+    var cols=function(id){ if(!c.cols) return ''; var x=byF[id]; if(!x){ try{ x=JSON.parse(R.sig[id]||'{}'); }catch(e){ x={}; } } return c.cols(x); };
+    ids=ids.filter(function(id){ return body(id); });
+    var sent={}, conflicts=[], fresh=ids.filter(function(id){return !R.seen[id];}), old=ids.filter(function(id){return R.seen[id];});
+    var done=function(id,ts){ R.seen[id]=ts; if(R.sig[id]===sent[id]) delete R.dirty[id]; };
+    var insert=function(chunk){ chunk.forEach(function(id){ sent[id]=body(id); });
+      return fetch(sbUrl('/rest/v1/'+c.table),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=representation'}),body:'['+chunk.map(function(id){ return '{"id":'+JSON.stringify(id)+','+cols(id)+'"data":'+sent[id]+'}'; }).join(',')+']'})
+        .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error(c.name+' save '+r.status); var got={}; (rows||[]).forEach(function(x){ got[x.id]=1; done(x.id,x.updated_at); });
+          var miss=chunk.filter(function(id){ return !got[id]; }); if(!miss.length) return;
+          return fetch(sbUrl('/rest/v1/'+c.table+'?select=id,updated_at&id=in.('+miss.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r2){ if(!r2.ok) throw new Error(c.name+' check '+r2.status); return r2.json(); })
+            .then(function(ex){ (ex||[]).forEach(function(x){ R.seen[x.id]=x.updated_at; q.push(x.id); }); }); }); }); };
+    var update=function(id){ sent[id]=body(id);
+      return fetch(sbUrl('/rest/v1/'+c.table+'?id=eq.'+encodeURIComponent(id)+'&updated_at=eq.'+encodeURIComponent(R.seen[id])),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:'{'+cols(id)+'"data":'+sent[id]+'}'})
+        .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error(c.name+' save '+r.status); if(rows&&rows.length) done(id,rows[0].updated_at); else conflicts.push(id); }); }); };
+    var chain=Promise.resolve(); for(var i=0;i<fresh.length;i+=100){ (function(ch){ chain=chain.then(function(){ return insert(ch); }); })(fresh.slice(i,i+100)); }
+    var q=old.slice(), worker=function(){ var id=q.shift(); return id?update(id).then(worker):Promise.resolve(); };
+    R.busy=sbRefresh().then(function(){ return chain; }).then(function(){ return Promise.all([worker(),worker(),worker(),worker()]); })
+      .then(function(){ if(!conflicts.length) return; return fetch(sbUrl('/rest/v1/'+c.table+'?select=id,data,updated_at&id=in.('+conflicts.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error(c.name+' load '+r.status); return r.json(); }).then(function(rows){ var back={};
+          (rows||[]).forEach(function(x){ back[x.id]=1; }); var res=apply(rows||[],false), nm=(rows||[]).map(function(x){ return c.label(x.data||{})||x.id; });
+          conflicts.forEach(function(id){ if(!back[id]){ delete R.seen[id]; R.again=true; } });
+          if(nm.length){ toast('⚠ '+c.word+' '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+' was saved first on another phone — loaded theirs. Please redo your last change there.'); render(); } }); })
+      .then(function(){ R.meta(); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); },function(e){ R.meta(); setSync('Offline — '+c.name+' saved on this device ('+(e&&e.message||'')+')'); })
+      .then(function(){ R.busy=null; if(R.again){ R.again=false; return R.push(); } });
+    return R.busy; };
+  R.unsent=function(){ return Object.keys(R.dirty).length; };
+  return R; }
+var ROWSTORES=[];
+function rowsAway(){ ROWSTORES.forEach(function(R){ if(R.loaded){ R.scan(); R.flush(); } }); }
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') rowsAway(); });
+window.addEventListener('pagehide',rowsAway);
+
+/* ============================================================
    APARTMENT PROJECTS — each flat is its own order (owner pays separately, measured flat by flat).
    Flats live outside the main record: on the device in IndexedDB (big quota — an 800-flat site
    would not fit in the 5 MB phone storage, iPhones allow only ~2.5 M characters there),
    one row per flat online (shop_flats), so a change sends only that flat.
    ============================================================ */
-var FL={sig:{},seen:{},dirty:{},since:'',busy:null,again:false,scanT:null,loaded:false,ready:Promise.resolve(),idb:true,db:null,wq:{},wt:null,lsk:{}};
-var MAINJ='', MAINSENT=null;
+var MAINJ='', MAINSENT=(function(){ try{ return localStorage.getItem('wbase'); }catch(e){ return null; } })();
 function liveFlats(){ return (D.flats||[]).filter(function(f){return !f.del;}); }
 function allOrders(){ return D.orders.concat(liveFlats()); }
 function flatById(id){ var a=D.flats||[]; for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null; }
 function projById(id){ return (D.projects||[]).filter(function(p){return p.id===id;})[0]; }
 function projFlats(pid){ return liveFlats().filter(function(f){return f.proj===pid;}); }
 function typeById(id){ var ps=D.projects||[]; for(var i=0;i<ps.length;i++){ var t=(ps[i].types||[]).filter(function(x){return x.id===id;})[0]; if(t) return t; } return null; }
-/* ---- device storage ---- */
-function flatsMeta(){ try{ localStorage.setItem('wfseen',JSON.stringify(FL.seen)); localStorage.setItem('wfdirty',JSON.stringify(FL.dirty)); localStorage.setItem('wfsince',FL.since||''); }catch(e){} if(FL.loaded) flatsQueue('__dirty',JSON.stringify({__dirty:FL.dirty})); }
-function fdbOpen(){ if(FL.db) return FL.db; FL.db=new Promise(function(res,rej){ try{ if(!window.indexedDB) return rej(new Error('no indexedDB')); var rq=indexedDB.open('wshop-flats',1);
-    rq.onupgradeneeded=function(){ try{ rq.result.createObjectStore('flats'); }catch(e){} }; rq.onsuccess=function(){ var db=rq.result; db.onversionchange=function(){ db.close(); }; res(db); };
-    rq.onerror=function(){ rej(rq.error||new Error('indexedDB')); }; rq.onblocked=function(){ rej(new Error('indexedDB blocked')); }; }catch(e){ rej(e); } }); return FL.db; }
-function flatsStFull(){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online.':'free some space.')); STFULL=true; }
-function flatsBoot(){ D.flats=[]; FL.sig={}; FL.loaded=false; try{ FL.seen=JSON.parse(localStorage.getItem('wfseen')||'{}')||{}; FL.dirty=JSON.parse(localStorage.getItem('wfdirty')||'{}')||{}; FL.since=localStorage.getItem('wfsince')||''; }catch(e){ FL.seen={}; FL.dirty={}; FL.since=''; }
-  var lk=[], ls={}; for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,3)==='wf:') lk.push(k); } lk.forEach(function(k){ ls[k.slice(3)]=localStorage.getItem(k); FL.lsk[k.slice(3)]=1; });
-  var slow=new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('indexedDB slow')); },6000); });
-  FL.ready=Promise.race([fdbOpen().then(function(db){ return new Promise(function(res,rej){ var rq=db.transaction('flats','readonly').objectStore('flats').getAll(); rq.onsuccess=function(){ res(rq.result||[]); }; rq.onerror=function(){ rej(rq.error); }; }); }),slow])
-    .catch(function(){ FL.idb=false; return []; })
-    .then(function(vals){ var by={}, arr=[], had={}, dl=function(v){ try{ var x=JSON.parse(v); if(x&&x.__dirty) Object.keys(x.__dirty).forEach(function(id){ FL.dirty[id]=1; }); }catch(e){} };
-      vals.forEach(function(v){ try{ var f=JSON.parse(v); if(f&&f.__dirty) dl(v); else if(f&&f.id) by[f.id]=v; }catch(e){} });
-      Object.keys(ls).forEach(function(id){ if(id==='__dirty') dl(ls[id]); else if(ls[id]) by[id]=ls[id]; });   /* phone-storage copies are the newer ones */
-      Object.keys(by).forEach(function(id){ try{ var f=JSON.parse(by[id]); arr.push(f); FL.sig[f.id]=by[id]; had[f.id]=1; }catch(e){} });
-      (D.flats||[]).forEach(function(f){ if(!had[f.id]){ arr.push(f); had[f.id]=1; } }); D.flats=arr;
-      /* copies the phone lost (storage cleared, slow start): forget we had them, so the next refresh downloads them again */
-      var gone=Object.keys(FL.seen).filter(function(id){ return !had[id]; }); gone.forEach(function(id){ delete FL.seen[id]; delete FL.dirty[id]; }); Object.keys(FL.dirty).forEach(function(id){ if(!had[id]) delete FL.dirty[id]; });
-      if(gone.length) FL.since=''; FL.loaded=true; if(gone.length) flatsMeta();
-      if(FL.idb&&lk.length){ Object.keys(ls).forEach(function(id){ if(by[id]) FL.wq[id]=by[id]; }); flatsFlush(); }
-      if(S.role&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) render(); }); }
-function flatsQueue(id,s){ FL.wq[id]=s; if(!FL.wt) FL.wt=setTimeout(function(){ flatsFlush(); },0); }
-function flatsFlush(cb){ clearTimeout(FL.wt); FL.wt=null; var q=FL.wq, ids=Object.keys(q); FL.wq={}; if(!ids.length){ if(cb) cb(true); return; }
-  var done=false, toLs=function(){ if(done) return; done=true; ids.forEach(function(id){ try{ localStorage.setItem('wf:'+id,q[id]); FL.lsk[id]=1; }catch(e){ flatsStFull(); } }); if(cb) cb(false); };
-  if(!FL.idb) return toLs();
-  fdbOpen().then(function(db){ var tx=db.transaction('flats','readwrite'), st=tx.objectStore('flats'); ids.forEach(function(id){ st.put(q[id],id); });
-      tx.oncomplete=function(){ if(done) return; done=true; ids.forEach(function(id){ if(FL.lsk[id]){ delete FL.lsk[id]; try{ localStorage.removeItem('wf:'+id); }catch(e){} } }); if(cb) cb(true); };
-      tx.onerror=tx.onabort=function(){ FL.idb=false; toLs(); }; }).catch(function(){ FL.idb=false; toLs(); }); }
-function flatKeep(f){ var s=JSON.stringify(f); if(s===FL.sig[f.id]) return false; FL.sig[f.id]=s; FL.dirty[f.id]=1; flatsQueue(f.id,s); return true; }
-function flatsScan(){ if(!FL.loaded) return false; var ch=false; (D.flats||[]).forEach(function(f){ if(flatKeep(f)) ch=true; }); if(ch) flatsMeta(); return ch; }
-function flatsTouch(){ if(!FL.loaded) return; var o=S.oid&&flatById(S.oid); if(o&&flatKeep(o)) flatsMeta(); clearTimeout(FL.scanT); FL.scanT=setTimeout(function(){ FL.scanT=null; flatsScan(); },250); }
-document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden'&&D&&D.flats&&FL.loaded){ flatsScan(); flatsFlush(); } });
-/* ---- online: pull only what changed, push only changed flats ---- */
-function flatsPull(){ if(!FL.loaded) return FL.ready.then(function(){ return FL.loaded?flatsPull():null; }); if(!sbOn()||!SESS||FL.busy) return Promise.resolve();
-  var since=FL.since?new Date(new Date(FL.since).getTime()-60000).toISOString():'', top='', first=!Object.keys(FL.seen).length;
-  var chk=function(r){ if(r.status===404) return []; if(!r.ok) throw new Error('flats '+r.status); return r.json(); };
-  var page=function(sel,lim){ var got=[]; var step=function(off){ return fetch(sbUrl('/rest/v1/shop_flats?select='+sel+(since?'&updated_at=gt.'+encodeURIComponent(since):'')+'&order=updated_at.asc&limit='+lim+'&offset='+off),{headers:sbHeaders()}).then(chk).then(function(rows){ got=got.concat(rows||[]); return rows&&rows.length===lim?step(off+lim):got; }); }; return step(0); };
-  var byIds=function(ids){ var out=[], k=0, next=function(){ if(k>=ids.length) return Promise.resolve(out); var ch=ids.slice(k,k+150); k+=150; return fetch(sbUrl('/rest/v1/shop_flats?select=id,data,updated_at&id=in.('+ch.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(chk).then(function(rows){ out=out.concat(rows||[]); return next(); }); }; return next(); };
-  /* first time on a phone: everything in pages; after that: a short list of (id, time), then only the flats that changed */
-  return sbRefresh().then(function(){ if(first) return page('id,data,updated_at',500);
-      return page('id,updated_at',1000).then(function(list){ var need=[]; list.forEach(function(r){ if(!top||r.updated_at>top) top=r.updated_at; if(FL.seen[r.id]!==r.updated_at) need.push(r.id); }); return need.length?byIds(need):[]; }); })
-    .then(function(rows){ var ch=0, lost=[], idx={}; D.flats.forEach(function(f,i){ idx[f.id]=i; });
-    rows.forEach(function(r){ if(!FL.since||r.updated_at>FL.since) FL.since=r.updated_at; if(FL.seen[r.id]===r.updated_at) return; var f=r.data; if(!f||!f.id) return;
-      if(FL.dirty[r.id]&&FL.seen[r.id]) lost.push(f.no||r.id);
-      if(idx[f.id]!=null) D.flats[idx[f.id]]=f; else { idx[f.id]=D.flats.length; D.flats.push(f); }
-      var s=JSON.stringify(f); FL.sig[f.id]=s; flatsQueue(f.id,s); FL.seen[f.id]=r.updated_at; delete FL.dirty[f.id]; ch++; });
-    if(top&&(!FL.since||top>FL.since)) FL.since=top; flatsMeta(); if(lost.length) toast('⚠ Flat '+lost.slice(0,3).join(', ')+(lost.length>3?'…':'')+' was changed on another phone — loaded the latest. Check your last change.');
-    if(ch&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) render(); }); }
-function flatsPush(){ if(!FL.loaded) return FL.ready.then(function(){ return FL.loaded?flatsPush():null; }); if(!sbOn()||!SESS) return Promise.resolve(); if(FL.busy){ FL.again=true; return FL.busy; }
-  var ids=Object.keys(FL.dirty); if(!ids.length) return Promise.resolve(); var byF={}; (D.flats||[]).forEach(function(f){ byF[f.id]=f; }); ids=ids.filter(function(id){ return byF[id]; });
-  var sent={}, conflicts=[], fresh=ids.filter(function(id){return !FL.seen[id];}), old=ids.filter(function(id){return FL.seen[id];});
-  var done=function(id,ts){ FL.seen[id]=ts; if(FL.sig[id]===sent[id]) delete FL.dirty[id]; };
-  var insert=function(chunk){ chunk.forEach(function(id){ sent[id]=JSON.stringify(byF[id]); });
-    return fetch(sbUrl('/rest/v1/shop_flats'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=representation'}),body:'['+chunk.map(function(id){ return '{"id":'+JSON.stringify(id)+',"proj":'+JSON.stringify(byF[id].proj||'')+',"data":'+sent[id]+'}'; }).join(',')+']'})
-      .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('flats save '+r.status); var got={}; (rows||[]).forEach(function(x){ got[x.id]=1; done(x.id,x.updated_at); });
-        var miss=chunk.filter(function(id){ return !got[id]; }); if(!miss.length) return;
-        return fetch(sbUrl('/rest/v1/shop_flats?select=id,updated_at&id=in.('+miss.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r2){ if(!r2.ok) throw new Error('flats check '+r2.status); return r2.json(); })
-          .then(function(ex){ (ex||[]).forEach(function(x){ FL.seen[x.id]=x.updated_at; q.push(x.id); }); }); }); }); };
-  var update=function(id){ sent[id]=JSON.stringify(byF[id]);
-    return fetch(sbUrl('/rest/v1/shop_flats?id=eq.'+encodeURIComponent(id)+'&updated_at=eq.'+encodeURIComponent(FL.seen[id])),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:'{"proj":'+JSON.stringify(byF[id].proj||'')+',"data":'+sent[id]+'}'})
-      .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error('flats save '+r.status); if(rows&&rows.length) done(id,rows[0].updated_at); else conflicts.push(id); }); }); };
-  var chain=Promise.resolve(); for(var i=0;i<fresh.length;i+=100){ (function(ch){ chain=chain.then(function(){ return insert(ch); }); })(fresh.slice(i,i+100)); }
-  var q=old.slice(), worker=function(){ var id=q.shift(); return id?update(id).then(worker):Promise.resolve(); };
-  FL.busy=sbRefresh().then(function(){ return chain; }).then(function(){ return Promise.all([worker(),worker(),worker(),worker()]); })
-    .then(function(){ if(!conflicts.length) return; return fetch(sbUrl('/rest/v1/shop_flats?select=id,data,updated_at&id=in.('+conflicts.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error('flats load '+r.status); return r.json(); }).then(function(rows){ var nm=[], back={};
-        (rows||[]).forEach(function(x){ back[x.id]=1; var i=D.flats.findIndex(function(f){return f.id===x.id;}); if(i>=0) D.flats[i]=x.data; var s=JSON.stringify(x.data); FL.sig[x.id]=s; flatsQueue(x.id,s); FL.seen[x.id]=x.updated_at; delete FL.dirty[x.id]; nm.push(x.data.no||x.id); });
-        conflicts.forEach(function(id){ if(!back[id]){ delete FL.seen[id]; FL.again=true; } });
-        if(nm.length){ toast('⚠ Flat '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+' was saved first on another phone — loaded theirs. Please redo your last change there.'); render(); } }); })
-    .then(function(){ flatsMeta(); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); },function(e){ flatsMeta(); setSync('Offline — flats saved on this device ('+(e&&e.message||'')+')'); })
-    .then(function(){ FL.busy=null; if(FL.again){ FL.again=false; return flatsPush(); } });
-  return FL.busy; }
+/* ---- flats: one record per row (IndexedDB on the phone, shop_flats online) ---- */
+var FLS=RowStore({name:'flats',word:'Flat',table:'shop_flats',dbn:'wshop-flats',store:'flats',ls:'wf:',mp:'wf',clear:true,
+  get:function(){ return D.flats; }, set:function(a){ D.flats=a; }, label:function(x){ return x.no; }, cols:function(x){ return '"proj":'+JSON.stringify(x.proj||'')+','; },
+  cur:function(){ return S.oid&&flatById(S.oid); }});
+var FL=FLS; ROWSTORES.push(FLS);
+function flatsMeta(){ FLS.meta(); } function fdbOpen(){ return FLS.open(); } function flatsBoot(){ return FLS.boot(); }
+function flatsQueue(id,s){ FLS.queue(id,s); } function flatsFlush(cb){ FLS.flush(cb); } function flatKeep(f){ return FLS.keep(f); }
+function flatsScan(){ return FLS.scan(); } function flatsTouch(){ FLS.touch(); } function flatsPull(){ return FLS.pull(); } function flatsPush(){ return FLS.push(); }
 function mainFetch(force){ var full=function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=data,updated_at'),{headers:sbHeaders()}); };
   if(force||!LASTSEEN) return full();
   return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=updated_at'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) return r; return r.json().then(function(rows){ if(rows&&rows[0]&&rows[0].updated_at===LASTSEEN) return {status:200,ok:true,json:function(){ return Promise.resolve([{data:{__same:1},updated_at:LASTSEEN}]); }}; return full(); }); }); }
@@ -1593,7 +1658,7 @@ function statPop(ids){ var fl=ids.map(flatById), opts=prod()?STOPT.filter(functi
   pjPop('Set status — '+ids.length+' flat'+(ids.length>1?'s':''),'<div class="stlist">'+opts.map(function(x){ var now=fl.filter(function(f){return Math.min(4,f.stage)===x[0];}).length; return '<label class="chk stopt"><input type="radio" name="pjst" value="'+x[0]+'"'+(x[0]===(prod()?3:1)?' checked':'')+'><span><b>'+x[1]+'</b>'+(x[2]?' <small class="faint">— '+x[2]+'</small>':'')+(now?' <small class="faint">· '+now+' now</small>':'')+'</span></label>'; }).join('')+'</div><p class="faint" style="margin:6px 0 0">Material is taken from stock once per flat, when it goes into production.</p>',
     '<button class="btn primary" data-act="pjstatset">Apply to '+ids.length+' flat'+(ids.length>1?'s':'')+'</button>'); }
 function setFlatStage(f,st){ var took=0; st=Math.max(0,Math.min(4,st));
-  if(st>=1&&!f.confirmedOn) f.confirmedOn=today(); if(st===0) delete f.confirmedOn;
+  if(st>=1&&!f.confirmedOn) f.confirmedOn=today(); if(st===0) delete f.confirmedOn; if(st>=1) lockRates(f); else unlockRates(f);
   if(st>=2&&!f.consumed){ if(consumeOrder(f)) took=1; }
   if(st>=3) f.items.forEach(function(i){ i.made=true; }); else if(st<=1&&f.stage>=2) f.items.forEach(function(i){ i.made=false; });
   if(st===4){ if(!f.deliveredOn) f.deliveredOn=today(); } else delete f.deliveredOn;
@@ -1731,7 +1796,7 @@ function pjAddFlats(p){ if(!FL.loaded){ toast('Loading flats… try again in a m
   if((p.types||[]).length>1){ p.fplan=[]; for(var k=0;k<a.n;k++) p.fplan[k]=faTypeAt(p,a,k).id; S.fa_pt=p.fplan.slice(); }
   S.fa_t=a.t; S.fa_ty=a.ty; S.fa_f1=a.f2+1; S.fa_f2=a.f2+1+(a.f2-a.f1); S.fa_n=a.n; S.fa_u=a.u; S.padd=false; save(); render(); toast(added+' flats added'); }
 /* put flats into a batch: in production, material taken from stock once per flat */
-function pjIntoBatch(p,b,fl){ fl.forEach(function(f){ var o=f.batch&&batchById(f.batch); if(o&&o.b!==b) o.b.flats=o.b.flats.filter(function(x){return x!==f.id;}); f.batch=b.id; if(b.flats.indexOf(f.id)<0) b.flats.push(f.id); if(f.stage<2){ if(!f.confirmedOn) f.confirmedOn=today(); f.stage=2; } });
+function pjIntoBatch(p,b,fl){ fl.forEach(function(f){ var o=f.batch&&batchById(f.batch); if(o&&o.b!==b) o.b.flats=o.b.flats.filter(function(x){return x!==f.id;}); f.batch=b.id; if(b.flats.indexOf(f.id)<0) b.flats.push(f.id); if(f.stage<2){ if(!f.confirmedOn) f.confirmedOn=today(); f.stage=2; } lockRates(f); });
   var toTake=fl.filter(function(f){return !f.consumed;}), took=0; if(toTake.length){ var po={id:'B:'+b.id,kind:'windows',no:b.name,customer:p.name,items:[],payments:[],discount:0,consumed:false}; toTake.forEach(function(f){ f.items.forEach(function(it){ po.items.push(Object.assign({},it,{loc:f.no+(it.loc?' '+it.loc:'')})); }); }); took=consumeOrder(po); toTake.forEach(function(f){ f.consumed=true; }); } return took; }
 function pjMakeBatch(p){ var fl=pjSelIds().map(flatById); if(!fl.length) return;
   var busy=fl.filter(function(f){ return f.batch&&batchById(f.batch); }); if(busy.length&&!confirm(busy.length+' of these flats are already in another batch ('+busy.slice(0,4).map(function(f){return f.no;}).join(', ')+(busy.length>4?'…':'')+'). Move them to the new batch?')) return;
@@ -1849,11 +1914,12 @@ function nestRows(r){ return '<table><tbody>'+nestGroups(r).map(function(g){ var
       return '<tr><td style="white-space:nowrap;width:76px;vertical-align:top;padding-top:10px"><b'+(bar.off?' style="color:var(--good)"':'')+'>'+g.name+'</b>'+(c>1&&!bar.off?'<div class="faint">'+c+(r.two?' pairs':' bars')+' alike</div>':'')+(r.two?'<div class="faint">together</div>':'')+(bar.off?'<div class="faint">from rack</div>':'')+'</td><td>'+barSvg(bar,r.rule)+(r.two?'<div style="margin-top:3px;opacity:.55">'+barSvg(bar,r.rule)+'</div>':'')+'<div class="faint" style="margin-top:2px">'+(c>1?'<b>each bar:</b> '+bar.pieces.map(function(p){return p.len;}).join(' · ')+' <small>— for '+labs.slice(0,14).map(esc).join(', ')+(labs.length>14?' … +'+(labs.length-14)+' more':'')+'</small>':bar.pieces.map(function(p){return p.len+' <small>('+esc(p.lab.trim())+')</small>';}).join(' · '))+(r.two?' · <small>each ×2</small>':'')+'</div></td><td class="num faint" style="white-space:nowrap;vertical-align:top;padding-top:10px">waste '+bar.waste+(c>1?' each':'')+'</td></tr>';}).join('')+'</tbody></table>'; }
 function nestGroups(r){ var gs=[], bi=0; r.nest.forEach(function(bar){ var key=(bar.off?"o"+bar.cap:"b")+"|"+bar.pieces.map(function(p){return p.len;}).join(","), g=gs[gs.length-1]; if(g&&g.key===key){ g.n++; bar.pieces.forEach(function(p){ var l=p.lab.split(" ")[0]; if(g.labs.indexOf(l)<0) g.labs.push(l); }); } else gs.push({key:key,bar:bar,n:1,labs:bar.pieces.map(function(p){return p.lab.split(" ")[0];}).filter(function(v,i,a){return a.indexOf(v)===i;})}); });
   gs.forEach(function(g){ if(g.bar.off){ g.name="Offcut "+g.bar.cap+(g.n>1?" ×"+g.n:""); return; } var a=bi+1, z=bi+g.n; g.name=r.two?(g.n>1?"Bars "+(2*a-1)+"–"+(2*z):"Bars "+(2*a-1)+"+"+(2*a)):(g.n>1?"Bars "+a+"–"+z:"Bar "+a); bi+=g.n; }); return gs; }
-function viewOrder(){ var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
+function viewOrder(){ if(S.oid&&!byId(S.oid)&&typeof ORS!=='undefined'&&(!ORS.loaded||!FL.loaded)) return '<div class="card"><div class="faint">Loading…</div></div>'; var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
   var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o); var h=viewOrder0();
   if(o&&o.proj){ h=flatTop(o)+h.replace('<button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>','').replace('>Customer</button>','>Owner</button>').replace('>Delete this order</button>','>🗑 Delete this flat</button>').replace('id="oh">#'+esc(o.no)+' · New order</h2>','id="oh">Flat '+esc(o.no)+'</h2>').replace('id="oh">#','id="oh">Flat ').replace(/Customer said yes/g,'Owner said yes').replace('<span>Customer name</span>','<span>Owner name</span>'); } return h; }
 var MATC=null; function material(o){ if(MATC&&MATC.o===o) return MATC.M; var M=material0(o); MATC={o:o,M:M}; setTimeout(function(){ MATC=null; },0); return M; }
 flatsBoot();
+if(!(D.sb&&D.sb.url&&D.sb.key)) FL.ready.then(function(){ lockOldSoon(); });
 
 
 /* ============================================================
@@ -1887,6 +1953,325 @@ function geoFill(o,btn){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); geoBu
         o.geoAddr=o.address; o.geoSrc=a.src; if(a.pin) o.pin=a.pin; save(); geoBusy(btn,false); render(); toast(a.pin?'📍 Site address updated · PIN '+a.pin:'📍 Address filled — PIN not found, please type it'); },
       function(){ geoBusy(btn,false); render(); toast('📍 Map location saved. Address not found (no internet?) — please type it.'); }); },
     function(e){ geoBusy(btn,false); toast('⚠ '+e.message); }); }
+
+
+/* ============================================================
+   PRICE LOCK — when the customer / owner says yes, the rates used by that job are copied onto it.
+   Changing rates, costs or GST in Settings later only changes enquiries and new jobs.
+   ============================================================ */
+function lkVal(o,brand,k,t,sr){ var L=o&&o.rlock, e=L&&L.b&&L.b[brand||''], v=e&&e[k]&&e[k][t]?e[k][t][sr]:undefined; if(v!=null) return v; var B=brandOf(brand); return ((B[k]||{})[t]||{})[sr]; }
+function lkDoor(o,brand,t){ var L=o&&o.rlock, e=L&&L.b&&L.b[brand||''], v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; return (brandOf(brand).doorCost||{})[t]; }
+function lockRates(o,force){ if(!o||o.tpl||o.del||(o.rlock&&!force)) return false; var b={};
+  (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), e=b[nm]||(b[nm]={rate:{},cost:{},doorCost:{}});
+    if(o.kind==='doors'){ e.doorCost[it.type]=(B.doorCost||{})[it.type]; return; }
+    (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (e.rate[t]=e.rate[t]||{})[it.series]=((B.rate||{})[t]||{})[it.series]; (e.cost[t]=e.cost[t]||{})[it.series]=((B.cost||{})[t]||{})[it.series]; }); });
+  var L={on:today(),b:b}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=n(D.gstPct); L.gst=1; } o.rlock=L; return true; }
+function unlockRates(o){ if(!o||!o.rlock) return; if(o.rlock.gst) delete o.gstPct; delete o.rlock; }
+function lockLine(o){ if(!o||o.tpl||!o.rlock) return ''; return '<div class="lockl">🔒 Prices locked at the rates of <b>'+dShort(o.rlock.on)+'</b> — later rate changes don\'t change this bill.'+(admin()?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':'')+'</div>'; }
+/* jobs confirmed before this version: lock them once, on one phone only (it claims the job through the shared record) */
+var RLDEV=(function(){ try{ var v=localStorage.getItem('wdev'); if(!v){ v=Math.random().toString(36).slice(2,10); localStorage.setItem('wdev',v); } return v; }catch(e){ return 'x'; } })();
+function lockOld(){ if(D.rlockv&&D.rlockv.done) return; if(!D.rlockv){ D.rlockv={by:RLDEV,on:today()}; save(); }
+  if(D.rlockv.by!==RLDEV) return; var k=0; D.orders.forEach(function(o){ if(o.stage>=1&&lockRates(o)) k++; }); (D.flats||[]).forEach(function(f){ if(!f.del&&f.stage>=1&&lockRates(f)) k++; });
+  D.rlockv.done=today(); D.rlockv.n=k; save(); }
+var PULLOK=false, MAINNONE=false; function lockOldSoon(){ if(!FL.loaded) return FL.ready.then(lockOldSoon); if(typeof ORS!=='undefined'&&!ORS.loaded) return ORS.ready.then(lockOldSoon); if(sbOn()&&SESS&&!PULLOK) return; lockOld(); }
+function allJobs(){ var a=D.orders.slice(); (D.flats||[]).forEach(function(f){ if(!f.del) a.push(f); }); (D.projects||[]).forEach(function(p){ (p.types||[]).forEach(function(t){ a.push(t); }); }); return a; }
+
+
+/* ============================================================
+   ORDERS — one record per row (IndexedDB on the phone, shop_orders online).
+   Older phones may still have orders inside the shared record: they are taken over once.
+   ============================================================ */
+var ORS=RowStore({name:'orders',word:'Order',table:'shop_orders',dbn:'wshop-orders',store:'orders',ls:'wo:',mp:'wo',deletes:true,
+  get:function(){ return D.orders; }, set:function(a){ D.orders=a; }, label:function(x){ return '#'+x.no; },
+  cur:function(){ if(!S.oid) return null; for(var i=0;i<D.orders.length;i++) if(D.orders[i].id===S.oid) return D.orders[i]; return null; }});
+ROWSTORES.push(ORS);
+/* ---- the shared record: when another phone saved first, merge both changes ---- */
+function setBase(j){ MAINSENT=j; try{ if(j==null) localStorage.removeItem('wbase'); else localStorage.setItem('wbase',j); }catch(e){} }
+function mJ(x){ return x===undefined?'\u0000u':JSON.stringify(x); }
+function isObj(x){ return !!x&&typeof x==='object'&&!Array.isArray(x); }
+function mergeArr(b,l,s){
+  var ids=function(a){ return a.length&&a.every(function(x){ return isObj(x)&&x.id!=null; }); };
+  if((!b.length||ids(b))&&ids(l)&&ids(s)){ var by=function(a){ var m={}; a.forEach(function(x){ m[x.id]=x; }); return m; }, mb=by(b), ml=by(l), ms=by(s), out=[], done={};
+    s.forEach(function(x){ done[x.id]=1; if(mb[x.id]&&!ml[x.id]){ if(mJ(mb[x.id])!==mJ(x)) out.push(x); return; } out.push(ml[x.id]?merge3(mb[x.id],ml[x.id],x,''):x); });
+    l.forEach(function(x){ if(done[x.id]) return; if(mb[x.id]&&!ms[x.id]){ if(mJ(mb[x.id])!==mJ(x)) out.push(x); return; } out.push(x); });
+    return out; }
+  var cnt=function(a){ var m={}; a.forEach(function(x){ var j=mJ(x); m[j]=(m[j]||0)+1; }); return m; }, cb=cnt(b), cl=cnt(l), cs=cnt(s), want={}, used={}, out2=[];
+  Object.keys(cs).concat(Object.keys(cl)).forEach(function(j){ if(want[j]==null) want[j]=Math.max(0,(cs[j]||0)+(cl[j]||0)-(cb[j]||0)); });
+  s.forEach(function(x){ var j=mJ(x); if((used[j]||0)<want[j]){ out2.push(x); used[j]=(used[j]||0)+1; } });
+  l.forEach(function(x){ var j=mJ(x); if((used[j]||0)<want[j]){ out2.push(x); used[j]=(used[j]||0)+1; } });
+  return out2; }
+/* three-way merge: b = last copy both phones had, l = this phone, s = online now */
+function merge3(b,l,s,k){ var jb=mJ(b), jl=mJ(l), js=mJ(s);
+  if(jl===jb) return s; if(js===jb||jl===js) return l;
+  if(Array.isArray(l)&&Array.isArray(s)&&(b===undefined||Array.isArray(b))) return mergeArr(b||[],l,s);
+  if(isObj(l)&&isObj(s)&&(b===undefined||isObj(b))){ var o={}, seen={}, ks=[]; [s,l,b||{}].forEach(function(x){ Object.keys(x).forEach(function(kk){ if(!seen[kk]){ seen[kk]=1; ks.push(kk); } }); });
+    ks.forEach(function(kk){ var v=merge3(b?b[kk]:undefined,l[kk],s[kk],kk); if(v!==undefined) o[kk]=v; }); return o; }
+  /* both changed one number that counts things (stock qty, order / voucher numbers): add both changes */
+  if(typeof l==='number'&&typeof s==='number'&&typeof b==='number'&&(k==='qty'||k==='seq'||k==='vseq')) return Math.round((s+(l-b))*1000)/1000;
+  return l===undefined?s:l; }
+function mainShape(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.flats; if(ORS.loaded) delete c.orders; return c; }
+function mainMerge(sentJ){ var baseJ=MAINSENT; if(!baseJ) return Promise.reject(new Error('no base'));
+  return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=data,updated_at'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error('load '+r.status); return r.json(); }).then(function(rows){
+    if(!rows||!rows[0]||!rows[0].data) throw new Error('no online copy'); return mainMergeRow(rows[0],sentJ,baseJ); }); }
+/* this phone's unsent changes (sent vs base) put on top of the online copy sv */
+function mainMergeRow(sv,sentJ,baseJ){ var sb=D.sb, fl0=D.flats, or0=D.orders, strip=function(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.sb; delete c.flats; delete c.orders; return c; };
+    var m=merge3(strip(JSON.parse(baseJ)),strip(JSON.parse(sentJ)),strip(sv.data),''), lg=sv.data.orders;
+    var Ds=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(JSON.stringify(sv.data)))); Ds.sb=sb;
+    D=migrate(merge(JSON.parse(JSON.stringify(DEF)),m)); D.sb=sb; D.flats=fl0; D.orders=or0; if(lg&&lg.length) ORS.legacy(lg);
+    LASTSEEN=sv.updated_at; localStorage.setItem('sbseen',LASTSEEN); setBase(JSON.stringify(mainShape(Ds))); keepLocal(); render(); return true; }
+ORS.boot();
+
+/* ============================================================
+   KEEPING THE SHOP SAFE OVER THE YEARS
+   1. Site photos live online (storage bucket 'photos'), one file each — orders stay small.
+      This phone keeps a copy of the photos it took or opened, so they open without internet.
+   2. Old stock-log lines move online (shop_archive) so the shared record stays small.
+   3. A full copy is saved online once a day (shop_backups, kept 21 days); admin can restore it.
+   4. Warnings: changes not sent, online database not reachable, backups, stock count.
+   ============================================================ */
+
+/* ---------- waiting after a failure ---------- */
+var BACK={};
+function httpErr(r,label){ return r.text().then(function(t){ var e=new Error(label+' '+r.status); e.status=r.status; e.body=String(t||'').slice(0,300); throw e; },function(){ var e=new Error(label+' '+r.status); e.status=r.status; throw e; }); }
+function isMissing(e){ return !!e&&(e.status===404||/PGRST205|does not exist|not find the table|Bucket not found/i.test(e.body||'')); }
+function backOff(k,e){ var b=BACK[k]||{n:0}; b.n++; b.missing=isMissing(e); b.msg=(e&&e.message)||''; var mins=b.missing?360:Math.min(360,Math.pow(2,b.n)); b.until=Date.now()+mins*60000; BACK[k]=b; }
+function backOk(k){ delete BACK[k]; }
+function backWait(k){ return !!BACK[k]&&BACK[k].until>Date.now(); }
+
+/* ---------- 1. site photos ---------- */
+var PHDBP=null, PHURL={}, PHGET={}, PHWAIT={}, PHUP=false, PHMIG=false, PHERR='';
+function phLs(k){ try{ return JSON.parse(localStorage.getItem(k)||'[]')||[]; }catch(e){ return []; } }
+var PHQ=phLs('wphq'), PHDQ=phLs('wphdq');          /* waiting to upload / waiting to be removed online */
+function phQSave(){ try{ localStorage.setItem('wphq',JSON.stringify(PHQ)); localStorage.setItem('wphdq',JSON.stringify(PHDQ)); }catch(e){} }
+function phSvg(t){ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="180"><rect width="240" height="180" fill="#eef1f5"/><text x="120" y="96" font-family="sans-serif" font-size="15" fill="#8a94a6" text-anchor="middle">'+t+'</text></svg>'); }
+var PHIMG_WAIT=phSvg('Loading photo…'), PHIMG_MISS=phSvg('Photo not available yet');
+function phDb(){ if(PHDBP) return PHDBP; PHDBP=new Promise(function(res){ try{ if(!window.indexedDB) return res(null); var rq=indexedDB.open('wshop-photos',1);
+    rq.onupgradeneeded=function(){ try{ rq.result.createObjectStore('ph'); }catch(e){} }; rq.onsuccess=function(){ var db=rq.result; db.onversionchange=function(){ db.close(); PHDBP=null; }; db.onclose=function(){ PHDBP=null; }; res(db); };
+    rq.onerror=rq.onblocked=function(){ PHDBP=null; res(null); }; }catch(e){ PHDBP=null; res(null); } }); return PHDBP; }
+function phTx(mode,fn){ return phDb().then(function(db){ if(!db) return null; return new Promise(function(res){ try{ var tx=db.transaction('ph',mode), rq=fn(tx.objectStore('ph'));
+    tx.oncomplete=function(){ var v=true; try{ if(rq) v=rq.result; }catch(e){} res(v); }; tx.onerror=tx.onabort=function(){ PHDBP=null; res(null); }; }catch(e){ PHDBP=null; res(null); } }); }); }
+function phGetLocal(p){ return phTx('readonly',function(st){ return st.get(p); }); }
+function phPutLocal(p,b){ return phTx('readwrite',function(st){ return st.put({blob:b,on:Date.now()},p); }); }
+function phDelLocal(p){ return phTx('readwrite',function(st){ st.delete(p); }); }
+function phCloud(){ return !!(sbOn()&&SESS&&window.indexedDB&&window.Blob&&window.fetch); }
+function phOnline(){ return phCloud()&&navigator.onLine!==false; }
+function phEnc(p){ return String(p).split('/').map(encodeURIComponent).join('/'); }
+function phAuth(x){ var h={apikey:D.sb.key,Authorization:'Bearer '+(SESS&&SESS.access_token)}; for(var k in (x||{})) h[k]=x[k]; return h; }
+function d2b(u){ var i=u.indexOf(','), m=(u.slice(5,i).split(';')[0])||'image/jpeg', s=atob(u.slice(i+1)), a=new Uint8Array(s.length); for(var k=0;k<s.length;k++) a[k]=s.charCodeAt(k); return new Blob([a],{type:m}); }
+function phHash(s){ var a=0x811c9dc5, b=0x9747b28c^s.length; for(var i=0;i<s.length;i++){ var c=s.charCodeAt(i); a=Math.imul(a^c,16777619); b=Math.imul(b^c,1597334677); } return (a>>>0).toString(36)+(b>>>0).toString(36); }
+function phRecs(){ if(typeof allJobs==='function') return allJobs(); return (D.orders||[]).concat((D.flats||[]).filter(function(f){ return f&&!f.del; })); }
+function phDir(o){ return String(o&&o.id||'x').replace(/[^\w-]/g,'_'); }
+function photoCount(){ return phRecs().reduce(function(a,o){ return a+(o.photos||[]).length; },0); }
+function oldPhotoCount(){ return phRecs().reduce(function(a,o){ return a+(o.photos||[]).filter(function(ph){ return ph&&ph.src&&!ph.path; }).length; },0); }
+/* the picture for an <img>: old photos carry their own picture; new ones come from this phone or online */
+function phSrc(ph){ if(!ph) return PHIMG_MISS; if(ph.src) return ph.src; if(!ph.path) return PHIMG_MISS; if(PHURL[ph.path]) return PHURL[ph.path]; phLoad(ph.path); return PHWAIT[ph.path]?PHIMG_MISS:PHIMG_WAIT; }
+function phBlob(p){ return phGetLocal(p).then(function(rec){ if(rec&&rec.blob) return rec.blob; if(!phOnline()) throw new Error('offline');
+    return sbRefresh().then(function(){ return fetch(sbUrl('/storage/v1/object/authenticated/photos/'+phEnc(p)),{headers:phAuth()}); })
+      .then(function(r){ if(!r.ok) throw new Error('photo '+r.status); return r.blob(); }).then(function(b){ phPutLocal(p,b); return b; }); }); }
+var PHLRU=[];
+function phKeepUrl(p,u){ PHURL[p]=u; PHLRU.push(p); while(PHLRU.length>250){ var q=PHLRU.shift(), w=PHURL[q], shown=false; [].forEach.call(document.querySelectorAll('img[data-phk]'),function(im){ if(im.getAttribute('data-phk')===q) shown=true; }); if(shown){ PHLRU.push(q); break; } if(w&&w.slice(0,5)==='blob:'){ try{ URL.revokeObjectURL(w); }catch(e){} } delete PHURL[q]; } }
+function phLoad(p){ if(PHGET[p]||(PHWAIT[p]&&PHWAIT[p]>Date.now())) return; PHGET[p]=1;
+  phBlob(p).then(function(b){ delete PHGET[p]; delete PHWAIT[p]; phKeepUrl(p,URL.createObjectURL(b)); phPaint(p); },function(){ delete PHGET[p]; PHWAIT[p]=Date.now()+60000; phPaint(p); }); }
+function phPaint(p){ var u=PHURL[p]||PHIMG_MISS; [].forEach.call(document.querySelectorAll('img[data-phk]'),function(im){ if(im.getAttribute('data-phk')===p&&im.getAttribute('src')!==u) im.src=u; }); }
+function phPaintQ(p){ [].forEach.call(document.querySelectorAll('.phup[data-phq]'),function(x){ if(x.getAttribute('data-phq')===p) x.remove(); }); }
+/* a new photo: the order keeps only where it is; the file waits on this phone until it is online */
+function phAdd(o,src){ o.photos=o.photos||[]; if(!phCloud()){ o.photos.push({src:src,cap:'',on:today()}); return; }
+  var b; try{ b=d2b(src); }catch(e){ o.photos.push({src:src,cap:'',on:today()}); return; }
+  var p=phDir(o)+'/'+Date.now().toString(36)+uid()+'.jpg'; o.photos.push({path:p,cap:'',on:today()}); PHURL[p]=src; PHQ.push(p); phQSave();
+  phPutLocal(p,b).then(function(ok){ if(ok){ phKick(); return; }
+    /* this phone could not keep the file — keep the picture inside the order instead, as before */
+    PHQ=PHQ.filter(function(x){ return x!==p; }); phQSave(); var hit=null; phRecs().forEach(function(r){ (r.photos||[]).forEach(function(x){ if(x&&x.path===p) hit=x; }); });
+    if(hit){ hit.src=src; delete hit.path; save(); } }); }
+function phSend(p,b){ return sbRefresh().then(function(){ return fetch(sbUrl('/storage/v1/object/photos/'+phEnc(p)),{method:'POST',headers:phAuth({'Content-Type':b.type||'image/jpeg'}),body:b}); })
+  .then(function(r){ if(r.ok) return true; return r.text().then(function(t){ if(r.status===409||/Duplicate|already exists/i.test(t)) return true; var e=new Error('photo upload '+r.status); e.status=r.status; e.body=String(t||'').slice(0,300); throw e; }); }); }
+function phRemoteDel(list){ return sbRefresh().then(function(){ return fetch(sbUrl('/storage/v1/object/photos'),{method:'DELETE',headers:phAuth({'Content-Type':'application/json'}),body:JSON.stringify({prefixes:list})}); })
+  .then(function(r){ if(r.ok||r.status===400||r.status===403||r.status===404) return true; var e=new Error('photo delete '+r.status); e.status=r.status; throw e; }); }
+/* a removed photo's file is removed online only 3 weeks later (an online copy restored in that time still finds it),
+   and only if nothing uses it any more and everything on this phone has gone online */
+var PHGONE=21*864e5;
+function phUsed(p){ var u=false; phRecs().forEach(function(r){ (r.photos||[]).forEach(function(x){ if(x&&x.path===p) u=true; }); }); return u; }
+function phDue(){ var now=Date.now(), n0=PHDQ.length; PHDQ=PHDQ.filter(function(x){ return Array.isArray(x)&&!phUsed(x[0]); }); if(PHDQ.length!==n0) phQSave(); return PHDQ.filter(function(x){ return now-x[1]>PHGONE; }).map(function(x){ return x[0]; }); }
+/* send waiting photos (and due removals) one at a time */
+function phKick(){ if(PHUP||!phOnline()) return Promise.resolve(); var due=PHDQ.length&&!unsentN()?phDue():[]; if(!PHQ.length&&!due.length) return Promise.resolve(); PHUP=true;
+  var step=function(){ if(!phOnline()) return;
+    if(due.length){ var dl=due.splice(0,50); return phRemoteDel(dl).then(function(){ PHDQ=PHDQ.filter(function(x){ return dl.indexOf(x[0])<0; }); phQSave(); return step(); }); }
+    if(!PHQ.length) return; var p=PHQ[0];
+    return phGetLocal(p).then(function(rec){ if(rec===null){ PHDBP=null; var e=new Error('phone photo store busy'); e.status=0; throw e; }   /* could not read — keep it waiting */
+        return rec&&rec.blob?phSend(p,rec.blob):true; })                                                                            /* not on this phone any more — nothing to send */
+      .then(function(){ PHQ=PHQ.filter(function(x){ return x!==p; }); phQSave(); phPaintQ(p); return step(); }); };
+  return Promise.resolve().then(step).then(function(){ PHERR=''; backOk('phup'); },function(e){ PHERR=(e&&e.message)||'upload failed'; backOff('phup',e);
+      if(e&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==403&&PHQ.length>1){ PHQ.push(PHQ.shift()); phQSave(); } })
+    .then(function(){ PHUP=false; netBar(); }); }
+/* a photo deleted by the admin: removed online too (unless another job still shows the same file) */
+function phForget(ph){ if(!ph||!ph.path) return; var p=ph.path; if(phUsed(p)) return;
+  if(!PHDQ.some(function(x){ return Array.isArray(x)&&x[0]===p; })) PHDQ.push([p,Date.now()]); phQSave(); }
+/* photos saved inside orders by older versions: moved online by the admin's phone, a few at a time */
+function phRecent(o){ var t=(ORS.seen[o.id]||FL.seen[o.id]||''); return o.id===S.oid||(t&&Date.now()-Date.parse(t)<10*60000)||!!ORS.dirty[o.id]||!!FL.dirty[o.id]; }
+function phMigrate(){ if(PHMIG||!phOnline()||!admin()||!PULLOK||backWait('phmig')) return; var todo=[];
+  phRecs().forEach(function(o){ if(phRecent(o)) return; (o.photos||[]).forEach(function(ph){ if(ph&&ph.src&&!ph.path&&todo.length<15) todo.push([o,ph]); }); }); if(!todo.length) return; PHMIG=true; var i=0, moved=0;
+  var step=function(){ if(i>=todo.length||!phOnline()) return; var o=todo[i][0], ph=todo[i][1], src=ph.src, b; i++; try{ b=d2b(src); }catch(e){ return step(); }
+    var p=phDir(o)+'/m'+phHash(src)+'.jpg';
+    return phSend(p,b).then(function(){ return phPutLocal(p,b); }).then(function(){ if(ph.src===src){ ph.path=p; delete ph.src; PHURL[p]=src; moved++; } return step(); }); };
+  Promise.resolve().then(step).then(function(){ backOk('phmig'); },function(e){ PHERR=(e&&e.message)||''; backOff('phmig',e); }).then(function(){ PHMIG=false; if(moved){ save(); setTimeout(phMigrate,2000); } }); }
+/* keep at most ~1500 photos on this phone (oldest opened ones go; they stay online) */
+function phPrune(){ try{ if(localStorage.getItem('wphprune')===today()) return; localStorage.setItem('wphprune',today()); }catch(e){ return; }
+  phDb().then(function(db){ if(!db) return; var keep={}; PHQ.forEach(function(p){ keep[p]=1; }); var all=[];
+    var tx=db.transaction('ph','readonly'), cur=tx.objectStore('ph').openCursor(); cur.onsuccess=function(){ var c=cur.result; if(!c) return; all.push([c.key,(c.value&&c.value.on)||0]); c.continue(); };
+    tx.oncomplete=function(){ if(all.length<=1500) return; all.sort(function(a,b){ return a[1]-b[1]; }); var gone=all.slice(0,all.length-1500).filter(function(x){ return !keep[x[0]]; });
+      if(gone.length){ var t2=db.transaction('ph','readwrite'), st=t2.objectStore('ph'); gone.forEach(function(x){ st.delete(x[0]); }); } }; }).catch(function(){}); }
+function b2u(b){ if(b.arrayBuffer) return b.arrayBuffer().then(function(ab){ return new Uint8Array(ab); });
+  return new Promise(function(res,rej){ var fr=new FileReader(); fr.onload=function(){ res(new Uint8Array(fr.result)); }; fr.onerror=rej; fr.readAsArrayBuffer(b); }); }
+/* every site photo in one zip, a folder per order / flat */
+var PHPART=300;
+function phList(){ var list=[]; phRecs().forEach(function(o){ (o.photos||[]).forEach(function(ph,i){ if(ph&&(ph.src||ph.path)) list.push([o,ph,i]); }); }); return list; }
+function phZipBtns(){ var n=phList().length; if(!n) return ''; if(n<=PHPART) return '<button class="btn" data-cs="phzip" data-part="0">⬇ All site photos (zip)</button>';
+  var h=''; for(var i=0;i*PHPART<n;i++) h+='<button class="btn" data-cs="phzip" data-part="'+i+'">⬇ Site photos '+(i*PHPART+1)+'–'+Math.min(n,(i+1)*PHPART)+'</button>'; return h; }
+function phZip(btn,part){ var all=phList(), used={}, list=all.slice(part*PHPART,(part+1)*PHPART);
+  if(!list.length){ toast('No site photos yet'); return; }
+  var files=[], k=0, miss=0, lab=btn.textContent, clean=function(x,m){ return String(x||'').replace(/[^\w\- .#()]+/g,'_').replace(/\s+/g,' ').trim().slice(0,m); };
+  var fname=function(o,ph,i){ var f=clean(o.proj?(typeof oTitleT==='function'?oTitleT(o):'Flat '+(o.no||'')):'Order '+(o.no||'')+' '+(o.customer||''),60)||'Order', n=f+'/'+(i+1)+(ph.cap?' '+clean(ph.cap,40):'')+'.jpg'; while(used[n]) n=n.replace(/\.jpg$/,'_.jpg'); used[n]=1; return n; };
+  var next=function(){ if(k>=list.length) return Promise.resolve(); var x=list[k++]; btn.textContent='Collecting… '+k+' of '+list.length; var got;
+    try{ got=x[1].src?Promise.resolve(d2b(x[1].src)):phBlob(x[1].path); }catch(e){ got=Promise.reject(e); }
+    return got.then(b2u).then(function(u){ files.push([fname(x[0],x[1],x[2]),u]); },function(){ miss++; }).then(next); };
+  btn.disabled=true;
+  next().then(function(){ btn.disabled=false; btn.textContent=lab; if(!files.length){ toast('Could not get the photos — check internet'); return; }
+    download('Site photos '+today()+(all.length>PHPART?' part '+(part+1):'')+'.zip',zip(files,'application/zip')); if(miss) toast(miss+' photo'+(miss>1?'s are':' is')+' not online yet — not in the zip'); }); }
+
+/* ---------- 2. stock log: keep the latest lines here, older ones online ---------- */
+var LOGKEEP=1500, LOGPART=1000, LOGBUSY=false;
+function logArchive(){ if(LOGBUSY||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||backWait('arch')) return; if((D.invLog||[]).length<LOGKEEP+LOGPART) return; LOGBUSY=true;
+  var step=function(){ var L=D.invLog||[]; if(L.length<LOGKEEP+LOGPART) return; var cut=LOGPART, rows=L.slice(0,cut), j=JSON.stringify(rows), id='invlog-'+(rows[0].on||'x')+'-'+phHash(j);
+    return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),
+        body:'[{"id":'+JSON.stringify(id)+',"kind":"invlog","data":{"from":'+JSON.stringify(rows[0].on||'')+',"to":'+JSON.stringify(rows[rows.length-1].on||'')+',"n":'+rows.length+',"rows":'+j+'}}]'}); })
+      .then(function(r){ if(!r.ok) return httpErr(r,'stock log'); var L2=D.invLog||[];
+        if(L2.length>=cut&&JSON.stringify(L2.slice(0,cut))===j){ D.invLog=L2.slice(cut); D.logArch=(D.logArch||0)+cut; save(); return step(); } }); };
+  Promise.resolve().then(step).then(function(){ backOk('arch'); },function(e){ backOff('arch',e); }).then(function(){ LOGBUSY=false; netBar(); }); }
+function logXls(btn){ var lab=btn.textContent; btn.disabled=true; btn.textContent='Getting the full log…';
+  var get=sbOn()&&SESS&&navigator.onLine!==false?sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive?kind=eq.invlog&select=data&order=created_at.asc'),{headers:sbHeaders()}); })
+      .then(function(r){ if(!r.ok) throw new Error('online log '+r.status); return r.json(); }):Promise.resolve(D.logArch?null:[]);
+  get.then(function(rows){ if(rows===null) throw new Error('older lines are online — connect to the internet'); var all=[], seen={};
+      (rows||[]).forEach(function(r){ ((r&&r.data&&r.data.rows)||[]).forEach(function(l){ all.push(l); }); }); all=all.concat(D.invLog||[]);
+      all=all.filter(function(l){ if(!l) return false; if(!l.id) return true; if(seen[l.id]) return false; seen[l.id]=1; return true; });
+      all.sort(function(a,b){ return (a.on||'')<(b.on||'')?-1:(a.on||'')>(b.on||'')?1:0; });
+      var A=[['Date','Item','Code','Qty','Unit','Note']].concat(all.map(function(l){ var it=D.inv[l.key]||{}; return [l.on||'',it.name||String(l.key||'').replace(/^P:/,'Offcuts '),l.key||'',l.qty,it.unit||'',l.note||'']; }));
+      download('Stock log '+today()+'.xlsx',xlsx([['Stock log',A]])); toast('Stock log: '+all.length+' lines'); })
+    .catch(function(e){ toast('Could not get the full log — '+(e.message||'check internet')); }).then(function(){ btn.disabled=false; btn.textContent=lab; }); }
+function lastCountDay(){ if(D.lastCount) return D.lastCount; var L=D.invLog||[]; for(var i=L.length-1;i>=0;i--) if(L[i]&&L[i].note==='Stock count') return L[i].on; return L.length&&L[0]?L[0].on:''; }
+
+/* ---------- 3. a full copy online once a day; admin can restore ---------- */
+var SNAPBUSY=false;
+function snapBody(id){ var x=Object.assign({},D); delete x.sb; var j=JSON.stringify(x); return '[{"id":'+JSON.stringify(id)+',"by":'+JSON.stringify((SESS&&SESS.email)||'')+',"size":'+j.length+',"data":'+j+'}]'; }
+/* the day's copy is marked with a tiny row (shop_archive 'snap-<day>') so other phones don't send it again — the shared record is not touched */
+function snapMaybe(){ if(SNAPBUSY||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||!ORS.loaded||!FL.loaded||backWait('snap')) return; var d=today();
+  if(!ORS.okAt||!FL.okAt||Date.now()-ORS.okAt>10*60000||Date.now()-FL.okAt>10*60000) return;
+  if(localStorage.getItem('wsnap')===d) return; SNAPBUSY=true; var mark='snap-'+d;
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive?id=eq.'+encodeURIComponent(mark)+'&select=id'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) return httpErr(r,'online copy'); return r.json(); })
+    .then(function(rows){ if(rows&&rows.length) return;
+      return fetch(sbUrl('/rest/v1/shop_backups'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),body:snapBody(d)})
+        .then(function(r){ if(!r.ok) return httpErr(r,'online copy');
+          return fetch(sbUrl('/rest/v1/shop_archive'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),body:JSON.stringify([{id:mark,kind:'snapmark',data:{on:d,by:(SESS&&SESS.email)||''}}])}); })
+        .then(function(r){ if(r&&!r.ok) return httpErr(r,'online copy'); }); })
+    .then(function(){ backOk('snap'); try{ localStorage.setItem('wsnap',d); }catch(e){} },function(e){ backOff('snap',e); })
+    .then(function(){ SNAPBUSY=false; netBar(); }); }
+function snapList(){ S.snaps='loading'; render(); sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_backups?select=id,created_at,by,size&order=created_at.desc&limit=40'),{headers:sbHeaders()}); })
+  .then(function(r){ if(!r.ok) throw new Error('backups '+r.status); return r.json(); }).then(function(rows){ S.snaps=rows||[]; render(); }).catch(function(e){ S.snaps={err:e.message||'offline'}; render(); }); }
+function snapName(b){ return /^\d{4}-\d\d-\d\d$/.test(b.id)?dShort(b.id)+' '+b.id.slice(0,4):'Before restore, '+String(b.created_at||'').slice(0,16).replace('T',' '); }
+function snapsHtml(){ if(!(sbOn()&&SESS&&admin())) return ''; var s=S.snaps;
+  var h='<div style="margin:2px 0 12px"><div class="row between"><b>Online copies</b>'+(s&&s!=='loading'?'<button class="btn sm ghost" data-cs="snapshide">Hide</button>':'<button class="btn sm" data-cs="snaps">Show</button>')+'</div><div class="faint">A full copy of everything is saved online once a day and kept for 21 days'+(localStorage.getItem('wsnap')?' · last: '+dShort(localStorage.getItem('wsnap')):'')+'.</div>';
+  if(s==='loading') h+='<div class="faint" style="margin-top:6px">Loading…</div>'; else if(s&&s.err) h+='<div class="warnt" style="margin-top:6px">Could not load: '+esc(s.err)+'</div>';
+  else if(Array.isArray(s)) h+=s.length?'<table class="rt" style="margin-top:6px"><tbody>'+s.map(function(b){ return '<tr><td>'+esc(snapName(b))+'</td><td class="faint">'+Math.max(1,Math.round((b.size||0)/1024))+' KB</td><td class="faint" style="word-break:break-all">'+esc(String(b.by||'').split('@')[0])+'</td><td class="right"><button class="btn sm" data-csrestore="'+esc(b.id)+'">Restore</button></td></tr>'; }).join('')+'</tbody></table>':'<div class="faint" style="margin-top:6px">No online copies yet — the first one is made today.</div>';
+  return h+'</div>'; }
+function keepNumbers(old){ var mx=0; (D.orders||[]).forEach(function(o){ if(n(o.no)>mx) mx=n(o.no); });
+  D.seq=Math.max(n(D.seq),n(old&&old.seq),mx+1); D.vseq=Math.max(n(D.vseq),n(old&&old.vseq),1); }
+function snapAsk(id){ var nm=id; (Array.isArray(S.snaps)?S.snaps:[]).forEach(function(b){ if(b.id===id) nm=snapName(b); });
+  pjPop('Restore — '+esc(nm),'<div class="snapopt"><button class="btn primary" data-csrst="undel" data-id="'+esc(id)+'">Bring back deleted items</button><div class="faint">Orders, flats, projects and flat types deleted after this day come back as they were. Nothing else changes.</div></div>'
+    +'<div class="snapopt"><button class="btn" data-csrst="full" data-id="'+esc(id)+'">Go back fully to this day</button><div class="faint">Settings, rates, stock, accounts and staff go back to this day, and orders and flats go back to how they were then. Orders and flats added later stay. Use only if data was badly damaged.</div></div>'
+    +'<p class="faint" style="margin:10px 0 0">Either way, a copy of how everything is now is saved online first — so this can be undone.</p>','<button class="btn" data-pjx="1">Cancel</button>'); }
+/* items deleted since the copy b come back; everything else stays as it is now */
+function restoreDeleted(b){ var k={orders:0,flats:0,projects:0,types:0}, cp=function(x){ return JSON.parse(JSON.stringify(x)); };
+  D.projects=D.projects||[];
+  (b.projects||[]).forEach(function(bp){ if(!bp||!bp.id) return; var p=projById(bp.id); if(!p){ D.projects.push(cp(bp)); k.projects++; return; }
+    (bp.types||[]).forEach(function(bt){ if(bt&&bt.id&&!(p.types||[]).some(function(t){ return t.id===bt.id; })){ (p.types=p.types||[]).push(cp(bt)); k.types++; } }); });
+  var fx={}; D.flats=D.flats||[]; D.flats.forEach(function(f,i){ if(f&&f.id) fx[f.id]=i; });
+  (b.flats||[]).forEach(function(bf){ if(!bf||!bf.id||bf.del) return; var i=fx[bf.id]; if(i!=null&&!D.flats[i].del) return; var f=cp(bf);
+    if(i!=null) D.flats[i]=f; else { fx[f.id]=D.flats.length; D.flats.push(f); } k.flats++;
+    if(f.batch){ var r=batchById(f.batch); if(r&&r.b.flats&&r.b.flats.indexOf(f.id)<0) r.b.flats.push(f.id); } });
+  var ox={}; (D.orders||[]).forEach(function(o){ if(o&&o.id) ox[o.id]=1; });
+  (b.orders||[]).forEach(function(bo){ if(!bo||!bo.id||bo.del||ox[bo.id]) return; D.orders.push(cp(bo)); k.orders++; });
+  return k; }
+/* everything as it was on that day; orders and flats added later stay (their stock use is taken out again) */
+function restoreFull(b){ var old={seq:D.seq,vseq:D.vseq}, sb=D.sb, fl0=D.flats, or0=D.orders, inCopy={};
+  (b.orders||[]).forEach(function(o){ if(o&&o.id) inCopy[o.id]=1; }); (b.flats||[]).forEach(function(f){ if(f&&f.id) inCopy[f.id]=1; });
+  D=migrate(merge(JSON.parse(JSON.stringify(DEF)),b)); D.sb=sb; D.flats=flatsMerge(fl0,b.flats); D.orders=flatsMerge(or0,b.orders); keepNumbers(old);
+  var re=0; D.orders.concat(liveFlats()).forEach(function(o){ if(o&&o.consumed&&!inCopy[o.id]&&!o.tpl){ o.consumed=false; consumeOrder(o); re++; } });
+  return re; }
+function snapRestore(id,mode,btn){ var nm=id; (Array.isArray(S.snaps)?S.snaps:[]).forEach(function(b){ if(b.id===id) nm=snapName(b); });
+  if(mode==='full'&&!confirm('Go back fully to '+nm+'?\n\nSettings, rates, stock, accounts and staff change back to that day, and orders and flats go back to how they were then (orders and flats added later stay).\n\nA copy of how everything is now is saved online first.')) return;
+  var lab=btn.textContent; btn.disabled=true; btn.textContent='Restoring…'; var b=null, k=null;
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_backups?id=eq.'+encodeURIComponent(id)+'&select=data'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) throw new Error('copy '+r.status); return r.json(); })
+    .then(function(rows){ b=rows&&rows[0]&&rows[0].data; if(!b||!b.company) throw new Error('that copy is empty');
+      if(mode==='undel'){ var t=JSON.parse(JSON.stringify({p:D.projects,f:D.flats,o:D.orders})); var sv={projects:D.projects,flats:D.flats,orders:D.orders}; D.projects=t.p; D.flats=t.f; D.orders=t.o; k=restoreDeleted(b); D.projects=sv.projects; D.flats=sv.flats; D.orders=sv.orders;
+        if(!k.orders&&!k.flats&&!k.projects&&!k.types) return 'none'; }
+      return fetch(sbUrl('/rest/v1/shop_backups'),{method:'POST',headers:sbHeaders({Prefer:'return=minimal'}),body:snapBody('before-restore-'+new Date().toISOString().slice(0,19))}); })
+    .then(function(r){ pjPopX();
+      if(r==='none'){ toast('Nothing was deleted after '+nm); return; }
+      if(!r.ok) throw new Error('could not save a copy of now first ('+r.status+')');
+      if(mode==='undel'){ k=restoreDeleted(b); save(); S.snaps=null; render();
+        var parts=[]; if(k.orders) parts.push(k.orders+' order'+(k.orders>1?'s':'')); if(k.flats) parts.push(k.flats+' flat'+(k.flats>1?'s':'')); if(k.projects) parts.push(k.projects+' project'+(k.projects>1?'s':'')); if(k.types) parts.push(k.types+' flat type'+(k.types>1?'s':''));
+        toast('✓ Brought back '+parts.join(', ')); return; }
+      var re=restoreFull(b); try{ localStorage.setItem('wdirty','1'); }catch(e){} save(); S.snaps=null; render(); toast('✓ Everything is back to '+nm+(re?' — stock updated for '+re+' later job'+(re>1?'s':''):'')); })
+    .catch(function(e){ toast('Restore failed — '+(e.message||e)); btn.disabled=false; btn.textContent=lab; }); }
+
+/* ---------- 4. warnings ---------- */
+var NET={bad:0,since:0,msg:''}, UNS={since:+(localStorage.getItem('wunsince')||0)};
+function netOk(){ if(/^Offline/.test(syncMsg)) setSync('Online ✓ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); if(NET.bad){ NET.bad=0; NET.since=0; NET.msg=''; netBar(); } }
+function netBad(e){ if(navigator.onLine===false) return; var m=(e&&e.message)||''; if(/Session expired|Not signed in/.test(m)) return; NET.bad++; if(!NET.since) NET.since=Date.now(); NET.msg=m; netBar(); }
+function unsentN(){ var n=0; ROWSTORES.forEach(function(R){ if(R.loaded) n+=R.unsent(); }); try{ if(localStorage.getItem('wdirty')) n++; }catch(e){} return n; }
+function hhmm(t){ var d=new Date(t); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+(ymd(d)!==today()?', '+dShort(ymd(d)):''); }
+function netBarHtml(){ var h='', off=navigator.onLine===false, n=unsentN(), np=PHQ.length;
+  if(S.role&&sbOn()&&SESS){
+    if(admin()&&(ROWSTORES.some(function(R){ return R.missing; })||Object.keys(BACK).some(function(k){ return BACK[k].missing; }))) h='<div class="netbar bad">⚠ <b>The online database needs an update</b> for this version. Settings → Online sync → copy the setup SQL and run it in Supabase (SQL editor). Nothing is lost meanwhile.</div>';
+    else if(!off&&NET.bad>=2) h='<div class="netbar bad">⚠ <b>Can\'t reach the online database</b> since '+hhmm(NET.since)+'. Your work is safe on this phone and is sent when it\'s back. <button class="btn sm" data-cs="nethelp">What to do</button></div>';
+    else if((n||np)&&UNS.since&&Date.now()-UNS.since>(off?2:10)*60000) h='<div class="netbar">⏳ <b>'+(n?n+' change'+(n>1?'s':''):'')+(n&&np?' and ':'')+(np?np+' photo'+(np>1?'s':''):'')+' not sent online yet</b>'+(off?' — this phone is offline':' (since '+hhmm(UNS.since)+')')+'. '+(n+np>1?'They are':'It is')+' kept on this phone.'+(off?'':' <button class="btn sm" data-cs="sendnow">Send now</button>')+'</div>';
+    else if(np&&PHERR&&admin()) h='<div class="netbar">📷 '+np+' photo'+(np>1?'s':'')+' waiting to upload ('+esc(PHERR)+'). <button class="btn sm" data-cs="sendnow">Try again</button></div>'; }
+  return '<div id="netbar">'+h+'</div>'; }
+function netBar(){ var el=document.getElementById('netbar'); if(!el) return; var t=document.createElement('div'); t.innerHTML=netBarHtml(); var nw=t.firstChild.innerHTML; if(el.innerHTML!==nw) el.innerHTML=nw; }
+function netHelp(){ var ref=sbRef(); pjPop('Online database not reachable','<ol style="padding-left:18px;margin:0;line-height:1.6">'
+    +'<li>Check this phone has internet — open any website.</li>'
+    +'<li>Keep working. Everything is saved on this phone and sent by itself when the database is back.</li>'
+    +'<li>If it lasts more than an hour, the <b>admin</b> opens <b>supabase.com</b>, signs in and opens the project'+(ref?' <b>'+esc(ref)+'</b>':'')+'. If it says <b>Paused</b>, press <b>Restore project</b> and wait a few minutes. Nothing is lost.</li>'
+    +'<li>Supabase\'s own status page: <b>status.supabase.com</b></li></ol>'+(NET.msg?'<p class="faint" style="margin-top:8px">Last error: '+esc(NET.msg)+'</p>':''),
+    (ref&&admin()?'<a class="btn primary" style="text-decoration:none" href="https://supabase.com/dashboard/project/'+esc(ref)+'" target="_blank" rel="noopener">Open Supabase</a>':'')+'<button class="btn" data-pjx="1">Close</button>'); }
+function csTick(){ var n=unsentN()+PHQ.length;
+  if(n&&!UNS.since){ UNS.since=Date.now(); try{ localStorage.setItem('wunsince',String(UNS.since)); }catch(e){} }
+  if(!n&&UNS.since){ UNS.since=0; try{ localStorage.removeItem('wunsince'); }catch(e){} }
+  netBar(); if(!S.role||!sbOn()||!SESS) return;
+  if((PHQ.length||PHDQ.length)&&!backWait('phup')) phKick(); phMigrate(); logArchive(); snapMaybe(); phPrune(); }
+function cloudAfter(){ csTick(); }
+setInterval(function(){ if(document.visibilityState==='visible') csTick(); },20000);
+window.addEventListener('online',function(){ setTimeout(csTick,1500); });
+window.addEventListener('offline',function(){ setTimeout(netBar,50); });
+/* ask the phone not to clear the app's storage when space runs low */
+setTimeout(function(){ try{ var st=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if(navigator.storage&&navigator.storage.persist&&navigator.storage.persisted&&(st||/Chrome\//.test(navigator.userAgent))) navigator.storage.persisted().then(function(p){ if(!p) return navigator.storage.persist(); }).catch(function(){}); }catch(e){} },4000);
+function phoneSpace(){ var el=document.getElementById('phst'); if(!el||!navigator.storage||!navigator.storage.estimate) return;
+  navigator.storage.estimate().then(function(e){ var el2=document.getElementById('phst'); if(!el2||!e||!e.usage) return; var g=function(b){ return b>=1073741824?(b/1073741824).toFixed(1)+' GB':Math.max(1,Math.round(b/1048576))+' MB'; };
+    el2.textContent='This phone: the app uses '+g(e.usage)+(e.quota?' (allowed up to '+g(e.quota)+')':'')+'.'; }).catch(function(){}); }
+function spaceLine(){ var ms=DSIZE||JSON.stringify(D).length, mb=ms/1048576, pc=Math.min(100,Math.round(mb/5*100)), np=photoCount(), old=oldPhotoCount(), wait=PHQ.length, nf=liveFlats().length;
+  setTimeout(phoneSpace,0);
+  return '<div style="margin-top:10px"><div class="faint">Space used: <b>'+(mb<0.1?Math.max(1,Math.round(ms/1024))+' KB':mb.toFixed(1)+' MB')+'</b> of about 5 MB a phone can keep for the shared data (settings, stock, accounts)</div>'
+    +'<div style="height:8px;background:#eef1f5;border-radius:99px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+Math.max(2,pc)+'%;background:'+(pc>70?'var(--warn)':'var(--accent)')+'"></div></div>'
+    +'<div class="faint" style="margin-top:6px">'+D.orders.length+' order'+(D.orders.length===1?'':'s')+(nf?' + '+nf+' flat'+(nf===1?'':'s'):'')+' — each kept as its own record · '+np+' site photo'+(np===1?'':'s')
+    +(phCloud()?' kept online'+(wait?' ('+wait+' waiting to upload)':'')+(old?' · '+old+' older photo'+(old>1?'s':'')+' still inside orders'+(admin()?' — moving online':' — the admin\'s phone moves them online'):''):'')
+    +(D.logArch?' · '+D.logArch+' older stock-log lines kept online':'')+'</div><div class="faint" id="phst" style="margin-top:4px"></div></div>'; }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-cs],[data-csrestore],[data-csrst]'); if(!t) return;
+  if(t.hasAttribute('data-csrestore')){ snapAsk(t.getAttribute('data-csrestore')); return; }
+  if(t.hasAttribute('data-csrst')){ snapRestore(t.getAttribute('data-id'),t.getAttribute('data-csrst'),t); return; }
+  var a=t.getAttribute('data-cs');
+  if(a==='snaps') snapList(); else if(a==='snapshide'){ S.snaps=null; render(); } else if(a==='phzip') phZip(t,+t.getAttribute('data-part')||0); else if(a==='logxls') logXls(t);
+  else if(a==='nethelp') netHelp(); else if(a==='sendnow'){ backOk('phup'); cloudPush(); phKick(); toast('Sending…'); } });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -1926,8 +2311,8 @@ function subCustomer(o){
    +(o.remind?'<label class="f"><span>Reminder note</span><input type="text" data-o="remindNote" value="'+esc(o.remindNote||'')+'" placeholder="Call customer about quote / collect balance…"></label>':'')
    +'<label class="f"><span>Notes (site, floor, colour…)</span><textarea data-o="notes">'+esc(o.notes||'')+'</textarea></label>'
    +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link, or press Locate"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
-   +'<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Site photos</span><div class="photos">'+(o.photos||[]).map(function(ph,i){return '<div class="ph"><img src="'+ph.src+'" data-view="'+i+'" alt="">'+(canDel()?'<button class="phx" data-phdel="'+i+'">×</button>':'')+'<input type="text" data-phcap="'+i+'" value="'+esc(ph.cap||'')+'" placeholder="caption"></div>';}).join('')
-   +'<label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>Add photo</span></label></div><div class="faint">Camera or gallery. Photos are shrunk to save space.</div></div>'
+   +'<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Site photos</span><div class="photos">'+(o.photos||[]).map(function(ph,i){return '<div class="ph"><img src="'+esc(phSrc(ph))+'" data-phk="'+esc(ph.path||'')+'" data-view="'+i+'" alt="">'+(ph.path&&PHQ.indexOf(ph.path)>=0?'<span class="phup" data-phq="'+esc(ph.path)+'" title="Waiting to upload">⏳</span>':'')+(canDel()?'<button class="phx" data-phdel="'+i+'">×</button>':'')+'<input type="text" data-phcap="'+i+'" value="'+esc(ph.cap||'')+'" placeholder="caption"></div>';}).join('')
+   +'<label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>Add photo</span></label></div><div class="faint">Camera or gallery. Photos are shrunk to save space'+(phCloud()?' and kept online — they open on every phone.':'.')+'</div></div>'
    +'<div class="faint" style="margin-top:12px">Created '+dShort(o.created)+(o.confirmedOn?' · confirmed '+dShort(o.confirmedOn):'')+(o.deliveredOn?' · delivered '+dShort(o.deliveredOn):'')+'</div>'
    +(admin()?'<div style="margin-top:12px"><button class="btn danger sm" data-act="delete">Delete this order</button></div>':'')+'</div>';
 }
@@ -2064,7 +2449,7 @@ function orderNeeds(o){ var M=material(o), need={};
 function offAdd(code,len,qty){ len=Math.round(len); if(len<=0||qty<=0) return; var arr=D.offcuts[code]=D.offcuts[code]||[]; var hit=arr.filter(function(z){return z.len===len;})[0]; if(hit) hit.qty+=qty; else arr.push({len:len,qty:qty}); arr.sort(function(a,b){return b.len-a.len;}); }
 function offTake(code,len,qty){ var arr=D.offcuts[code]||[]; var hit=arr.filter(function(z){return z.len===len;})[0]; if(!hit) return; hit.qty-=qty; if(hit.qty<=0) arr.splice(arr.indexOf(hit),1); }
 function consumeOrder(o){ if(o.consumed) return 0; var M=material(o), need=orderNeeds(o), ks=invKeys(), k=0;
-  M.bom.forEach(function(r){ if(!r.code) return; r.offUsed.forEach(function(u){ offTake(r.code,u.len,u.qty); }); var made=0; r.nest.forEach(function(bin){ if(bin.waste>=D.minOffcut){ offAdd(r.code,bin.waste,r.two?2:1); made+=r.two?2:1; } }); if(made) D.invLog.push({on:today(),key:'P:'+r.code,qty:0,note:(o.proj?oTitleT(o)+':':'Order #'+o.no+':')+' '+made+' offcut'+(made>1?'s':'')+' added to rack'}); }); Object.keys(need).forEach(function(key){ var it=invItem(key,ks[key]); it.qty=Math.round((it.qty-need[key])*10)/10; D.invLog.push({on:today(),key:key,qty:-need[key],note:(o.proj?oTitleT(o):'Order #'+o.no+' '+(o.customer||''))}); k++; }); o.consumed=true; return k; }
+  M.bom.forEach(function(r){ if(!r.code) return; r.offUsed.forEach(function(u){ offTake(r.code,u.len,u.qty); }); var made=0; r.nest.forEach(function(bin){ if(bin.waste>=D.minOffcut){ offAdd(r.code,bin.waste,r.two?2:1); made+=r.two?2:1; } }); if(made) D.invLog.push({id:uid(),on:today(),key:'P:'+r.code,qty:0,note:(o.proj?oTitleT(o)+':':'Order #'+o.no+':')+' '+made+' offcut'+(made>1?'s':'')+' added to rack'}); }); Object.keys(need).forEach(function(key){ var it=invItem(key,ks[key]); it.qty=Math.round((it.qty-need[key])*10)/10; D.invLog.push({id:uid(),on:today(),key:key,qty:-need[key],note:(o.proj?oTitleT(o):'Order #'+o.no+' '+(o.customer||''))}); k++; }); o.consumed=true; return k; }
 function lowStock(){ return Object.keys(D.inv).filter(function(k){ var it=D.inv[k]; return it.min>0&&it.qty<it.min; }); }
 function viewInventory(){ var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
@@ -2079,7 +2464,7 @@ function viewInventory(){ var ks=invKeys(); Object.keys(ks).forEach(function(k){
    +'<div class="row" style="margin-bottom:10px"><select id="ocCode" style="width:160px">'+codes.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select><input type="number" id="ocLen" placeholder="Length mm" style="width:130px"><input type="number" id="ocQty" placeholder="Qty" value="1" style="width:80px"><button class="btn primary sm" data-act="ocadd">Add offcut</button><label class="f" style="margin:0 0 0 auto;max-width:170px"><span>Min usable length mm</span><input type="number" data-d="minOffcut" value="'+D.minOffcut+'"></label></div>'
    +(Object.keys(D.offcuts).filter(function(c){return D.offcuts[c].length;}).length?'<table><thead><tr><th>Profile</th><th>Pieces in rack</th></tr></thead><tbody>'+Object.keys(D.offcuts).sort().filter(function(c){return D.offcuts[c].length;}).map(function(c){return '<tr><td><b>'+esc(c)+'</b></td><td>'+D.offcuts[c].map(function(z,i){return '<span class="stage" style="margin:2px 6px 2px 0">'+z.len+' mm × '+z.qty+' <button class="del" style="padding:0 2px;font-size:14px" data-ocdel="'+esc(c)+'|'+i+'">×</button></span>';}).join('')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No offcuts in the rack</div>')+'</div>';
   var log=D.invLog.slice(-40).reverse();
-  html+='<div class="card"><h2>Stock movements</h2><p class="faint">Stock goes out automatically when an order\'s production starts. Use + In for purchases, Adjust after a physical count.</p>'+(log.length?'<table><thead><tr><th>Date</th><th>Item</th><th class="num">Qty</th><th>Note</th></tr></thead><tbody>'+log.map(function(l){return '<tr><td>'+dShort(l.on)+'</td><td>'+esc((D.inv[l.key]||{}).name||l.key)+'</td><td class="num '+(l.qty<0?'warnt':'goodt')+'">'+(l.qty>0?'+':'')+(Math.round(l.qty*10)/10)+'</td><td class="faint">'+esc(l.note||'')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No movements yet</div>')+'</div>';
+  html+='<div class="card"><div class="row between"><h2>Stock movements</h2><button class="btn sm" data-cs="logxls">⬇ Full log (Excel)</button></div><p class="faint">Stock goes out automatically when an order\'s production starts. Use + In for purchases, Adjust after a physical count.'+(D.logArch?' Older lines ('+D.logArch+') are kept online — they are in the full log.':'')+'</p>'+(log.length?'<table><thead><tr><th>Date</th><th>Item</th><th class="num">Qty</th><th>Note</th></tr></thead><tbody>'+log.map(function(l){return '<tr><td>'+dShort(l.on)+'</td><td>'+esc((D.inv[l.key]||{}).name||l.key)+'</td><td class="num '+(l.qty<0?'warnt':'goodt')+'">'+(l.qty>0?'+':'')+(Math.round(l.qty*10)/10)+'</td><td class="faint">'+esc(l.note||'')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No movements yet</div>')+'</div>';
   return html; }
 /* ---- staff & attendance ---- */
 function headGrp(name){ var h=(D.heads||[]).filter(function(x){return x.name===name;})[0]; return h?h.grp:'Indirect'; }
@@ -2171,7 +2556,7 @@ function viewSettings(){
   return '<div class="card"><h2>Company (shown on quotes)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
    +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % on quotes (0 = none)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
-   +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
+   +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs.</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — profile codes</h2><p class="faint">Supplier\'s code for each profile. Shown on the BOM and cutting list.</p><div class="tscroll"><table><thead><tr><th>Profile</th>'+SERIES.map(function(x){return '<th>'+x+' series</th>';}).join('')+'</tr></thead><tbody>'
    +PROFS.map(function(p){return '<tr><td>'+p[1]+'</td>'+SERIES.map(function(x){return '<td><input type="text" style="min-height:36px;padding:4px 8px" data-prof="'+x+'|'+p[0]+'" value="'+esc(B.prof[x][p[0]])+'"></td>';}).join('')+'</tr>';}).join('')
@@ -2192,11 +2577,11 @@ function viewSettings(){
      if(sbOn()&&SESS){ if(S.ru==null) loadUsers(); var ru=S.ru;
        return '<div class="card"><h2>Users & roles (allowed list)</h2><p class="faint">Only these emails can sign in. Give each one a password in Supabase → Authentication → Users → Add user'+(sbRef()?' (<a href="https://supabase.com/dashboard/project/'+sbRef()+'/auth/users" target="_blank" rel="noopener">open</a>)':'')+', then tap <b>📤 Send link</b>. Changes apply on their next sign-in.</p>'
         +(ru==='loading'?'<div class="empty">Loading…</div>':ru&&ru.err?'<div class="warnt">Could not load users: '+esc(ru.err)+'</div>':'<table class="rt"><tbody>'+(ru||[]).map(function(u){ var me=SESS&&u.email===(SESS.email||'').toLowerCase(); return '<tr><td class="rw" style="word-break:break-all">'+esc(u.email)+(me?' <span class="faint">(you)</span>':'')+'</td><td>'+(me?'<b>'+u.role+'</b>':roleSel('data-rurole="'+esc(u.email)+'"',u.role))+'</td><td class="right ra" style="white-space:nowrap">'+(me?'':'<button class="btn sm" data-ushare="'+esc(u.email)+'|'+esc(u.role)+'">📤 Send link</button> <button class="del" data-rudel="'+esc(u.email)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>')
-        +'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
+        +(Array.isArray(ru)&&ru.filter(function(u){ return u.role==='admin'; }).length<2?'<div class="netbar" style="margin:10px 0 0">👥 <b>Only one admin.</b> Add a second admin (a partner or a trusted person) so the shop is never locked out if this phone or email is lost.</div>':'')+'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
      if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
      return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
    +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div>'+spaceLine()+'<p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'
-   +'<div class="card"><h2>Backup</h2><div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label></div><p class="faint">Download a backup once a week if you are not using online sync.</p></div>';
+   +'<div class="card"><h2>Backup</h2>'+snapsHtml()+'<div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label>'+phZipBtns()+'</div><p class="faint">'+(sbOn()?'Also download a backup file every 2 weeks and keep it on your computer or Google Drive'+(D.lastBackup?' (last one: '+dShort(D.lastBackup)+')':'')+'. Site photos are kept online — “All site photos” saves a copy of them.':'Download a backup once a week if you are not using online sync.')+'</p></div>';
 }
 
 /* ============================================================
@@ -2227,13 +2612,13 @@ function cutPrintHtml(o){ var c=D.company, M=material(o);
 /* ---- tiny .xlsx writer (zip, stored) ---- */
 var CRC=(function(){var t=[],c;for(var i=0;i<256;i++){c=i;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c>>>0;}return t;})();
 function crc32(u){var c=-1;for(var i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return (c^-1)>>>0;}
-function zip(files){ var enc=new TextEncoder(), parts=[],cd=[],off=0;
-  files.forEach(function(f){ var name=enc.encode(f[0]), data=enc.encode(f[1]), crc=crc32(data), h=new DataView(new ArrayBuffer(30));
+function zip(files,ztype){ var enc=new TextEncoder(), parts=[],cd=[],off=0;
+  files.forEach(function(f){ var name=enc.encode(f[0]), data=f[1] instanceof Uint8Array?f[1]:enc.encode(f[1]), crc=crc32(data), h=new DataView(new ArrayBuffer(30));
     h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0,true);h.setUint16(8,0,true);h.setUint16(10,0,true);h.setUint16(12,0,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);h.setUint16(28,0,true);
     var c=new DataView(new ArrayBuffer(46)); c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0,true);c.setUint16(10,0,true);c.setUint16(12,0,true);c.setUint16(14,0,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint16(30,0,true);c.setUint16(32,0,true);c.setUint16(34,0,true);c.setUint16(36,0,true);c.setUint32(38,0,true);c.setUint32(42,off,true);
     parts.push(h.buffer,name,data); cd.push(c.buffer,name); off+=30+name.length+data.length; });
   var cdLen=cd.reduce(function(a,x){return a+x.byteLength;},0), e=new DataView(new ArrayBuffer(22)); e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdLen,true);e.setUint32(16,off,true);
-  return new Blob(parts.concat(cd,[e.buffer]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); }
+  return new Blob(parts.concat(cd,[e.buffer]),{type:ztype||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); }
 function xlsx(sheets){ function xe(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function col(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=(i-m-1)/26;}return s;}
   var files=[['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map(function(x,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join('')+'</Types>'],
@@ -2295,10 +2680,10 @@ document.addEventListener('click',function(e){
   if(d.del!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } snap(o); o.items.splice(+d.del,1); if(S.di!=null&&S.di>=o.items.length) S.di=o.items.length?o.items.length-1:null; save(); render(); return; }
   if(d.pdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } o.payments.splice(+d.pdel,1); save(); render(); return; }
   if(d.edel!==undefined){ if(!canDel()){ toast('Only Admin can delete'); return; } D.expenses.splice(+d.edel,1); save(); render(); return; }
-  if(d.phdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } o.photos.splice(+d.phdel,1); save(); render(); return; }
-  if(d.view!==undefined&&o){ var v=document.createElement('div'); v.className='viewer'; v.innerHTML='<img src="'+o.photos[+d.view].src+'">'; v.onclick=function(){v.remove();}; document.body.appendChild(v); return; }
-  if(d.iin){ var qi=prompt('Stock in — quantity ('+D.inv[d.iin].unit+')'); if(qi!=null&&n(qi)){ var nt=prompt('Note (supplier / bill no)','')||''; D.inv[d.iin].qty=Math.round((D.inv[d.iin].qty+n(qi))*10)/10; D.invLog.push({on:today(),key:d.iin,qty:n(qi),note:nt}); save(); render(); } return; }
-  if(d.iadj){ var qa=prompt('Counted quantity ('+D.inv[d.iadj].unit+')',D.inv[d.iadj].qty); if(qa!=null&&qa!==''){ var diff=Math.round((n(qa)-D.inv[d.iadj].qty)*10)/10; D.inv[d.iadj].qty=n(qa); if(diff) D.invLog.push({on:today(),key:d.iadj,qty:diff,note:'Stock count'}); save(); render(); } return; }
+  if(d.phdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } if(!confirm('Delete this photo?')) return; phForget(o.photos.splice(+d.phdel,1)[0]); save(); render(); return; }
+  if(d.view!==undefined&&o){ var v=document.createElement('div'); v.className='viewer'; var ph0=o.photos[+d.view]; v.innerHTML='<img src="'+esc(phSrc(ph0))+'" data-phk="'+esc(ph0&&ph0.path||'')+'">'; v.onclick=function(){v.remove();}; document.body.appendChild(v); return; }
+  if(d.iin){ var qi=prompt('Stock in — quantity ('+D.inv[d.iin].unit+')'); if(qi!=null&&n(qi)){ var nt=prompt('Note (supplier / bill no)','')||''; D.inv[d.iin].qty=Math.round((D.inv[d.iin].qty+n(qi))*10)/10; D.invLog.push({id:uid(),on:today(),key:d.iin,qty:n(qi),note:nt}); save(); render(); } return; }
+  if(d.iadj){ var qa=prompt('Counted quantity ('+D.inv[d.iadj].unit+')',D.inv[d.iadj].qty); if(qa!=null&&qa!==''){ var diff=Math.round((n(qa)-D.inv[d.iadj].qty)*10)/10; D.inv[d.iadj].qty=n(qa); D.lastCount=today(); if(diff) D.invLog.push({id:uid(),on:today(),key:d.iadj,qty:diff,note:'Stock count'}); save(); render(); } return; }
   if(d.ocdel){ var pc=d.ocdel.split('|'); D.offcuts[pc[0]].splice(+pc[1],1); save(); render(); return; }
   if(d.idel){ if(confirm('Remove '+D.inv[d.idel].name+' from stock list?')){ delete D.inv[d.idel]; save(); render(); } return; }
   if(d.pmv){ var pm=d.pmv.split('|'), qq=queue(), ids=qq.map(function(x){return x.id;}), ix=ids.indexOf(pm[0]), nx=ix+(+pm[1]); if(ix<0||nx<0||nx>=ids.length) return; ids.splice(ix,1); ids.splice(nx,0,pm[0]); ids.forEach(function(id,i){ byId(id).prio=i; }); save(); render(); return; }
@@ -2323,7 +2708,7 @@ document.addEventListener('click',function(e){
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
   if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
-  if(a==='logout'){ NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
+  if(a==='logout'){ var unl=unsentN()+PHQ.length; if(unl&&sbOn()&&!confirm(unl+' change'+(unl>1?'s are':' is')+' not sent online yet. '+(unl>1?'They stay':'It stays')+' on this phone and '+(unl>1?'are':'is')+' sent after the next sign-in here.\n\nLog out anyway?')) return; NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
   if(a==='add'&&o){ snap(o); o.items.push(newItem(o)); if(S.di!=null) S.di=o.items.length-1; save(); render(); setTimeout(function(){var r=document.querySelectorAll('table.items tbody tr'); var inp=r[r.length-1]&&r[r.length-1].querySelector('input'); if(inp) inp.focus();},0); }
@@ -2332,7 +2717,7 @@ document.addEventListener('click',function(e){
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
     if(o.stage===3&&balance(o)>0.5&&!confirm('⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
     if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if(o.stage===0&&!o.customer){toast('Enter the customer name first'); S.sub='customer'; render(); return;}
-    o.stage=Math.min(4,o.stage+1); if(o.stage===1) o.confirmedOn=today(); if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
+    o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
   if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); if(o.proj&&projById(o.proj)){ S.tab='project'; S.pid=o.proj; render(); window.scrollTo(0,0); } else go('orders'); }
@@ -2354,8 +2739,8 @@ document.addEventListener('click',function(e){
   if(a==='xlsx'&&o) cutXlsx(o);
   if(a==='printcut'&&o) printDoc(cutPrintHtml(o),'landscape');
   if(a==='baddb'){ var nm=prompt('Brand name'); if(nm&&nm.trim()){ var src=D.brands[S.bi||0]; D.brands.push(JSON.parse(JSON.stringify(Object.assign({},src,{name:nm.trim()})))); S.bi=D.brands.length-1; save(); render(); } }
-  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ D.orders.forEach(function(x){x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn.trim(); });}); B0.name=nn.trim(); save(); render(); } }
-  if(a==='bdel'&&D.brands.length>1){ var Bd=D.brands[S.bi||0]; if(confirm('Delete brand '+Bd.name+'? Windows using it will switch to '+(D.brands[0]===Bd?D.brands[1]:D.brands[0]).name+'.')){ D.brands.splice(S.bi||0,1); D.orders.forEach(function(x){x.items.forEach(function(it){ if(it.brand===Bd.name) it.brand=D.brands[0].name; });}); S.bi=0; save(); render(); } }
+  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ var nn2=nn.trim(); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn2; }); if(x.rlock&&x.rlock.b&&x.rlock.b[B0.name]&&!x.rlock.b[nn2]){ x.rlock.b[nn2]=x.rlock.b[B0.name]; delete x.rlock.b[B0.name]; } }); B0.name=nn2; save(); render(); } }
+  if(a==='bdel'&&D.brands.length>1){ var Bd=D.brands[S.bi||0]; if(confirm('Delete brand '+Bd.name+'? Windows using it will switch to '+(D.brands[0]===Bd?D.brands[1]:D.brands[0]).name+'.')){ D.brands.splice(S.bi||0,1); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand!==Bd.name) return; if(x.rlock&&!x.tpl&&x.kind!=='doors'&&n(it.qty)){ it.fixed=Math.round(itemPrice(x,it)/n(it.qty)); } it.brand=D.brands[0].name; }); }); S.bi=0; save(); render(); } }
   if(a==='holadd'){ var hv=$('#holadd').value; if(hv){ D.holidays=D.holidays||[]; if(D.holidays.indexOf(hv)<0) D.holidays.push(hv); save(); render(); } }
   if(a==='ocadd'){ var oc=$('#ocCode').value, ol=n($('#ocLen').value), oq=n($('#ocQty').value)||1; if(!ol){toast('Enter length');return;} offAdd(oc,ol,oq); save(); render(); toast('Offcut added'); }
   if(a==='invadd'){ var nm=prompt('Item name'); if(nm&&nm.trim()){ var un=prompt('Unit (pcs / m / kg / sq ft)','pcs')||'pcs'; D.inv['X:'+nm.trim()]={name:nm.trim(),unit:un,qty:0,min:0}; save(); render(); } }
@@ -2366,6 +2751,7 @@ document.addEventListener('click',function(e){
   if(a==='slips'){ printDoc(slipsHtml(S.am||today().slice(0,7))); }
   if(a==='advgive'){ var sid=$('#advst').value, sa=D.staff.filter(function(x){return x.id===sid;})[0], am=n($('#advamt').value); if(!sa||!am){ toast('Pick worker and amount'); return; }
     D.expenses.push({on:$('#advon').value||today(),head:'Staff advance',party:sa.name,staffId:sa.id,mode:$('#advmode').value,note:$('#advnote').value||'Salary advance',amt:am,adv:true,vno:D.vseq++}); save(); render(); toast('Advance '+money(am)+' to '+sa.name+' recorded'); }
+  if(a==='relock'&&o&&admin()&&o.rlock){ var oldL=JSON.parse(JSON.stringify(o.rlock)), oldG=o.gstPct, before=orderTotal(o); lockRates(o,true); var after=orderTotal(o); if(after!==before&&!confirm('Re-price this job at today\'s rates?\n\nTotal '+money(before)+' → '+money(after))){ o.rlock=oldL; if(oldG===undefined) delete o.gstPct; else o.gstPct=oldG; return; } save(); render(); toast(after!==before?'Prices now use the rates of '+dShort(today()):'Already the same as today\'s rates'); }
   if((a==='locate'||a==='geoaddr')&&o){ geoFill(o,t); }
   if(a==='pull') cloudPull(); if(a==='push') cloudPush();
   if(a==='export'){ D.lastBackup=today(); save(); } if(a==='export') download('windowshop-backup-'+today()+'.json',JSON.stringify(D,null,1),'application/json');
@@ -2444,7 +2830,7 @@ function shrink(file,cb){ var img=new Image(), u=URL.createObjectURL(file); img.
 document.addEventListener('change',function(e){ var t=e.target;
   if(t.dataset&&t.dataset.rurole){ sbUserSave(t.dataset.rurole,t.value).then(function(){ toast('Role updated'); loadUsers(); }).catch(function(e2){ toast(e2.message); }); return; }
   if(t.dataset&&t.dataset.ded){ var ymC=S.am||today().slice(0,7), stC=D.staff.filter(function(x){return x.id===t.dataset.ded;})[0]; if(stC){ var rC=salRow(ymC,stC); if(n(t.value)!==rC.ded){ t.value=rC.ded; D.saladj[ymC][t.dataset.ded]=rC.ded; save(); var c2=$('#sn-'+t.dataset.ded); if(c2) c2.textContent=money(rC.net); toast('Deduction limited to '+money(rC.ded)); } } return; }
-  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) o.photos.push({src:src,cap:'',on:today()}); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); save(); toast('Backup restored'); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
+  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); keepNumbers(sq0); save(); toast('Backup restored'); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
   if(t.tagName==='SELECT') onInput(e); });
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
 function refreshTotals(o){ var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
