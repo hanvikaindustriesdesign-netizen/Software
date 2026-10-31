@@ -346,6 +346,21 @@ body.dzon{overflow:hidden}
 .pjpopc{max-width:560px;width:94vw;margin:0 auto} .pjpopf{gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .pjpop textarea{width:100%;box-sizing:border-box}
 .chk{display:flex;gap:10px;align-items:flex-start;margin:4px 0 8px;font-size:14px;cursor:pointer} .chk input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0}
+.pjmoney{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px} .pjmoney button{background:#f4f6f9;border:1.5px solid transparent;border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;color:var(--ink);font:inherit;min-width:0}
+.pjmoney span{display:block;font-size:12px;color:var(--soft)} .pjmoney b{display:block;font-size:18px;line-height:1.25} .pjmoney small{display:block;font-size:11.5px;color:var(--soft)} .pjmoney .good b{color:var(--good)} .pjmoney .warn b{color:var(--warn)} .pjmoney .on{border-color:var(--accent);background:#eef4ff}
+.ft{padding:0 0 4px;overflow:hidden} .fth,.ftm{display:grid;grid-template-columns:76px 92px minmax(0,1.5fr) 132px 106px 132px 100px;gap:4px 12px;align-items:center}
+.fth{padding:10px 54px 8px 14px;font-size:12px;font-weight:650;color:var(--soft);border-bottom:1px solid var(--line)} .fth .r,.pyh .r{text-align:right}
+.ftr{display:flex;align-items:center;border-bottom:1px solid var(--line)} .ftr:last-of-type{border-bottom:0}
+.ftm{flex:1 1 auto;min-width:0;background:none;border:0;padding:10px 4px 10px 14px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .ftm:hover{background:#f8fafc}
+.ftm small{display:block;font-size:12px;color:var(--faint);font-weight:400} .ftm b.c-no{font-size:15px} .c-ty{color:var(--soft);font-size:13.5px} .c-ow{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.c-bill,.c-rec,.c-due{text-align:right;font-size:14px} .ftr .fe{flex:0 0 auto;margin-right:6px;min-width:38px;font-size:17px;color:var(--soft)}
+@media(max-width:760px){ .fth{display:none} .ftm{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"no ty st" "ow ow ow" "bill rec due";gap:4px 10px;padding:10px 2px 10px 12px}
+  .c-no{grid-area:no} .c-ty{grid-area:ty} .c-st{grid-area:st;justify-self:end} .c-ow{grid-area:ow} .c-ow small{display:inline;margin-left:6px}
+  .c-bill{grid-area:bill;text-align:left} .c-rec{grid-area:rec;text-align:center} .c-due{grid-area:due} .c-bill::before,.c-rec::before,.c-due::before{content:attr(data-l);display:block;font-size:11px;color:var(--faint)} }
+.pyt{border:1px solid var(--line);border-radius:10px;overflow:hidden} .pyh,.pyr{display:grid;grid-template-columns:84px 80px minmax(0,1.2fr) minmax(0,1fr) 70px 110px;gap:4px 10px;align-items:center;padding:9px 12px}
+.pyh{font-size:12px;font-weight:650;color:var(--soft);background:#f7f9fc;border-bottom:1px solid var(--line)} .pyr{width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;cursor:pointer;font:inherit;color:var(--ink)} .pyr:last-child{border-bottom:0} .pyr:hover{background:#f8fafc}
+.pyr .c-am{text-align:right} .pyr .c-nt,.pyr .c-ow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .pyr .c-md,.pyr .c-dt{color:var(--soft);font-size:13.5px}
+@media(max-width:640px){ .pyh{display:none} .pyr{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"fn ow am" "dt nt md"} .pyr .c-fn{grid-area:fn} .pyr .c-ow{grid-area:ow} .pyr .c-am{grid-area:am} .pyr .c-dt{grid-area:dt} .pyr .c-nt{grid-area:nt;color:var(--soft)} .pyr .c-md{grid-area:md;text-align:right} }
 .faplan{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:2px 0 8px}
 .fapg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 10px} .fap{margin-bottom:6px} .fap>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){ .fapg{grid-template-columns:repeat(2,minmax(0,1fr))} }
@@ -436,7 +451,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 16:14';
+var APPV='31 Oct 2026, 16:48';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -548,7 +563,9 @@ function advanceDue(o){ return Math.round(orderTotal(o)*n(D.advancePct)/100); }
 function payLine(o){ var p=paid(o), b=balance(o); return b<=0.5?'<span class="goodt">Fully paid</span>':p>0.5?'Advance '+money(p)+' · <b class="warnt">Balance '+money(b)+'</b>':'<b class="warnt">Payment pending '+money(b)+'</b>'; }
 function madeCount(o){ return o.items.filter(function(i){return i.made;}).length; }
 function leftQty(o){ return o.items.filter(function(i){return !i.made;}).reduce(function(a,i){return a+n(i.qty);},0); }
-function openOrders(){ return D.orders.filter(function(o){return !o.archived;}); }
+function openOrders(){ return D.orders.filter(function(o){return !o.archived;}).concat(typeof liveFlats==='function'?liveFlats().filter(function(f){ return f.stage>=1&&!f.archived&&(f.stage<4||balance(f)>0.5); }):[]); }
+function oTitleT(o){ if(o&&o.proj){ var pj=projById(o.proj); return 'Flat '+o.no+(pj?' · '+pj.name:'')+(o.customer?' · '+o.customer:''); } return '#'+o.no+' '+(o.customer||''); }
+function oTitle(o){ return esc(oTitleT(o)); }
 
 /* production plan: queue by due date, each line (windows / doors) runs at its own speed */
 function isOff(ds){ return new Date(ds+'T00:00').getDay()===0||(D.holidays||[]).indexOf(ds)>=0; }
@@ -737,12 +754,12 @@ function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
   open.forEach(function(o){ var p=P[o.id];
     if(o.remind&&o.remind<=t) al.push(['r',o.id,'🔔 #'+o.no+' '+o.customer+' — '+(o.remindNote||'follow up')+(o.remind<t?' (was '+dShort(o.remind)+')':'')]);
-    if(o.stage===0&&o.created&&addWorkDays(o.created,5)<t&&!o.remind) al.push(['y',o.id,'#'+o.no+' '+o.customer+' — enquiry waiting '+Math.round((new Date(t)-new Date(o.created))/864e5)+' days, follow up']);
-    if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,'#'+o.no+' '+o.customer+' — delivery was due '+dShort(o.due)]);
-    else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,'#'+o.no+' '+o.customer+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
-    else if(p&&p.late) al.push(['y',o.id,'#'+o.no+' '+o.customer+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
-    if(o.stage>=3&&balance(o)>0.5) al.push(['r',o.id,'#'+o.no+' '+o.customer+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
-    if(o.stage===1&&paid(o)<0.5) al.push(['y',o.id,'#'+o.no+' '+o.customer+' — confirmed but no advance received']); });
+    if(o.stage===0&&o.created&&addWorkDays(o.created,5)<t&&!o.remind) al.push(['y',o.id,oTitleT(o)+' — enquiry waiting '+Math.round((new Date(t)-new Date(o.created))/864e5)+' days, follow up']);
+    if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
+    else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,oTitleT(o)+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
+    else if(p&&p.late) al.push(['y',o.id,oTitleT(o)+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
+    if(o.stage>=3&&balance(o)>0.5) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
+    if(o.stage===1&&paid(o)<0.5) al.push(['y',o.id,oTitleT(o)+' — confirmed but no advance received']); });
   if(admin()){ var lows=lowStock(); if(lows.length) al.push(['y','','inventory',lows.length+' item'+(lows.length>1?'s':'')+' low in stock — '+lows.slice(0,3).map(function(k){return D.inv[k].name;}).join(', ')+(lows.length>3?'…':'')]);
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
     if(DSIZE>3.5*1048576) al.push(['y','','settings','App data is '+(DSIZE/1048576).toFixed(1)+' MB — close to the phone limit. Remove old site photos (Settings → App version).']);
@@ -801,9 +818,9 @@ function viewHome(){
   var pipe='<div class="card h-pi"><h2>Orders</h2><div class="pipe">'+STAGES.map(function(s,i){return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span></button>';}).join('')+'</div></div>';
   var q=queue();
   var work='<div class="card h-wk"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
-   +(q.length?'<table><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">#'+o.no+' '+esc(o.customer)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
+   +(q.length?'<table><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
   var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5;}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
-  var payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending</div>')+'</div></div>';
+  var payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending</div>')+'</div></div>';
   return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
 function homeProd(){
@@ -812,8 +829,8 @@ function homeProd(){
   var left=q.reduce(function(a,o){return a+leftQty(o);},0), late=q.filter(function(o){return P[o.id].late;}).length;
   var kp='<div class="kpis"><div class="kpi"><span>To make</span><b>'+left+'</b><i>'+pl(q.length,'order')+'</i></div><div class="kpi"><span>On the floor</span><b>'+by[2].length+'</b><i>in production</i></div><div class="kpi good"><span>Ready to deliver</span><b>'+by[3].length+'</b></div><div class="kpi'+(late?' warn':'')+'"><span>Running late</span><b>'+late+'</b></div></div>';
   var work='<div class="card"><div class="row between"><h2>Make next</h2><button class="btn ghost sm" data-go="planning">Day plan ›</button></div>'
-   +(q.length?q.map(function(o){var p=P[o.id];return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer)+'</div><div class="d">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'windows')+' left · '+madeCount(o)+'/'+o.items.length+' made</div></div><div class="right"><div class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</div><div class="faint">due '+dShort(o.due)+'</div></div></button>';}).join(''):'<div class="empty">Nothing to make — all caught up</div>')+'</div>';
-  var rd=by[3].length?'<div class="card"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
+   +(q.length?q.map(function(o){var p=P[o.id];return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'windows')+' left · '+madeCount(o)+'/'+o.items.length+' made</div></div><div class="right"><div class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</div><div class="faint">due '+dShort(o.due)+'</div></div></button>';}).join(''):'<div class="empty">Nothing to make — all caught up</div>')+'</div>';
+  var rd=by[3].length?'<div class="card"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
   return installCard()+kp+work+rd;
 }
 function oRow(o){ var t=orderTotal(o), b=balance(o);
@@ -1468,9 +1485,9 @@ function flatsMerge(cur,inc){ cur=cur||[]; if(!Array.isArray(inc)) return cur; v
 function pad2(v){ v=String(v); return v.length<2?'0'+v:v; }
 function flatNo(t,fl,u){ return (t?t+'-':'')+fl+pad2(u); }
 function flatSort(a,b){ return (a.tower||'')<(b.tower||'')?-1:(a.tower||'')>(b.tower||'')?1:(n(a.floor)-n(b.floor))||(n(a.unit)-n(b.unit))||((a.no||'')<(b.no||'')?-1:1); }
-function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Ready':f.stage===2?'In production':f.stage===1?'Advance paid':f.measured?'Measured':'Not measured'; }
-var FSTC={'Not measured':'s0','Measured':'s1','Advance paid':'s1','In production':'s2','Ready':'s3','Delivered':'s4'};
-function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(f.stage>=1) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.measured||f.stage>=1) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
+function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Ready':f.stage===2?'In production':f.stage===1?(paid(f)>0.5?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
+var FSTC={'Not measured':'s0','Measured':'s1','Confirmed':'s1','Advance paid':'s1','In production':'s2','Ready':'s3','Delivered':'s4'};
+function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(paid(f)>0.5) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.measured||f.stage>=1) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
 function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
   o.items.forEach(function(it){ it.made=false; }); o.address='Flat '+o.no+', '+p.name+(p.site?', '+p.site:''); return o; }
 function batchById(id){ var ps=D.projects||[]; for(var i=0;i<ps.length;i++){ var b=(ps[i].batches||[]).filter(function(x){return x.id===id;})[0]; if(b) return {p:ps[i],b:b}; } return null; }
@@ -1485,11 +1502,11 @@ function batchOrder(id){ var r=batchById(id); if(!r) return null; var fl=batchFl
    PROJECT SCREENS — everything editable (✎) and deletable (🗑, admin only), kept simple:
    status boxes are the filters, one popup for each edit.
    ============================================================ */
-var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['Advance paid','Advance paid'],['In production','In production'],['Ready','Ready'],['Delivered','Delivered'],['pend','₹ Due']];
+var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['Confirmed','No advance yet'],['Advance paid','Advance paid'],['In production','In production'],['Ready','Ready'],['Delivered','Delivered']];
 function pjCounts(fl){ var c={'':fl.length,pend:0}; fl.forEach(function(f){ var s=flatStatus(f); c[s]=(c[s]||0)+1; if(f.stage>0&&balance(f)>0.5) c.pend++; }); return c; }
 function pjAddr(no,p){ return 'Flat '+no+', '+p.name+(p.site?', '+p.site:''); }
 function batchRange(b){ var fl=batchFlats(b); return fl.length?fl[0].no+(fl.length>1?' – '+fl[fl.length-1].no:'')+' · '+fl.length+' flat'+(fl.length>1?'s':''):'no flats yet'; }
-function pjFresh(){ S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; S.padd=false; S.fa_t='A'; S.fa_ty=null; S.fa_f1=null; S.fa_f2=null; S.fa_n=4; S.fa_u=1; S.fa_pt=null; S.ppT=null; }
+function pjFresh(){ S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; S.padd=false; S.fa_t='A'; S.fa_ty=null; S.fa_f1=null; S.fa_f2=null; S.fa_n=4; S.fa_u=1; S.fa_pt=null; S.ppT=null; S.pyq=''; S.pylim=100; }
 function pjSelIds(){ var s=S.psel||{}; return Object.keys(s).filter(function(k){ var f=s[k]&&flatById(k); return f&&!f.del&&f.proj===S.pid; }); }
 function itemsSig(items){ return JSON.stringify((items||[]).map(function(it){ var c=Object.assign({},it); delete c.made; return c; })); }
 /* flats of a type that are not measured yet and still have a different window list than the type */
@@ -1514,39 +1531,64 @@ function projCard(){ var all=D.projects||[], live=all.filter(function(p){return 
      :'<div class="faint" style="margin-top:6px">'+(S.pjarch?'No archived projects.':'For apartment jobs: each flat is its own order with the owner, measured sizes and payments.')+'</div>')
    +(ar||S.pjarch?'<button class="btn ghost sm" data-act="pjarchlist" style="margin-top:8px;padding-left:2px">'+(S.pjarch?'‹ Active projects':'Archived projects ('+ar+')')+'</button>':'')+'</div>'; }
 
-/* ---- project page ---- */
+/* ---- project page: one dashboard — every flat with its owner, money and advance; one flat is worked at a time ---- */
+function lastPay(f){ var ps=(f.payments||[]).slice().sort(function(a,b){ return (b.on||'')<(a.on||'')?-1:(b.on||'')>(a.on||'')?1:0; }); return ps[0]||null; }
+function pjPayRows(fl){ var rows=[]; fl.forEach(function(f){ (f.payments||[]).forEach(function(x,i){ rows.push({f:f,x:x,i:i}); }); }); rows.sort(function(a,b){ var d=(b.x.on||'').localeCompare(a.x.on||''); return d||flatSort(a.f,b.f); }); return rows; }
 function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">Project not found. <button class="btn ghost" data-go="orders">Back</button></div>';
   if(!FL.loaded) return '<div class="card"><h2>🏢 '+esc(p.name)+'</h2><div class="faint">Loading flats…</div></div>';
-  var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), sub=prod()?'batches':(S.psub==='types'||S.psub==='batches'?S.psub:'flats'), F=S.pf||(S.pf={tower:'',st:'',q:''});
+  var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), F=S.pf||(S.pf={tower:'',st:'',q:''}), hasB=(p.batches||[]).length>0, np=fl.reduce(function(a,f){return a+(f.payments||[]).length;},0);
+  var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length],['pay','Advance & payments',np],['types','Flat types',(p.types||[]).length]].concat(hasB?[['batches','Batches',p.batches.length]]:[]);
+  var sub=tabs.some(function(t){return t[0]===S.psub;})?S.psub:'flats';
+  var tiles=PJST.filter(function(x){ return x[0]!=='Confirmed'||c.Confirmed; }).map(function(x){ var on=!prod()&&sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='Confirmed'?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('');
+  var pend=fl.reduce(function(a,f){ return a+(f.stage>0?Math.max(0,balance(f)):0); },0);
   var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>'+(prod()?'':'<button class="btn sm" data-act="pjedit">✎ Edit project</button>')+'</div>'
    +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+'</div>':'')
-   +'<div class="pjst">'+PJST.map(function(x){ var on=sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='pend'?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('')+'</div>'
-   +(prod()?'':'<div class="muted" style="margin-top:8px">Billed '+money(st.billed)+' · received <b class="goodt">'+money(st.received)+'</b> · pending <b class="warnt">'+money(Math.max(0,st.billed-st.received))+'</b> · '+st.windows+' windows</div>')+'</div>';
-  var subs=prod()?[['batches','Batches',(p.batches||[]).length]]:[['flats','Flats',fl.length],['types','Flat types',(p.types||[]).length],['batches','Batches',(p.batches||[]).length]];
-  return head+'<div class="subtabs">'+subs.map(function(s){return '<button data-psub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+' <small>'+s[2]+'</small></button>';}).join('')+'</div>'+({flats:pjFlats,types:pjTypes,batches:pjBatches}[sub])(p,fl); }
+   +'<div class="pjst">'+tiles+'</div>'
+   +(prod()?'':'<div class="pjmoney"><button data-psub="pay"><span>Billed</span><b>'+money(st.billed)+'</b></button><button data-psub="pay" class="good"><span>Received</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>Pending</span><b>'+money(pend)+'</b></button></div>')+'</div>';
+  var body=sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
+  return head+'<div class="subtabs">'+tabs.map(function(s){return '<button data-psub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+(s[2]!=null?' <small>'+s[2]+'</small>':'')+'</button>';}).join('')+'</div>'+body; }
 function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').toLowerCase();
-  return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st==='free'){ if(f.batch) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
+  return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
     return !q||(f.no+' '+(f.customer||'')+' '+(f.phone||'')).toLowerCase().indexOf(q)>=0; }).sort(flatSort); }
-function pjRows(p,list,lim){ var sel=S.psel||(S.psel={});
-  return list.slice(0,lim).map(function(f){ var st=flatStatus(f), b=balance(f), ty=typeById(f.ftype);
-    return '<div class="frow"><input type="checkbox" data-fsel="'+f.id+'"'+(sel[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="fl" data-open="'+f.id+'"><b>'+esc(f.no)+'</b><span class="fo">'+esc([f.customer,ty&&ty.name,f.batch&&batchById(f.batch)&&batchById(f.batch).b.name].filter(Boolean).join(' · ')||'—')+'</span><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span><span class="fm">'+(f.measured||f.stage>0?money(orderTotal(f))+(f.stage>0||paid(f)>0?'<br><small class="'+(b>0.5?'warnt':'goodt')+'">'+(b>0.5?'due '+money(b):'paid')+'</small>':''):'<small class="faint">'+qty(f)+' windows</small>')+'</span></button>'
-     +'<button class="btn sm ghost fe" data-fedit="'+f.id+'" aria-label="Edit '+esc(f.no)+'" title="Edit flat">✎</button></div>'; }).join(''); }
-function pjSelBar(){ var ids=pjSelIds(), k=ids.length; if(!k) return '';
-  return '<div class="pjbar"><b>'+k+' selected</b><span class="grow"></span><button class="btn sm primary" data-act="pbatch">Make batch</button><button class="btn sm" data-act="pjseltype">Change type</button>'+(admin()?'<button class="btn sm danger" data-act="pjseldel">🗑 Delete</button>':'')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div>'; }
+function pjRow(f){ var ty=typeById(f.ftype), st=flatStatus(f), pd=paid(f), lp=lastPay(f), meas=f.measured||f.stage>0, bal=balance(f);
+  return '<div class="ftr"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
+   +'<span class="c-ow">'+(f.customer?esc(f.customer):'<span class="faint">No owner yet</span>')+(f.phone?'<small>'+esc(f.phone)+'</small>':'')+'</span>'
+   +'<span class="c-st"><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span></span>'
+   +'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+'</span>'
+   +'<span class="c-rec" data-l="Received">'+(pd>0.5?'<b class="goodt">'+money(pd)+'</b>'+(lp?'<small>'+dShort(lp.on)+' · '+esc(lp.mode||'Cash')+'</small>':''):'<span class="faint">—</span>')+'</span>'
+   +'<span class="c-due" data-l="Due">'+(f.stage>0||pd>0.5?(bal>0.5?'<b class="warnt">'+money(bal)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</span></button>'
+   +(prod()?'':'<button class="btn sm ghost fe" data-fedit="'+f.id+'" aria-label="Edit '+esc(f.no)+'" title="Edit flat">✎</button>')+'</div>'; }
 function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(function(f){return f.tower||'';}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(), list=pjFilter(p,fl), lim=S.plim||60, types=p.types||[], empty=fl.filter(function(f){return !f.items||!f.items.length;}).length;
+  if(prod()) list=list.filter(function(f){ return f.stage>=1&&f.stage<=3; });
   var tyOpt=types.map(function(t){return '<option value="'+t.id+'"'+(S.fa_ty===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join(''), many=types.length>1;
-  var add='<div class="card pjadd'+(S.padd||!fl.length?'':' hide')+'" id="pjadd"><div class="row between"><h2>Add flats</h2>'+(fl.length?'<button class="btn sm ghost" data-act="paddx" aria-label="Close">✕</button>':'')+'</div>'+(types.length?'':'<div class="pjnote">First make a flat type — the list of windows in one flat. <button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div>')
+  var add=prod()?'':'<div class="card pjadd'+(S.padd||!fl.length?'':' hide')+'" id="pjadd"><div class="row between"><h2>Add flats</h2>'+(fl.length?'<button class="btn sm ghost" data-act="paddx" aria-label="Close">✕</button>':'')+'</div>'+(types.length?'':'<div class="pjnote">First make a flat type — the list of windows in one flat. <button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div>')
    +'<div class="grid2"><label class="f"><span>Tower / block</span><input type="text" id="fa_t" value="'+esc(S.fa_t||'A')+'" maxlength="6"></label><label class="f"><span>Flats on each floor</span><input type="number" id="fa_n" min="1" max="30" value="'+(S.fa_n||4)+'"></label>'
    +'<label class="f"><span>From floor</span><input type="number" id="fa_f1" value="'+(S.fa_f1!=null?S.fa_f1:1)+'"></label><label class="f"><span>To floor</span><input type="number" id="fa_f2" value="'+(S.fa_f2!=null?S.fa_f2:1)+'"></label>'
    +'<label class="f"><span>First flat number</span><input type="number" id="fa_u" value="'+(S.fa_u||1)+'"></label>'+(many?'':'<label class="f"><span>Flat type</span><select id="fa_ty">'+tyOpt+'</select></label>')+'</div>'
    +(many?'<div id="fa_plan">'+faPlanHtml(p)+'</div>':'')
    +'<div class="muted" id="fa_prev" style="margin:4px 0 10px">'+faPreview(p)+'</div><button class="btn primary" data-act="padd"'+(types.length?'':' disabled')+'>Add flats</button></div>';
+  var note=!prod()&&empty?'<div class="pjnote">⚠ '+empty+' flat'+(empty>1?'s have':' has')+' no windows yet. Add the windows to the flat type, then tap <b>Update</b> on the flat type page.'+(types.length?' <button class="btn sm" data-psub="types">Open flat types</button>':'')+'</div>':'';
+  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'">'+(prod()?'':'<button class="btn" data-act="paddshow">+ Add flats</button>'+(many&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':''))+'</div>';
   var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
-  var note=empty?'<div class="pjnote">⚠ '+empty+' flat'+(empty>1?'s have':' has')+' no windows yet. Add the windows to the flat type, then tap <b>Update</b> on the flat type page.'+(types.length?' <button class="btn sm" data-psub="types">Open flat types</button>':'')+'</div>':'';
-  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'"><button class="btn" data-act="paddshow">+ Add flats</button>'+(types.length>1&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':'')+'</div>';
-  var stl=(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
-  var cnt='<div class="row pjsel2"><span class="muted">'+list.length+' flat'+(list.length===1?'':'s')+(F.st?' · '+esc(stl)+' <button class="btn ghost sm" data-pst="">show all</button>':'')+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+'</div>';
-  return add+note+bar+tw+cnt+'<div class="card flist">'+(pjRows(p,list,lim)||'<div class="empty">'+(fl.length?'No flats match':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin-top:8px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
+  var stl=F.st==='pend'?'Pending payment':(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
+  var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':''))+'</span><span class="grow"></span>'+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
+  var rows=list.slice(0,lim).map(pjRow).join('');
+  return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span><span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span></div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div>'; }
+/* every advance / payment of every flat, with its details */
+function pjPays(p,fl){ var all=pjPayRows(fl), q=(S.pyq||'').trim().toLowerCase(), rows=q?all.filter(function(r){ return (r.f.no+' '+(r.f.customer||'')+' '+(r.x.note||'')+' '+(r.x.mode||'')).toLowerCase().indexOf(q)>=0; }):all, lim=S.pylim||100;
+  var tot=rows.reduce(function(a,r){return a+n(r.x.amt);},0), by={}; rows.forEach(function(r){ var m=r.x.mode||'Cash'; by[m]=(by[m]||0)+n(r.x.amt); });
+  var noAdv=fl.filter(function(f){ return f.stage>=1&&paid(f)<0.5; });
+  return '<div class="card"><div class="row between"><h2>Advance & payments</h2>'+(all.length?'<button class="btn sm" data-act="pjxls">⬇ Excel</button>':'')+'</div>'
+   +'<div class="muted" style="margin-bottom:8px"><b class="goodt">'+money(tot)+'</b> received in '+rows.length+' payment'+(rows.length===1?'':'s')+(Object.keys(by).length?' · '+Object.keys(by).map(function(m){return esc(m)+' '+money(by[m]);}).join(' · '):'')+'</div>'
+   +(noAdv.length?'<div class="pjnote">⚠ '+noAdv.length+' confirmed flat'+(noAdv.length>1?'s have':' has')+' no advance yet: '+noAdv.slice(0,8).map(function(f){return '<button class="btn sm" data-fpay="'+f.id+'">'+esc(f.no)+'</button>';}).join(' ')+(noAdv.length>8?' …':'')+'</div>':'')
+   +'<input type="text" id="pyq" placeholder="Search flat no, owner, note" value="'+esc(S.pyq||'')+'" style="width:100%;margin-bottom:8px">'
+   +'<div class="pyt"><div class="pyh"><span>Date</span><span>Flat</span><span>Owner</span><span>Note</span><span>Mode</span><span class="r">Amount</span></div>'
+   +(rows.slice(0,lim).map(function(r){ return '<button class="pyr" data-fpay="'+r.f.id+'"><span class="c-dt">'+dShort(r.x.on)+'</span><b class="c-fn">'+esc(r.f.no)+'</b><span class="c-ow">'+esc(r.f.customer||'—')+'</span><span class="c-nt">'+esc(r.x.note||'')+'</span><span class="c-md">'+esc(r.x.mode||'Cash')+'</span><b class="c-am goodt">'+money(r.x.amt)+'</b></button>'; }).join('')||'<div class="empty">'+(all.length?'No payments match':'No advance received yet — open a flat → Payments to add one')+'</div>')
+   +(rows.length>lim?'<button class="btn" data-act="pymore" style="margin-top:8px">Show more ('+(rows.length-lim)+' more)</button>':'')+'</div></div>'; }
+function pjXls(p){ var fl=projFlats(p.id).sort(flatSort), pr=pjPayRows(fl);
+  var A=[['Flat','Tower','Floor','Type','Owner','Phone','Status','Measured on','Windows','Bill','Received','Due','Last payment','Mode']].concat(fl.map(function(f){ var lp=lastPay(f), ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',flatStatus(f),f.measuredOn||'',qty(f),Math.round(orderTotal(f)),Math.round(paid(f)),f.stage>0||paid(f)>0.5?Math.round(Math.max(0,balance(f))):'',lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
+  var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',r.x.note||'',r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
+  download((p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - flats.xlsx',xlsx([['Flats',A],['Payments',B]])); }
 function faRead(){ var g=function(id){ return ($('#'+id)||{}).value; };
   var a={t:String(g('fa_t')||'').trim().toUpperCase(),ty:g('fa_ty'),f1:Math.round(n(g('fa_f1'))),f2:Math.round(n(g('fa_f2'))),n:Math.min(30,Math.round(n(g('fa_n')))),u:Math.max(0,Math.round(n(g('fa_u'))))};
   a.pt=(S.fa_pt||[]).slice(); [].slice.call(document.querySelectorAll('[data-fapt]')).forEach(function(x){ a.pt[+x.dataset.fapt]=x.value; }); return a; }
@@ -1662,7 +1704,7 @@ function btDelete(r){ if(!admin()) return; var b=r.b, p=r.p, bf=batchFlats(b);
   p.batches=p.batches.filter(function(x){return x.id!==b.id;}); save(); S.tab='project'; S.pid=p.id; S.psub='batches'; render(); toast(b.name+' deleted'); }
 
 /* clicks for projects (the main handler ignores these attributes) */
-document.addEventListener('click',function(e){ var t=e.target.closest('[data-proj],[data-psub],[data-pft],[data-pfs],[data-pst],[data-act],[data-bsub],[data-bmade],[data-bfall],[data-bout],[data-nestshow],[data-fedit],[data-tyc],[data-tyd],[data-btr],[data-btd]'); if(!t) return; var d=t.dataset;
+document.addEventListener('click',function(e){ var t=e.target.closest('[data-proj],[data-psub],[data-pft],[data-pfs],[data-pst],[data-act],[data-bsub],[data-bmade],[data-bfall],[data-bout],[data-nestshow],[data-fedit],[data-tyc],[data-tyd],[data-btr],[data-btd],[data-fpay]'); if(!t) return; var d=t.dataset;
   if(d.nestshow!==undefined){ var on=order(); if(!on) return; var Mn=material(on), rn=Mn.bom[+d.nestshow], box=t.nextElementSibling; if(rn&&box){ box.innerHTML=nestRows(rn); t.remove(); } return; }
   if(d.proj!==undefined){ if(!projById(d.proj)) return; if(S.pid!==d.proj) pjFresh(); S.tab='project'; S.pid=d.proj; if(d.psubgo) S.psub=d.psubgo; S.psel=S.psel||{}; S.plim=60; render(); window.scrollTo(0,0); return; }
   if(d.psub){ S.psub=d.psub; render(); return; }
@@ -1672,6 +1714,7 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(d.bmade){ var q=d.bmade.split('|'), f=flatById(q[0]); if(!f||f.del||!f.items||!f.items[+q[1]]) return; f.items[+q[1]].made=!f.items[+q[1]].made; save(); render(); return; }
   if(d.bfall){ var f2=flatById(d.bfall); if(!f2||f2.del||!f2.items) return; var all=f2.items.every(function(i){return i.made;}); f2.items.forEach(function(i){ i.made=!all; }); save(); render(); return; }
   if(d.bout){ if(prod()) return; var f3=flatById(d.bout); if(!f3||f3.del) return; var r3=batchById(f3.batch); if(r3&&confirm('Take '+f3.no+' out of '+r3.b.name+'?')){ r3.b.flats=r3.b.flats.filter(function(x){return x!==f3.id;}); delete f3.batch; if(f3.stage===2&&!f3.items.some(function(i){return i.made;})) f3.stage=paid(f3)>0?1:0; save(); render(); } return; }
+  if(d.fpay){ var fp=flatById(d.fpay); if(!fp||fp.del) return; S.tab='order'; S.oid=fp.id; S.di=null; S.sub=prod()?'production':'payments'; render(); window.scrollTo(0,0); return; }
   if(d.fedit){ if(prod()) return; var fe=flatById(d.fedit); if(fe&&!fe.del) flatPop(fe); return; }
   if(d.tyc){ var tc=typeById(d.tyc); if(tc&&!prod()) tyCopy(tc); return; }
   if(d.tyd){ var td=typeById(d.tyd); if(td) tyDelete(td); return; }
@@ -1694,6 +1737,8 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='paddshow'){ S.padd=true; render(); var el=$('#pjadd'); if(el) el.scrollIntoView({block:'start'}); return; }
   if(a==='paddx'){ S.padd=false; render(); return; }
   if(a==='padd'&&p){ pjAddFlats(p); return; }
+  if(a==='pjxls'&&p&&!prod()){ pjXls(p); return; }
+  if(a==='pymore'){ S.pylim=(S.pylim||100)+200; render(); return; }
   if(a==='pmore'){ S.plim=(S.plim||60)+120; render(); return; }
   if(a==='pselall'&&p){ S.psel=S.psel||{}; pjFilter(p,projFlats(p.id)).forEach(function(f){ S.psel[f.id]=true; }); render(); return; }
   if(a==='pselnone'){ S.psel={}; render(); return; }
@@ -1726,12 +1771,12 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='pmeas'&&o&&o.proj&&!o.tpl){ if(o.measured){ o.measured=false; delete o.measuredOn; delete o.measuredBy; } else { o.measured=true; o.measuredOn=today(); o.measuredBy=SESS&&SESS.email?SESS.email.split('@')[0]:(S.role||''); } save(); render(); return; }
   if((a==='bready'||a==='bdeliv')&&o&&o.bat){ var bf=batchFlats(o.bat); if(a==='bready'){ bf.forEach(function(f){ if(f.stage<3) f.stage=3; }); toast('Flats marked ready'); } else { var due=bf.filter(function(f){return balance(f)>0.5;}); if(due.length&&!confirm(due.length+' owner'+(due.length>1?'s still have':' still has')+' a balance pending. Mark all delivered anyway?')) return; bf.forEach(function(f){ if(f.stage===3) f.stage=4; }); toast('Flats marked delivered'); } save(); render(); return; } });
 document.addEventListener('input',function(e){ var t=e.target;
-  if(t.id==='pq'){ (S.pf=S.pf||{}).q=t.value; S.plim=60; var p=projById(S.pid); if(!p) return; var tmp=document.createElement('div'); tmp.innerHTML=pjFlats(p,projFlats(p.id)); var a=$('.card.flist'), b=tmp.querySelector('.card.flist'); if(a&&b) a.innerHTML=b.innerHTML; var c=$('.pjsel2'), d2=tmp.querySelector('.pjsel2'); if(c&&d2) c.innerHTML=d2.innerHTML; return; }
+  if(t.id==='pq'){ (S.pf=S.pf||{}).q=t.value; S.plim=60; var p=projById(S.pid); if(!p) return; var tmp=document.createElement('div'); tmp.innerHTML=pjFlats(p,projFlats(p.id)); var a=$('.card.ft'), b=tmp.querySelector('.card.ft'); if(a&&b) a.innerHTML=b.innerHTML; var c=$('.pjsel2'), d2=tmp.querySelector('.pjsel2'); if(c&&d2) c.innerHTML=d2.innerHTML; return; }
+  if(t.id==='pyq'){ S.pyq=t.value; S.pylim=100; var pp=projById(S.pid); if(!pp) return; var tmp2=document.createElement('div'); tmp2.innerHTML=pjPays(pp,projFlats(pp.id)); var o1=$('.pyt'), n1=tmp2.querySelector('.pyt'); if(o1&&n1) o1.innerHTML=n1.innerHTML; var o2=o1&&o1.parentNode.querySelector('.muted'), n2=tmp2.querySelector('.card>.muted'); if(o2&&n2) o2.innerHTML=n2.innerHTML; return; }
   if(t.id==='bt_q'){ var qq=t.value.trim().toLowerCase(); [].slice.call(document.querySelectorAll('.pjpop .btf')).forEach(function(l){ l.classList.toggle('hide',!!qq&&l.dataset.q.indexOf(qq)<0); }); return; }
   if(/^fa_/.test(t.id||'')){ var p2=projById(S.pid), pv=$('#fa_prev'), pl=$('#fa_plan'); if(!p2) return;
     if(t.id==='fa_t') S.fa_t=t.value; else if(/^fa_(f1|f2|n|u)$/.test(t.id)) S[t.id]=t.value===''?null:Math.round(n(t.value));   /* a redraw keeps what was typed */ if(pl&&/^fa_(n|u|t|f1)$/.test(t.id)){ S.fa_pt=faRead().pt; pl.innerHTML=faPlanHtml(p2); } if(pv) pv.innerHTML=faPreview(p2); return; } });
 document.addEventListener('change',function(e){ var t=e.target, d=t.dataset;
-  if(d.fsel){ (S.psel=S.psel||{})[d.fsel]=t.checked; var w=$('#pjbarw'); if(w) w.innerHTML=pjSelBar(); return; }
   if(d.tpn){ var o=order(); if(o&&o.tpl){ o.name=t.value; save(); } return; }
   if(t.id==='fa_ty'){ S.fa_ty=t.value; var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; }
   if(d.fapt!==undefined){ (S.fa_pt=S.fa_pt||[])[+d.fapt]=t.value; var p3=projById(S.pid), pv3=$('#fa_prev'); if(p3&&pv3) pv3.innerHTML=faPreview(p3); return; }
@@ -1744,7 +1789,7 @@ function nestGroups(r){ var gs=[], bi=0; r.nest.forEach(function(bar){ var key=(
   gs.forEach(function(g){ if(g.bar.off){ g.name="Offcut "+g.bar.cap+(g.n>1?" ×"+g.n:""); return; } var a=bi+1, z=bi+g.n; g.name=r.two?(g.n>1?"Bars "+(2*a-1)+"–"+(2*z):"Bars "+(2*a-1)+"+"+(2*a)):(g.n>1?"Bars "+a+"–"+z:"Bar "+a); bi+=g.n; }); return gs; }
 function viewOrder(){ var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
   var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o); var h=viewOrder0();
-  if(o&&o.proj){ h=flatTop(o)+h.replace('<button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>','').replace('>Customer</button>','>Owner</button>').replace('>Delete this order</button>','>🗑 Delete this flat</button>').replace('id="oh">#'+esc(o.no)+' · New order</h2>','id="oh">Flat '+esc(o.no)+'</h2>').replace('id="oh">#','id="oh">Flat ').replace(/Customer said yes/g,'Owner said yes'); } return h; }
+  if(o&&o.proj){ h=flatTop(o)+h.replace('<button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>','').replace('>Customer</button>','>Owner</button>').replace('>Delete this order</button>','>🗑 Delete this flat</button>').replace('id="oh">#'+esc(o.no)+' · New order</h2>','id="oh">Flat '+esc(o.no)+'</h2>').replace('id="oh">#','id="oh">Flat ').replace(/Customer said yes/g,'Owner said yes').replace('<span>Customer name</span>','<span>Owner name</span>'); } return h; }
 var MATC=null; function material(o){ if(MATC&&MATC.o===o) return MATC.M; var M=material0(o); MATC={o:o,M:M}; setTimeout(function(){ MATC=null; },0); return M; }
 flatsBoot();
 
@@ -1901,8 +1946,8 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   var dayList=[], d=nextWork(t); for(var i=0;i<14;i++){ dayList.push(d); var dd=new Date(d+'T00:00'); dd.setDate(dd.getDate()+1); d=nextWork(ymd(dd)); }
   var cap='<div class="card"><div class="row between"><h2>Production plan</h2><span class="row">'+(admin()?'<label class="f" style="margin:0;max-width:120px"><span>Windows / day</span><input type="number" data-pd="windows" value="'+D.perDay.windows+'"></label><label class="f" style="margin:0;max-width:110px"><span>Doors / day</span><input type="number" data-pd="doors" value="'+D.perDay.doors+'"></label>':'<span class="faint">'+D.perDay.windows+' windows · '+D.perDay.doors+' doors a day</span>')+'</span></div>'
    +'<p class="faint">Urgent orders go first, then High, Normal, Low; within a level use ▲ ▼ to fine-tune. Sundays and holidays are skipped.</p>'
-   +(q.length?'<table class="rt"><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td class="rx">'+(i+1)+'</td><td class="rg"><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">#'+o.no+' '+esc(o.customer)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 26px 4px 8px;width:110px;background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num" data-l="Left">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'" data-l="Make">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td data-l="Due">'+dShort(o.due)+'</td>'+(canEdit?'<td class="right ra" style="white-space:nowrap"><button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
-   +(held.length?'<div style="margin-top:10px"><b>On hold:</b> '+held.map(function(o){return '<span class="stage">#'+o.no+' '+esc(o.customer)+(canEdit?' <button class="btn ghost sm" style="min-height:0;padding:0 4px" data-phold="'+o.id+'">release</button>':'')+'</span> ';}).join('')+'</div>':'')+'</div>';
+   +(q.length?'<table class="rt"><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td class="rx">'+(i+1)+'</td><td class="rg"><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 26px 4px 8px;width:110px;background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num" data-l="Left">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'" data-l="Make">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td data-l="Due">'+dShort(o.due)+'</td>'+(canEdit?'<td class="right ra" style="white-space:nowrap"><button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
+   +(held.length?'<div style="margin-top:10px"><b>On hold:</b> '+held.map(function(o){return '<span class="stage">'+oTitle(o)+(canEdit?' <button class="btn ghost sm" style="min-height:0;padding:0 4px" data-phold="'+o.id+'">release</button>':'')+'</span> ';}).join('')+'</div>':'')+'</div>';
   // timeline
   var tl='<div class="card"><h2>Timeline — next 14 working days</h2><div class="tscroll"><table class="tl"><thead><tr><th style="min-width:140px">Order</th>'+dayList.map(function(ds){var dd=new Date(ds+'T00:00');return '<th class="num" style="padding:4px 3px;font-size:11px">'+dd.toLocaleDateString('en-IN',{weekday:'short'}).slice(0,2)+'<br>'+dd.getDate()+'</th>';}).join('')+'</tr></thead><tbody>'
    +q.map(function(o){var p=P[o.id];return '<tr><td style="white-space:nowrap"><b>#'+o.no+'</b> '+esc(o.customer)+' '+plBadge(o)+'</td>'+dayList.map(function(ds){var k=(P._days[ds]||[]).filter(function(x){return x.id===o.id;})[0]; var due=o.due===ds; return '<td style="padding:3px 2px;text-align:center"><div style="height:22px;border-radius:5px;line-height:22px;font-size:11px;'+(k?'background:'+(p.late?'#fdebd3':'#dbeafe')+';color:#1e3a8a;font-weight:600':'')+(due?';box-shadow:inset 0 0 0 2px var(--warn)':'')+'">'+(k?k.qty:'')+'</div></td>';}).join('')+'</tr>';}).join('')
@@ -1924,7 +1969,7 @@ function orderNeeds(o){ var M=material(o), need={};
 function offAdd(code,len,qty){ len=Math.round(len); if(len<=0||qty<=0) return; var arr=D.offcuts[code]=D.offcuts[code]||[]; var hit=arr.filter(function(z){return z.len===len;})[0]; if(hit) hit.qty+=qty; else arr.push({len:len,qty:qty}); arr.sort(function(a,b){return b.len-a.len;}); }
 function offTake(code,len,qty){ var arr=D.offcuts[code]||[]; var hit=arr.filter(function(z){return z.len===len;})[0]; if(!hit) return; hit.qty-=qty; if(hit.qty<=0) arr.splice(arr.indexOf(hit),1); }
 function consumeOrder(o){ if(o.consumed) return 0; var M=material(o), need=orderNeeds(o), ks=invKeys(), k=0;
-  M.bom.forEach(function(r){ if(!r.code) return; r.offUsed.forEach(function(u){ offTake(r.code,u.len,u.qty); }); var made=0; r.nest.forEach(function(bin){ if(bin.waste>=D.minOffcut){ offAdd(r.code,bin.waste,r.two?2:1); made+=r.two?2:1; } }); if(made) D.invLog.push({on:today(),key:'P:'+r.code,qty:0,note:'Order #'+o.no+': '+made+' offcut'+(made>1?'s':'')+' added to rack'}); }); Object.keys(need).forEach(function(key){ var it=invItem(key,ks[key]); it.qty=Math.round((it.qty-need[key])*10)/10; D.invLog.push({on:today(),key:key,qty:-need[key],note:'Order #'+o.no+' '+(o.customer||'')}); k++; }); o.consumed=true; return k; }
+  M.bom.forEach(function(r){ if(!r.code) return; r.offUsed.forEach(function(u){ offTake(r.code,u.len,u.qty); }); var made=0; r.nest.forEach(function(bin){ if(bin.waste>=D.minOffcut){ offAdd(r.code,bin.waste,r.two?2:1); made+=r.two?2:1; } }); if(made) D.invLog.push({on:today(),key:'P:'+r.code,qty:0,note:(o.proj?oTitleT(o)+':':'Order #'+o.no+':')+' '+made+' offcut'+(made>1?'s':'')+' added to rack'}); }); Object.keys(need).forEach(function(key){ var it=invItem(key,ks[key]); it.qty=Math.round((it.qty-need[key])*10)/10; D.invLog.push({on:today(),key:key,qty:-need[key],note:(o.proj?oTitleT(o):'Order #'+o.no+' '+(o.customer||''))}); k++; }); o.consumed=true; return k; }
 function lowStock(){ return Object.keys(D.inv).filter(function(k){ var it=D.inv[k]; return it.min>0&&it.qty<it.min; }); }
 function viewInventory(){ var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
@@ -2195,7 +2240,7 @@ document.addEventListener('click',function(e){
     o.stage=Math.min(4,o.stage+1); if(o.stage===1) o.confirmedOn=today(); if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
-  if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); go('orders'); }
+  if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); if(o.proj&&projById(o.proj)){ S.tab='project'; S.pid=o.proj; render(); window.scrollTo(0,0); } else go('orders'); }
   if(a==='unarchive'&&o){ o.archived=false; save(); render(); }
   if(a==='delete'&&o&&admin()&&(o.proj||o.tpl)){ pjDelete(o); return; }
   if(a==='delete'&&o&&admin()){ if(confirm('Delete order #'+o.no+'? This cannot be undone.')){ D.orders=D.orders.filter(function(x){return x.id!==o.id;}); save(); go('orders'); } }
