@@ -346,6 +346,10 @@ body.dzon{overflow:hidden}
 .pjpopc{max-width:560px;width:94vw;margin:0 auto} .pjpopf{gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .pjpop textarea{width:100%;box-sizing:border-box}
 .chk{display:flex;gap:10px;align-items:flex-start;margin:4px 0 8px;font-size:14px;cursor:pointer} .chk input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0}
+.faplan{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:2px 0 8px}
+.fapg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 10px} .fap{margin-bottom:6px} .fap>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){ .fapg{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.pplist{border:1px solid var(--line);border-radius:10px;padding:2px 12px;margin:2px 0 10px;max-height:46vh;overflow:auto} .pprow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)} .pprow:last-child{border-bottom:0} .pprow select{width:auto;min-width:130px;max-width:48%}
 .btlist{max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:2px 10px} .btlist .chk{margin:0;padding:9px 0;border-bottom:1px solid var(--line)} .btlist .chk:last-child{border-bottom:0} .btf.hide{display:none}
 
 /* back button */
@@ -432,7 +436,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='31 Oct 2026, 15:55';
+var APPV='31 Oct 2026, 16:14';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1485,7 +1489,7 @@ var PJST=[['','All'],['Not measured','Not measured'],['Measured','Measured'],['A
 function pjCounts(fl){ var c={'':fl.length,pend:0}; fl.forEach(function(f){ var s=flatStatus(f); c[s]=(c[s]||0)+1; if(f.stage>0&&balance(f)>0.5) c.pend++; }); return c; }
 function pjAddr(no,p){ return 'Flat '+no+', '+p.name+(p.site?', '+p.site:''); }
 function batchRange(b){ var fl=batchFlats(b); return fl.length?fl[0].no+(fl.length>1?' – '+fl[fl.length-1].no:'')+' · '+fl.length+' flat'+(fl.length>1?'s':''):'no flats yet'; }
-function pjFresh(){ S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; S.padd=false; S.fa_t='A'; S.fa_ty=null; S.fa_f1=null; S.fa_f2=null; S.fa_n=4; S.fa_u=1; }
+function pjFresh(){ S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; S.padd=false; S.fa_t='A'; S.fa_ty=null; S.fa_f1=null; S.fa_f2=null; S.fa_n=4; S.fa_u=1; S.fa_pt=null; S.ppT=null; }
 function pjSelIds(){ var s=S.psel||{}; return Object.keys(s).filter(function(k){ var f=s[k]&&flatById(k); return f&&!f.del&&f.proj===S.pid; }); }
 function itemsSig(items){ return JSON.stringify((items||[]).map(function(it){ var c=Object.assign({},it); delete c.made; return c; })); }
 /* flats of a type that are not measured yet and still have a different window list than the type */
@@ -1530,26 +1534,50 @@ function pjRows(p,list,lim){ var sel=S.psel||(S.psel={});
 function pjSelBar(){ var ids=pjSelIds(), k=ids.length; if(!k) return '';
   return '<div class="pjbar"><b>'+k+' selected</b><span class="grow"></span><button class="btn sm primary" data-act="pbatch">Make batch</button><button class="btn sm" data-act="pjseltype">Change type</button>'+(admin()?'<button class="btn sm danger" data-act="pjseldel">🗑 Delete</button>':'')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div>'; }
 function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(function(f){return f.tower||'';}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(), list=pjFilter(p,fl), lim=S.plim||60, types=p.types||[], empty=fl.filter(function(f){return !f.items||!f.items.length;}).length;
-  var tyOpt=types.map(function(t){return '<option value="'+t.id+'"'+(S.fa_ty===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join('');
+  var tyOpt=types.map(function(t){return '<option value="'+t.id+'"'+(S.fa_ty===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join(''), many=types.length>1;
   var add='<div class="card pjadd'+(S.padd||!fl.length?'':' hide')+'" id="pjadd"><div class="row between"><h2>Add flats</h2>'+(fl.length?'<button class="btn sm ghost" data-act="paddx" aria-label="Close">✕</button>':'')+'</div>'+(types.length?'':'<div class="pjnote">First make a flat type — the list of windows in one flat. <button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div>')
-   +'<div class="grid2"><label class="f"><span>Tower / block</span><input type="text" id="fa_t" value="'+esc(S.fa_t||'A')+'" maxlength="6"></label><label class="f"><span>Flat type</span><select id="fa_ty">'+tyOpt+'</select></label>'
+   +'<div class="grid2"><label class="f"><span>Tower / block</span><input type="text" id="fa_t" value="'+esc(S.fa_t||'A')+'" maxlength="6"></label><label class="f"><span>Flats on each floor</span><input type="number" id="fa_n" min="1" max="30" value="'+(S.fa_n||4)+'"></label>'
    +'<label class="f"><span>From floor</span><input type="number" id="fa_f1" value="'+(S.fa_f1!=null?S.fa_f1:1)+'"></label><label class="f"><span>To floor</span><input type="number" id="fa_f2" value="'+(S.fa_f2!=null?S.fa_f2:1)+'"></label>'
-   +'<label class="f"><span>Flats on each floor</span><input type="number" id="fa_n" value="'+(S.fa_n||4)+'"></label><label class="f"><span>First flat number</span><input type="number" id="fa_u" value="'+(S.fa_u||1)+'"></label></div>'
+   +'<label class="f"><span>First flat number</span><input type="number" id="fa_u" value="'+(S.fa_u||1)+'"></label>'+(many?'':'<label class="f"><span>Flat type</span><select id="fa_ty">'+tyOpt+'</select></label>')+'</div>'
+   +(many?'<div id="fa_plan">'+faPlanHtml(p)+'</div>':'')
    +'<div class="muted" id="fa_prev" style="margin:4px 0 10px">'+faPreview(p)+'</div><button class="btn primary" data-act="padd"'+(types.length?'':' disabled')+'>Add flats</button></div>';
   var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
   var note=empty?'<div class="pjnote">⚠ '+empty+' flat'+(empty>1?'s have':' has')+' no windows yet. Add the windows to the flat type, then tap <b>Update</b> on the flat type page.'+(types.length?' <button class="btn sm" data-psub="types">Open flat types</button>':'')+'</div>':'';
-  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'"><button class="btn" data-act="paddshow">+ Add flats</button></div>';
+  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'"><button class="btn" data-act="paddshow">+ Add flats</button>'+(types.length>1&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':'')+'</div>';
   var stl=(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
   var cnt='<div class="row pjsel2"><span class="muted">'+list.length+' flat'+(list.length===1?'':'s')+(F.st?' · '+esc(stl)+' <button class="btn ghost sm" data-pst="">show all</button>':'')+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+'</div>';
   return add+note+bar+tw+cnt+'<div class="card flist">'+(pjRows(p,list,lim)||'<div class="empty">'+(fl.length?'No flats match':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin-top:8px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
-function faRead(){ return {t:String(($('#fa_t')||{}).value||'').trim().toUpperCase(),ty:($('#fa_ty')||{}).value,f1:Math.round(n(($('#fa_f1')||{}).value)),f2:Math.round(n(($('#fa_f2')||{}).value)),n:Math.round(n(($('#fa_n')||{}).value)),u:Math.max(0,Math.round(n(($('#fa_u')||{}).value)))}; }
-function faPreview(p){ var a=$('#fa_t')?faRead():{t:S.fa_t||'A',ty:S.fa_ty,f1:S.fa_f1!=null?S.fa_f1:1,f2:S.fa_f2!=null?S.fa_f2:1,n:S.fa_n||4,u:S.fa_u||1}; var fls=Math.max(0,a.f2-a.f1+1), tot=fls*Math.max(0,a.n);
+function faRead(){ var g=function(id){ return ($('#'+id)||{}).value; };
+  var a={t:String(g('fa_t')||'').trim().toUpperCase(),ty:g('fa_ty'),f1:Math.round(n(g('fa_f1'))),f2:Math.round(n(g('fa_f2'))),n:Math.min(30,Math.round(n(g('fa_n')))),u:Math.max(0,Math.round(n(g('fa_u'))))};
+  a.pt=(S.fa_pt||[]).slice(); [].slice.call(document.querySelectorAll('[data-fapt]')).forEach(function(x){ a.pt[+x.dataset.fapt]=x.value; }); return a; }
+function faState(p){ if($('#fa_t')) return faRead(); return {t:S.fa_t||'A',ty:S.fa_ty,f1:S.fa_f1!=null?S.fa_f1:1,f2:S.fa_f2!=null?S.fa_f2:1,n:S.fa_n||4,u:S.fa_u!=null?S.fa_u:1,pt:(S.fa_pt||p.fplan||[]).slice()}; }
+/* type of the u-th flat on a floor: one type for all, or the floor plan */
+function faTypeAt(p,a,u){ var types=p.types||[], by=function(id){ return types.filter(function(t){return t.id===id;})[0]; }; if(types.length<2) return by(a.ty)||types[0]; return by(a.pt[u])||by((p.fplan||[])[u])||types[0]; }
+function faPlanHtml(p){ var types=p.types||[], a=faState(p), k=Math.max(0,Math.min(30,a.n)), cells='';
+  for(var u=0;u<k;u++){ var ty=faTypeAt(p,a,u); cells+='<label class="f fap"><span>Flat '+pad2(a.u+u)+' <small class="faint">'+esc(flatNo(a.t,a.f1,a.u+u))+'…</small></span><select data-fapt="'+u+'">'+types.map(function(t){return '<option value="'+t.id+'"'+(ty&&t.id===ty.id?' selected':'')+'>'+esc(t.name)+'</option>';}).join('')+'</select></label>'; }
+  return '<div class="faplan"><div style="margin-bottom:6px"><b>Type of each flat on the floor</b> <span class="faint">— the same on every floor you add</span></div><div class="fapg">'+(cells||'<span class="faint">Enter flats on each floor</span>')+'</div></div>'; }
+function faPreview(p){ var a=faState(p), fls=Math.max(0,a.f2-a.f1+1), tot=fls*Math.max(0,a.n);
   if(!tot) return 'Nothing to add — check the floors and flats per floor.'; if(tot>400) return '⚠ '+tot+' flats at once is a lot — add up to 400 at a time.';
-  var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var skip=0; for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++) if(ex[flatNo(a.t,fl,a.u+u)]) skip++;
-  var ty=(p.types||[]).filter(function(t){return t.id===a.ty;})[0]||(p.types||[])[0];
-  return 'Will add <b>'+flatNo(a.t,a.f1,a.u)+'</b> … <b>'+flatNo(a.t,a.f2,a.u+a.n-1)+'</b> · <b>'+(tot-skip)+' flats</b>'+(skip?' ('+skip+' already there, skipped)':'')+(ty&&!qty(ty)?'<br><span class="warnt">⚠ '+esc(ty.name)+' has no windows yet — the flats will be empty until you add them to the type and tap Update.</span>':''); }
+  var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var skip=0, by={}, empty={};
+  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ if(ex[flatNo(a.t,fl,a.u+u)]){ skip++; continue; } var ty=faTypeAt(p,a,u); if(!ty) continue; by[ty.name]=(by[ty.name]||0)+1; if(!qty(ty)) empty[ty.name]=1; }
+  var names=Object.keys(by), em=Object.keys(empty);
+  return 'Will add <b>'+flatNo(a.t,a.f1,a.u)+'</b> … <b>'+flatNo(a.t,a.f2,a.u+a.n-1)+'</b> · <b>'+(tot-skip)+' flats</b>'+(names.length>1?' ('+names.map(function(k){return by[k]+' × '+esc(k);}).join(', ')+')':'')+(skip?' · '+skip+' already there, skipped':'')
+   +(em.length?'<br><span class="warnt">⚠ '+esc(em.join(', '))+' '+(em.length>1?'have':'has')+' no windows yet — those flats will be empty until you add windows to the type and tap Update.</span>':''); }
+/* set the type of flats already added, by their number on the floor (01, 02 …) */
+function planPop(p){ var types=p.types||[], all=projFlats(p.id); if(types.length<2){ toast('Make the other flat type first (Flat types → + New flat type)'); return; }
+  var towers=all.map(function(f){return f.tower||'';}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(), T=towers.indexOf(S.ppT)>=0?S.ppT:towers.length===1?towers[0]:'';
+  var fl=all.filter(function(f){ return !T||(f.tower||'')===T; }), fls=fl.map(function(f){return n(f.floor);}), f1=fls.length?Math.min.apply(null,fls):0, f2=fls.length?Math.max.apply(null,fls):0;
+  var units=fl.filter(function(f){return f.unit!=null&&f.unit!=='';}).map(function(f){return n(f.unit);}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(x,y){return x-y;});
+  if(!units.length){ toast('These flats have no flat number on the floor — change their type with ✎ instead'); return; }
+  var rows=units.map(function(u){ var fu=fl.filter(function(f){return n(f.unit)===u;}).sort(flatSort), cnt={}; fu.forEach(function(f){ var k=typeById(f.ftype)?f.ftype:''; cnt[k]=(cnt[k]||0)+1; });
+      var ks=Object.keys(cnt), top=ks.length===1?ks[0]:'';
+      return '<div class="pprow"><div class="grow"><b>Flat '+pad2(u)+'</b><div class="faint">'+esc(fu.slice(0,3).map(function(f){return f.no;}).join(', ')+(fu.length>3?' …':''))+' · '+fu.length+' flat'+(fu.length>1?'s':'')+'</div></div><select data-ppu="'+u+'">'+(top?'':'<option value="" selected>'+(ks.length>1?'Mixed — keep as is':'No type — keep')+'</option>')+types.map(function(t){return '<option value="'+t.id+'"'+(t.id===top?' selected':'')+'>'+esc(t.name)+'</option>';}).join('')+'</select></div>'; }).join('');
+  pjPop('🏠 Floor plan','<p class="faint" style="margin-top:0">Pick the type of each flat on a floor — e.g. flats 01 and 04 are 3BHK, 02 and 03 are 2BHK. It is applied to every floor below.</p>'
+    +'<div class="grid2">'+(towers.length>1?'<label class="f"><span>Tower</span><select id="pp_t"><option value="">All towers</option>'+towers.map(function(t){return '<option value="'+esc(t)+'"'+(t===T?' selected':'')+'>Tower '+esc(t||'—')+'</option>';}).join('')+'</select></label>':'')+pjFld('pp_f1','From floor',f1,'number')+pjFld('pp_f2','To floor',f2,'number')+'</div>'
+    +'<div class="pplist">'+rows+'</div><label class="chk"><input type="checkbox" id="pp_cp" checked><span>Copy the type\'s windows into flats that are not measured yet (measured flats keep their sizes)</span></label>',
+    '<button class="btn primary" data-act="pjplanset">Apply</button>'); }
 function pjTypes(p,fl){ var types=p.types||[];
-  return '<div class="card"><div class="row between"><h2>Flat types</h2><button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div><p class="faint">One window list per flat layout (2BHK, 3BHK…). New flats copy it; each flat then gets its own measured sizes.</p>'
+  return '<div class="card"><div class="row between"><h2>Flat types</h2><button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div><p class="faint">One window list per flat layout (2BHK, 3BHK…). New flats copy it; each flat then gets its own measured sizes.</p>'+(types.length>1&&fl.length?'<div class="pjnote">Different types on one floor? <button class="btn sm" data-act="pjplan">🏠 Floor plan</button></div>':'')
    +(types.length?types.map(function(t){ var used=fl.filter(function(f){return f.ftype===t.id;}).length, nw=qty(t);
      return '<div class="pjitem"><button class="pjrow" data-open="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+(nw?nw+' window'+(nw===1?'':'s')+' · '+fmt(t.items.reduce(function(a,it){return a+sqft(it.w,it.h)*n(it.qty);},0))+' sq ft · typical '+money(subTotal(t)):'<b class="warnt" style="font-size:13.5px">No windows yet — tap to add them</b>')+'</span><span class="faint">'+used+' flat'+(used===1?'':'s')+' use it</span></button>'
       +'<div class="pjacts"><button class="btn sm" data-open="'+t.id+'">✎ Edit</button><button class="btn sm" data-tyc="'+t.id+'">⧉ Copy</button>'+(admin()?'<button class="btn sm danger" data-tyd="'+t.id+'">🗑 Delete</button>':'')+'</div></div>'; }).join(''):'<div class="empty">No flat types yet</div>')+'</div>'; }
@@ -1606,10 +1634,11 @@ function batchAddPop(r){ var b=r.b, cand=projFlats(r.p.id).filter(function(f){ r
     '<button class="btn primary" data-act="btadd" data-bid="'+b.id+'">Add ticked flats</button><button class="btn" data-act="btall">Tick all shown</button>'); }
 
 /* ---- actions ---- */
-function pjAddFlats(p){ if(!FL.loaded){ toast('Loading flats… try again in a moment'); return; } var a=faRead(), ty=(p.types||[]).filter(function(t){return t.id===a.ty;})[0]; if(!ty){ toast('Pick a flat type'); return; }
+function pjAddFlats(p){ if(!FL.loaded){ toast('Loading flats… try again in a moment'); return; } var a=faRead(); if(!(p.types||[]).length){ toast('Make a flat type first'); return; }
   var tot=Math.max(0,a.f2-a.f1+1)*Math.max(0,a.n); if(!tot){ toast('Check floors and flats per floor'); return; } if(tot>400){ toast('Add up to 400 flats at a time'); return; }
   var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var added=0;
-  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ var no=flatNo(a.t,fl,a.u+u); if(ex[no]) continue; D.flats.push(newFlat(p,ty,a.t,fl,a.u+u)); ex[no]=1; added++; }
+  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ var no=flatNo(a.t,fl,a.u+u); if(ex[no]) continue; D.flats.push(newFlat(p,faTypeAt(p,a,u),a.t,fl,a.u+u)); ex[no]=1; added++; }
+  if((p.types||[]).length>1){ p.fplan=[]; for(var k=0;k<a.n;k++) p.fplan[k]=faTypeAt(p,a,k).id; S.fa_pt=p.fplan.slice(); }
   S.fa_t=a.t; S.fa_ty=a.ty; S.fa_f1=a.f2+1; S.fa_f2=a.f2+1+(a.f2-a.f1); S.fa_n=a.n; S.fa_u=a.u; S.padd=false; save(); render(); toast(added+' flats added'); }
 /* put flats into a batch: in production, material taken from stock once per flat */
 function pjIntoBatch(p,b,fl){ fl.forEach(function(f){ var o=f.batch&&batchById(f.batch); if(o&&o.b!==b) o.b.flats=o.b.flats.filter(function(x){return x!==f.id;}); f.batch=b.id; if(b.flats.indexOf(f.id)<0) b.flats.push(f.id); if(f.stage<2){ if(!f.confirmedOn) f.confirmedOn=today(); f.stage=2; } });
@@ -1669,6 +1698,11 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='pselall'&&p){ S.psel=S.psel||{}; pjFilter(p,projFlats(p.id)).forEach(function(f){ S.psel[f.id]=true; }); render(); return; }
   if(a==='pselnone'){ S.psel={}; render(); return; }
   if(a==='pbatch'&&p){ pjMakeBatch(p); return; }
+  if(a==='pjplan'&&p&&!prod()){ planPop(p); return; }
+  if(a==='pjplanset'&&p){ var T=($('#pp_t')||{value:null}).value, pf1=n(pjV('pp_f1')), pf2=n(pjV('pp_f2')), pcp=($('#pp_cp')||{}).checked, map={};
+    [].slice.call(document.querySelectorAll('.pjpop [data-ppu]')).forEach(function(x){ if(x.value) map[x.dataset.ppu]=x.value; });
+    var ch=0, cw=0; projFlats(p.id).forEach(function(f){ if(T&&(f.tower||'')!==T) return; var fn=n(f.floor); if(fn<pf1||fn>pf2) return; var tid=map[String(n(f.unit))]; if(!tid||f.ftype===tid) return; var nt=typeById(tid); if(!nt) return; f.ftype=tid; ch++; if(pcp&&!f.measured&&f.stage===0){ copyItems(f,nt); cw++; } });
+    pjPopX(); save(); render(); toast(ch?ch+' flat'+(ch>1?'s':'')+' got their type'+(cw?' · windows copied into '+cw:''):'Nothing to change — the flats already have these types'); return; }
   if(a==='pjseltype'&&p){ var si=pjSelIds(); if(si.length) selTypePop(p,si); return; }
   if(a==='pjtypeset'&&p){ var nt=typeById(pjV('st_ty')), cp=($('#st_cp')||{}).checked, sf=pjSelIds().map(flatById); if(!nt||!sf.length) return; var nc=0;
     sf.forEach(function(f){ f.ftype=nt.id; if(cp&&!f.measured&&f.stage===0){ copyItems(f,nt); nc++; } }); pjPopX(); S.psel={}; save(); render(); toast(sf.length+' flats → '+nt.name+(nc?' · windows copied into '+nc:'')); return; }
@@ -1694,11 +1728,14 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
 document.addEventListener('input',function(e){ var t=e.target;
   if(t.id==='pq'){ (S.pf=S.pf||{}).q=t.value; S.plim=60; var p=projById(S.pid); if(!p) return; var tmp=document.createElement('div'); tmp.innerHTML=pjFlats(p,projFlats(p.id)); var a=$('.card.flist'), b=tmp.querySelector('.card.flist'); if(a&&b) a.innerHTML=b.innerHTML; var c=$('.pjsel2'), d2=tmp.querySelector('.pjsel2'); if(c&&d2) c.innerHTML=d2.innerHTML; return; }
   if(t.id==='bt_q'){ var qq=t.value.trim().toLowerCase(); [].slice.call(document.querySelectorAll('.pjpop .btf')).forEach(function(l){ l.classList.toggle('hide',!!qq&&l.dataset.q.indexOf(qq)<0); }); return; }
-  if(/^fa_/.test(t.id||'')){ var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; } });
+  if(/^fa_/.test(t.id||'')){ var p2=projById(S.pid), pv=$('#fa_prev'), pl=$('#fa_plan'); if(!p2) return;
+    if(t.id==='fa_t') S.fa_t=t.value; else if(/^fa_(f1|f2|n|u)$/.test(t.id)) S[t.id]=t.value===''?null:Math.round(n(t.value));   /* a redraw keeps what was typed */ if(pl&&/^fa_(n|u|t|f1)$/.test(t.id)){ S.fa_pt=faRead().pt; pl.innerHTML=faPlanHtml(p2); } if(pv) pv.innerHTML=faPreview(p2); return; } });
 document.addEventListener('change',function(e){ var t=e.target, d=t.dataset;
   if(d.fsel){ (S.psel=S.psel||{})[d.fsel]=t.checked; var w=$('#pjbarw'); if(w) w.innerHTML=pjSelBar(); return; }
   if(d.tpn){ var o=order(); if(o&&o.tpl){ o.name=t.value; save(); } return; }
-  if(t.id==='fa_ty'){ S.fa_ty=t.value; var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; } });
+  if(t.id==='fa_ty'){ S.fa_ty=t.value; var p2=projById(S.pid), pv=$('#fa_prev'); if(p2&&pv) pv.innerHTML=faPreview(p2); return; }
+  if(d.fapt!==undefined){ (S.fa_pt=S.fa_pt||[])[+d.fapt]=t.value; var p3=projById(S.pid), pv3=$('#fa_prev'); if(p3&&pv3) pv3.innerHTML=faPreview(p3); return; }
+  if(t.id==='pp_t'){ S.ppT=t.value; var p4=projById(S.pid); if(p4) planPop(p4); return; } });
 
 function bigNest(M,forPrint){ return !forPrint&&M.bom.reduce(function(a,r){return a+r.nest.length;},0)>150; }
 function nestRows(r){ return '<table><tbody>'+nestGroups(r).map(function(g){ var bar=g.bar, c=g.n, labs=g.labs;
