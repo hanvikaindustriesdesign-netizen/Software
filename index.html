@@ -428,6 +428,14 @@ body.dzon{overflow:hidden}
 .stl.sm{font-size:12.5px;color:var(--soft)}
 .sthr{border-top:1px dashed var(--line);margin:6px 0}
 .sttot{margin-top:10px;font-size:15px}
+.owr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) 210px;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 2px;font:inherit;color:var(--ink);cursor:pointer}
+.owr:first-child{border-top:0}
+.owr small{display:block;color:var(--soft);font-size:12px}
+.owr .c-am{text-align:right}
+.owr .c-am b{font-size:15.5px}
+@media(max-width:520px){.owr{grid-template-columns:minmax(0,1fr) auto}.owr .c-fl{grid-column:1/-1;order:3}}
+.fgh{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#f3f6fa;border-top:1px solid var(--line);font-size:14px}
+.fgh small{color:var(--soft)}
 </style>
 </head>
 <body>
@@ -482,7 +490,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 00:16';
+var APPV='02 Nov 2026, 00:51';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -823,10 +831,10 @@ function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1
   return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
-  open.forEach(function(o){ var p=P[o.id];
+  open.forEach(function(o){ var p=P[o.id]; if(salesR()&&o.proj) return;
     if(o.remind&&o.remind<=t) al.push(['r',o.id,'🔔 #'+o.no+' '+o.customer+' — '+(o.remindNote||'follow up')+(o.remind<t?' (was '+dShort(o.remind)+')':'')]);
     if(o.stage===0&&o.created&&addWorkDays(o.created,5)<t&&!o.remind) al.push(['y',o.id,oTitleT(o)+' — enquiry waiting '+Math.round((new Date(t)-new Date(o.created))/864e5)+' days, follow up']);
-    if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
+    if(salesR()){ } else if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
     else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,oTitleT(o)+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
     else if(p&&p.late) al.push(['y',o.id,oTitleT(o)+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
     if(o.stage>=3&&balance(o)>0.5&&!noAmt(o)) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
@@ -872,7 +880,7 @@ function remHtml(){ var AS=alertSets(), al=AS.live; return '<div class="row betw
 function refreshAlerts(){ var rc=document.getElementById('remcard'); if(rc) rc.innerHTML=remHtml(); render(); }
 function showReminders(){ var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" id="remcard" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto">'+remHtml()+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
 function viewHome(){
-  if(prod()) return homeProd();
+  if(prod()) return homeProd(); if(salesR()) return homeSales();
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
   var due=open.filter(function(o){return !noAmt(o);}).reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0)+bldPendAll();
   var mo=moneyOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
@@ -892,6 +900,15 @@ function viewHome(){
   var BH=bldHomeRows(), payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+BH+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):(BH?'':'<div class="empty">Nothing pending</div>'))+'</div></div>';
   return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
+function salesR(){ return S.role==='sales'; }
+/* the sales person's home: follow-ups and payments to collect — no shop totals, no apartment flats */
+function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; }), AS=alertSets(), al=AS.live;
+  var follow='<div class="card h-al"><div class="row between"><h2>Follow up</h2><span class="row" style="gap:4px">'+alertTools(AS)+'</span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing to follow up 👍</div>')+'</div>';
+  var pend=open.filter(function(o){ return o.stage>0&&balance(o)>0.5; }).sort(function(a,b){ return b.stage-a.stage||balance(b)-balance(a); });
+  var pay='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?pl(pend.length,'order'):'')+'</span></div><div class="olist">'
+   +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
+     +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
+  return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
 function homeProd(){
   var open=openOrders(), P=plan(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});});
   var q=queue();
@@ -1695,19 +1712,19 @@ function pjPayRows(fl){ var rows=[]; fl.forEach(function(f){ (f.payments||[]).fo
 function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">Project not found. <button class="btn ghost" data-go="orders">Back</button></div>';
   if(!FL.loaded) return '<div class="card"><h2>🏢 '+esc(p.name)+'</h2><div class="faint">Loading flats…</div></div>';
   var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), F=S.pf||(S.pf={tower:'',st:'',q:''}), hasB=(p.batches||[]).length>0, np=fl.reduce(function(a,f){return a+(f.payments||[]).length;},0);
-  if(S.psub==='builder') S.psub='stmt'; if(!admin()&&(F.st==='pend'||F.st==='Advance paid'||F.st==='noadv')) F.st=''; var hasBf=fl.some(isBld);
-  var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length]].concat(admin()?[['pay','Advance & payments',np],['stmt','Statement']]:[]).concat([['types','Flat types',(p.types||[]).length]]).concat(hasB?[['batches','Batches',p.batches.length]]:[]);
+  if(S.psub==='stmt') S.psub='builder'; if(!admin()&&(F.st==='pend'||F.st==='Advance paid'||F.st==='noadv')) F.st=''; var hasBf=fl.some(isBld);
+  var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length]].concat(admin()?[['owners','Owners'],['builder','Builder'],['pay','Advance & payments',np]]:[]).concat([['types','Flat types',(p.types||[]).length]]).concat(hasB?[['batches','Batches',p.batches.length]]:[]);
   var sub=tabs.some(function(t){return t[0]===S.psub;})?S.psub:'flats';
   var tiles=PJST.filter(function(x){ return (x[0]!=='Confirmed'||c.Confirmed)&&(admin()||x[0]!=='Advance paid'); }).map(function(x){ if((!admin()||hasBf)&&x[0]==='Confirmed') x=['Confirmed','Confirmed']; var on=!prod()&&sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='Confirmed'&&admin()&&!hasBf?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('');
   var pend=fl.reduce(function(a,f){ return a+(f.stage>0?Math.max(0,balance(f)):0); },0);
   var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>'+(prod()?'':'<button class="btn sm" data-act="pjedit">✎ Edit project</button>')+'</div>'
    +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone||p.maplink?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+(p.maplink?' <a href="'+esc(p.maplink)+'" target="_blank" rel="noopener" class="pjmap">📍 Map</a>':'')+'</div>':'')
    +'<div class="pjst">'+tiles+(admin()&&hasBf&&c.noadv?'<button data-pst="noadv" class="due'+(sub==='flats'&&F.st==='noadv'?' on':'')+'"><b>'+c.noadv+'</b><span>No advance yet</span></button>':'')+'</div>'
-   +(!admin()?'':'<div class="pjmoney"><button data-psub="pay"><span>'+(hasBf?'Owners billed':'Billed')+'</span><b>'+money(st.billed)+'</b></button><button data-psub="pay" class="good"><span>'+(hasBf?'From owners':'Received')+'</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>'+(hasBf?'Owners pending':'Pending')+'</span><b>'+money(pend)+'</b></button></div>'+bldLine(p))+'</div>';
-  var body=sub==='stmt'?stmtView(p):sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
+   +(!admin()?'':'<div class="pjmoney"><button data-psub="owners"><span>'+(hasBf?'Owners billed':'Billed')+'</span><b>'+money(st.billed)+'</b></button><button data-psub="owners" class="good"><span>'+(hasBf?'From owners':'Received')+'</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>'+(hasBf?'Owners pending':'Pending')+'</span><b>'+money(pend)+'</b></button></div>'+bldLine(p))+'</div>';
+  var body=sub==='owners'?ownersView(p):sub==='builder'?builderView(p):sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
   return head+'<div class="subtabs">'+tabs.map(function(s){return '<button data-psub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+(s[2]!=null?' <small>'+s[2]+'</small>':'')+'</button>';}).join('')+'</div>'+body; }
-function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').toLowerCase();
-  return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st==='noadv'){ if(!(f.stage===1&&!isBld(f)&&paid(f)<0.5)) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
+function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').toLowerCase(), OI=(F.ow||F.multi)?ownIdx(fl):null;
+  return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(OI&&F.ow&&OI.key(f)!==F.ow) return false; if(OI&&F.multi&&!(OI.n[OI.key(f)]>1)) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st==='noadv'){ if(!(f.stage===1&&!isBld(f)&&paid(f)<0.5)) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
     return !q||(f.no+' '+(f.customer||'')+' '+(f.phone||'')).toLowerCase().indexOf(q)>=0; }).sort(flatSort); }
 function pjRow(f){ var ty=typeById(f.ftype), st=flatStatus(f), pd=paid(f), lp=lastPay(f), meas=f.measured||f.stage>0, bal=balance(f);
   return '<div class="ftr'+((S.psel||{})[f.id]?' sel':'')+'"><input type="checkbox" class="fsel" data-fsel="'+f.id+'"'+((S.psel||{})[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
@@ -1730,8 +1747,8 @@ function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(
   var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'">'+(prod()?'':'<button class="btn" data-act="paddshow">+ Add flats</button><button class="btn" data-act="pone">+ One flat</button>'+(many&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':''))+'</div>';
   var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
   var stl=F.st==='pend'?'Pending payment':F.st==='noadv'?'No advance yet':F.st==='Confirmed'&&(!admin()||fl.some(isBld))?'Confirmed':(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
-  var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':''))+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+(pjSelIds().length?'<button class="btn sm ghost" data-act="pselnone">Clear</button>':'')+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
-  var rows=list.slice(0,lim).map(pjRow).join('');
+  var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':'')+ownLabel(F,fl))+'</span><span class="grow"></span>'+ownChips(F)+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+(pjSelIds().length?'<button class="btn sm ghost" data-act="pselnone">Clear</button>':'')+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
+  var rows=F.grp&&!prod()?ownRows(list,lim,fl):list.slice(0,lim).map(pjRow).join('');
   return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span>'+(admin()?'<span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span>':'<span class="r">Windows</span><span></span><span></span>')+'</div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
 /* ---- ticked flats: what they are (confirmed / production done / pending) and what to do with them ---- */
 var STOPT=[[0,'Not confirmed yet','owner has not said yes'],[1,'Confirmed','owner said yes'],[2,'In production',''],[3,'Production done','all windows made — ready to deliver'],[4,'Delivered','']];
@@ -1787,7 +1804,7 @@ function pjXls(p,ids,name){ var fl=(ids?ids.map(flatById).filter(function(f){ret
   var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',r.x.note||'',r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
   var C=[['Flat','Owner','Phone','Status','Bill','Received','Pending','Last payment','Mode']].concat(pe.map(function(f){ var lp=lastPay(f); return [f.no,f.customer||'',f.phone||'',flatStatus(f),Math.round(orderTotal(f)),Math.round(paid(f)),Math.round(balance(f)),lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
   var sh=[['Flats',A],['Pending',C],['Payments',B]];
-  if(!ids){ sh.unshift(['Statement',stmtRows(p)]);
+  if(!ids){ sh.unshift(['Owners',ownXls(p)]);
     if(bldOn(p)){ var st=pjStmt(p).b, Bd=bldOf(p), R=[['Builder flat','Tower','Floor','Type','Status','Delivered on','Windows','Value']].concat(st.list.slice().sort(flatSort).map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',flatStatus(f),f.deliveredOn||'',qty(f),Math.round(orderTotal(f))]; }));
       var E=Bd.pays.map(function(x){ return [x.on||'','Payment received',x.note||'',x.mode||'Cash',Math.round(n(x.amt))]; }).concat(Bd.bills.map(function(x){ return [x.on||'','Extra bill',x.note||'','',Math.round(n(x.amt))]; })).sort(function(a,b){ return a[0]<b[0]?-1:a[0]>b[0]?1:0; });
       R=R.concat([[],['Date','Entry','Note','Mode','Amount']]).concat(E).concat([[],['','','','Value of work done',Math.round(st.doneVal)],['','','','Extra bills',Math.round(st.extra)],['','','','Received',Math.round(st.recv)],['','','',st.pend<-0.5?'Advance':'Pending now',Math.round(Math.abs(st.pend))]]);
@@ -2645,35 +2662,106 @@ function bldPendAll(){ if(!admin()) return 0; return (D.projects||[]).reduce(fun
 function pjCardMoney(p,st){ if(!admin()) return ''; if(!bldOn(p)) return '<span class="faint">'+money(st.received)+' received of '+money(st.billed)+'</span>';
   var b=pjStmt(p).b; return '<span class="faint">Owners: '+money(st.received)+' received of '+money(st.billed)+' · 🏗 Builder: '+money(b.recv)+' received'+(b.pend>0.5?', '+money(b.pend)+' pending':'')+'</span>'; }
 function bldHomeRows(){ if(!admin()) return ''; return (D.projects||[]).map(function(p){ if(!bldOn(p)) return ''; var s=pjStmt(p).b; if(s.pend<=0.5) return '';
-  return '<button class="o" data-proj="'+p.id+'" data-psubgo="stmt"><div class="grow"><div class="n">🏗 '+esc(p.builder||'Builder')+' · '+esc(p.name)+'</div><div class="d">'+s.done+' of '+s.n+' flat'+(s.n===1?'':'s')+' done · received '+money(s.recv)+'</div></div><div class="amt right warnt">'+money(s.pend)+'<small>builder</small></div></button>'; }).join(''); }
+  return '<button class="o" data-proj="'+p.id+'" data-psubgo="builder"><div class="grow"><div class="n">🏗 '+esc(p.builder||'Builder')+' · '+esc(p.name)+'</div><div class="d">'+s.done+' of '+s.n+' flat'+(s.n===1?'':'s')+' done · received '+money(s.recv)+'</div></div><div class="amt right warnt">'+money(s.pend)+'<small>builder</small></div></button>'; }).join(''); }
 function bldByOn(a,b){ return (a.on||'')<(b.on||'')?-1:(a.on||'')>(b.on||'')?1:0; }
 /* the line under the project's money tiles */
 function bldLine(p){ if(!bldOn(p)) return ''; var s=pjStmt(p).b;
-  return '<button type="button" class="pjbld" data-psub="stmt">🏗 <b>Builder</b>'+(p.builder?' ('+esc(p.builder)+')':'')+': '+s.done+' of '+s.n+' flat'+(s.n===1?'':'s')+' done · received '+money(s.recv)+' · '
+  return '<button type="button" class="pjbld" data-psub="builder">🏗 <b>Builder</b>'+(p.builder?' ('+esc(p.builder)+')':'')+': '+s.done+' of '+s.n+' flat'+(s.n===1?'':'s')+' done · received '+money(s.recv)+' · '
     +(s.pend>0.5?'<b class="warnt">pending '+money(s.pend)+'</b>':s.pend<-0.5?'<b class="goodt">advance '+money(-s.pend)+'</b>':'<b class="goodt">nothing pending</b>')+' ›</button>'; }
 function stL(lab,val,cls,big){ return '<div class="stl'+(big?' big':'')+(cls==='sm'?' sm':'')+'"><span>'+lab+'</span><b'+(cls&&cls!=='sm'?' class="'+cls+'"':'')+'>'+val+'</b></div>'; }
-function stmtView(p){ var S2=pjStmt(p), b=S2.b, o=S2.o, B=bldOf(p), bl=B.bills.slice().sort(bldByOn), py=B.pays.slice().sort(bldByOn);
+/* ---- the builder's statement (its own tab) ---- */
+function builderView(p){ var b=pjStmt(p).b, B=bldOf(p), bl=B.bills.slice().sort(bldByOn), py=B.pays.slice().sort(bldByOn);
   var del=function(k,x){ return '<td class="dl"><button class="del" data-act="blddel" data-pid="'+p.id+'" data-k="'+k+'" data-id="'+esc(x.id)+'" aria-label="Delete">×</button></td>'; };
-  var bb='<div class="stb"><h3>🏗 Builder pays'+(p.builder?' <small>· '+esc(p.builder)+'</small>':'')+'</h3>'
-    +(b.n?stL('Flats',b.n)+stL('Work done (delivered)',b.done,'goodt')+(b.ready?stL('Ready to deliver',b.ready):'')+(b.work?stL('In production',b.work):'')+stL('Not started',b.todo)
+  return '<div class="card"><div class="row between"><h2>🏗 Builder statement'+(p.builder?' — '+esc(p.builder):'')+'</h2><span class="faint">as on '+dShort(today())+'</span></div>'+(p.builder?'':'<button class="btn sm" data-act="pjedit" style="margin-bottom:8px">+ Builder name</button>')
+   +'<div class="stb">'+(b.n?stL('Flats paid by the builder',b.n)+stL('Work done (delivered)',b.done,'goodt')+(b.ready?stL('Ready to deliver',b.ready):'')+(b.work?stL('In production',b.work):'')+stL('Not started',b.todo)
       :'<p class="faint" style="margin:4px 0 8px">No flat is paid by the builder yet. On <b>All flats</b>, tick the flats and tap <b>🏗 Builder pays</b>.</p>')
     +'<div class="sthr"></div>'+stL('Value of work done',money(b.doneVal))+(b.extra?stL('Extra bills',money(b.extra)):'')+stL('Received from builder',money(b.recv),'goodt')
     +(b.pend<-0.5?stL('Advance from builder',money(-b.pend),'goodt',true):stL('Pending now',money(Math.max(0,b.pend)),b.pend>0.5?'warnt':'goodt',true))
-    +(b.n?stL('All '+b.n+' builder flat'+(b.n===1?'':'s')+' (full order)',money(b.fullVal),'sm')+stL('Balance on the full order',money(b.pendFull),'sm'):'')+'</div>';
-  var ob='<div class="stb"><h3>👤 Owners pay</h3>'
-    +(o.n?stL('Flats',o.n)+stL('Work done (delivered)',o.done,'goodt')+(o.ready?stL('Ready to deliver',o.ready):'')+(o.work?stL('In production',o.work):'')+stL('Confirmed (owner said yes)',o.conf)
-      :'<p class="faint" style="margin:4px 0 8px">All flats are paid by the builder.</p>')
-    +'<div class="sthr"></div>'+stL('Bill (confirmed flats)',money(o.billed))+stL('Received from owners',money(o.recv),'goodt')+stL('Pending',money(o.pend),o.pend>0.5?'warnt':'goodt',true)
-    +(o.pendDone>0.5?stL('… of it on delivered flats',money(o.pendDone),'sm'):'')+(o.meas?stL(o.meas+' measured, owner not yet confirmed',money(o.measVal),'sm'):'')+'</div>';
-  return '<div class="card"><div class="row between"><h2>📊 Statement</h2><span class="faint">as on '+dShort(today())+'</span></div>'
-   +'<div class="stg">'+bb+ob+'</div>'
-   +'<div class="sttot">Total received <b class="goodt">'+money(S2.recv)+'</b> · pending now <b class="'+(S2.pend>0.5?'warnt':'goodt')+'">'+money(S2.pend)+'</b></div>'
-   +'<div class="row" style="margin-top:10px"><button class="btn" data-act="stshare" data-pid="'+p.id+'">📤 Share statement</button><button class="btn" data-act="pjxls">⬇ Excel</button></div></div>'
-   +'<div class="card"><div class="row between"><h2>🏗 Payments from the builder</h2>'+(p.builder?'':'<button class="btn sm" data-act="pjedit">+ Builder name</button>')+'</div>'
-   +'<div class="row" style="margin-bottom:10px"><button class="btn primary" data-act="bldpay" data-pid="'+p.id+'">+ Payment received</button><button class="btn" data-act="bldbill" data-pid="'+p.id+'">+ Extra bill</button>'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">📤 Send to builder</button>':'')+'</div>'
-   +(py.length?'<table class="bldt"><tbody>'+py.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.mode||'Cash')+(x.note?' · '+esc(x.note):'')+'</td><td class="num"><b class="goodt">'+money(x.amt)+'</b></td>'+del('pays',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment from the builder yet</div>')
+    +(b.n?stL('All '+b.n+' builder flat'+(b.n===1?'':'s')+' (full order)',money(b.fullVal),'sm')+stL('Balance on the full order',money(b.pendFull),'sm'):'')+'</div>'
+   +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="bldpay" data-pid="'+p.id+'">+ Payment received</button><button class="btn" data-act="bldbill" data-pid="'+p.id+'">+ Extra bill</button>'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">📤 Send to builder</button>':'')+'</div></div>'
+   +'<div class="card"><h2>Payments from the builder</h2>'+(py.length?'<table class="bldt"><tbody>'+py.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.mode||'Cash')+(x.note?' · '+esc(x.note):'')+'</td><td class="num"><b class="goodt">'+money(x.amt)+'</b></td>'+del('pays',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment from the builder yet</div>')
    +(bl.length?'<h3 style="margin:14px 0 4px;font-size:15px">Extra bills to the builder</h3><table class="bldt"><tbody>'+bl.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.note||'')+'</td><td class="num"><b>'+money(x.amt)+'</b></td>'+del('bills',x)+'</tr>'; }).join('')+'</tbody></table>':'')
+   +(b.n?'<h3 style="margin:14px 0 4px;font-size:15px">Builder flats</h3><table class="bldt"><tbody>'+b.list.slice().sort(flatSort).map(function(f){ return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></td><td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')+'</tbody></table>':'')
    +'<p class="faint" style="margin:10px 0 0">The builder pays for its flats when they are delivered. Extra bills are for other work (e.g. common areas). Only admins see this.</p></div>'; }
+/* ---- owners: one owner may have several flats — their flats, bills and payments are clubbed ---- */
+function ownIdx(fl){ var dg=function(x){ return String(x||'').replace(/\D/g,'').slice(-10); }, nm=function(x){ return String(x||'').trim().toLowerCase().replace(/\s+/g,' '); }, np={};
+  fl.forEach(function(f){ var d=dg(f.phone), m=nm(f.customer); if(d.length>=6&&m) (np[m]=np[m]||{})[d]=1; });
+  var key=function(f){ var d=dg(f.phone); if(d.length>=6) return 'p'+d; var m=nm(f.customer); if(!m) return ''; var ps=np[m]?Object.keys(np[m]):[]; return ps.length===1?'p'+ps[0]:'n'+m; };
+  var cnt={}, names={}, phone={}; fl.forEach(function(f){ var k=key(f); if(!k) return; cnt[k]=(cnt[k]||0)+1; var c=String(f.customer||'').trim(); if(c){ names[k]=names[k]||{}; names[k][c]=(names[k][c]||0)+1; } if(f.phone&&!phone[k]) phone[k]=String(f.phone).trim(); });
+  return {key:key,n:cnt,name:function(k){ var o=names[k]||{}; return Object.keys(o).sort(function(a,b){ return (o[b]-o[a])||(b.length-a.length); })[0]||'—'; },phone:function(k){ return phone[k]||''; }}; }
+function ownGroups(fl,OI){ var by={}, out=[]; fl.forEach(function(f){ var k=OI.key(f); if(!k) return; if(!by[k]){ by[k]={k:k,flats:[]}; out.push(by[k]); } by[k].flats.push(f); });
+  out.forEach(function(g){ g.name=OI.name(g.k); g.phone=OI.phone(g.k); g.flats.sort(flatSort); }); return out.sort(function(a,b){ return a.name.toLowerCase()<b.name.toLowerCase()?-1:a.name.toLowerCase()>b.name.toLowerCase()?1:0; }); }
+function ownSum(fl){ var s={n:fl.length,conf:0,done:0,bill:0,recv:0,quote:0,pays:[],last:''}, r2=function(x){ return Math.round(x*100)/100; };
+  fl.forEach(function(f){ var t=orderTotal(f), pd=paid(f); s.recv+=pd; if(f.stage>=4) s.done++; if(f.stage>=1){ s.conf++; s.bill+=t; } else s.quote+=t;
+    (f.payments||[]).forEach(function(x){ s.pays.push({f:f,x:x}); if((x.on||'')>s.last) s.last=x.on||''; }); });
+  s.pays.sort(function(a,b){ return (a.x.on||'')<(b.x.on||'')?-1:(a.x.on||'')>(b.x.on||'')?1:0; });
+  s.bill=r2(s.bill); s.recv=r2(s.recv); var net=r2(s.bill-s.recv); s.pend=Math.max(0,net); s.adv=Math.max(0,-net); return s; }
+function ownRef(p){ if(S.owPid!==p.id){ S.owPid=p.id; S.owk=''; S.owq=''; S.owf=''; } }
+function ownersView(p){ ownRef(p); var all=projFlats(p.id), OI=ownIdx(all), fl=all.filter(function(f){ return !isBld(f); }), G=ownGroups(fl,OI);
+  if(S.owk){ var g0=G.filter(function(x){ return x.k===S.owk; })[0]; if(g0) return ownStmtView(p,g0,OI,all); S.owk=''; }
+  var o=pjStmt(p).o, nf=fl.filter(function(f){ return !OI.key(f); }), noOwn=nf.length, multi=G.filter(function(g){ return g.flats.length>1; }).length, A=ownSum(fl), SS=G.map(function(g){ return ownSum(g.flats); });
+  var pend=SS.reduce(function(a,x){ return a+x.pend; },0)+nf.reduce(function(a,f){ return a+(f.stage>=1?Math.max(0,orderTotal(f)-paid(f)):0); },0), adv=SS.reduce(function(a,x){ return a+x.adv; },0);
+  return '<div class="card"><div class="row between"><h2>👤 Owners\' statement</h2><span class="faint">as on '+dShort(today())+'</span></div>'
+   +'<div class="stb">'+stL('Owners',G.length+(multi?' <small class="faint">('+multi+' with 2+ flats)</small>':''))+stL('Flats paid by owners',o.n+(noOwn?' <small class="faint">('+noOwn+' with no owner yet)</small>':''))+stL('Work done (delivered)',o.done,'goodt')+(o.ready?stL('Ready to deliver',o.ready):'')+(o.work?stL('In production',o.work):'')+stL('Confirmed (owner said yes)',o.conf)
+    +'<div class="sthr"></div>'+stL('Bill (confirmed flats)',money(A.bill))+stL('Received from owners',money(A.recv),'goodt')+stL('Pending',money(pend),pend>0.5?'warnt':'goodt',true)+(adv>0.5?stL('Advance with us (paid more than the bill)',money(adv),'sm'):'')+(o.meas?stL(o.meas+' measured, owner not yet confirmed',money(o.measVal),'sm'):'')+'</div>'
+   +'<div class="row" style="margin-top:10px">'+(pend>0.5?'<button class="btn" data-act="ownpendshare" data-pid="'+p.id+'">📤 Share pending list</button>':'')+'<button class="btn" data-act="pjxls">⬇ Excel</button></div></div>'
+   +'<div class="card"><h2>Owners</h2><input type="text" id="owq" placeholder="Search owner, phone, flat no" value="'+esc(S.owq||'')+'" style="width:100%;margin-bottom:8px">'
+   +'<div class="subtabs">'+[['','All'],['pend','Payment pending'],['multi','2+ flats'],['nopay','No payment yet']].map(function(x){ return '<button data-act="owf" data-f="'+x[0]+'" class="'+((S.owf||'')===x[0]?'on':'')+'">'+x[1]+'</button>'; }).join('')+'</div>'
+   +'<div class="owl">'+ownList(p,G)+'</div></div>'; }
+function ownList(p,G){ var q=(S.owq||'').trim().toLowerCase(), fx=S.owf||'';
+  var rows=G.map(function(g){ return {g:g,s:ownSum(g.flats)}; }).filter(function(r){ if(fx==='pend'&&!(r.s.pend>0.5)) return false; if(fx==='multi'&&r.g.flats.length<2) return false; if(fx==='nopay'&&!(r.s.conf>0&&r.s.recv<0.5)) return false;
+    return !q||(r.g.name+' '+r.g.phone+' '+r.g.flats.map(function(f){return f.no;}).join(' ')).toLowerCase().indexOf(q)>=0; });
+  if(fx==='pend') rows.sort(function(a,b){ return b.s.pend-a.s.pend; });
+  var lim=S.owlim||80;
+  return (rows.length?rows.slice(0,lim).map(function(r){ var g=r.g, s=r.s; return '<button class="owr" data-own="'+esc(g.k)+'"><span class="c-on"><b>'+esc(g.name)+'</b>'+(g.phone?'<small>'+esc(g.phone)+'</small>':'')+'</span><span class="c-fl">'+g.flats.map(function(f){return esc(f.no);}).join(', ')+'<small>'+s.n+' flat'+(s.n>1?'s':'')+' · '+s.conf+' confirmed · '+s.done+' delivered</small></span>'
+      +'<span class="c-am"><small>bill '+money(s.bill)+' · paid '+money(s.recv)+'</small>'+(s.pend>0.5?'<b class="warnt">'+money(s.pend)+'</b>':s.adv>0.5?'<b class="goodt">advance '+money(s.adv)+'</b>':s.conf?'<b class="goodt">Paid</b>':'<span class="faint">not confirmed</span>')+'</span></button>'; }).join('')
+      +(rows.length>lim?'<button class="btn" data-act="owmore" style="margin-top:8px">Show more ('+(rows.length-lim)+' more)</button>':'')
+    :'<div class="empty">'+(G.length?'No owners match':'No owner names yet — add them on the flats')+'</div>'); }
+function ownStmtView(p,g,OI,all){ var s=ownSum(g.flats), bf=all.filter(function(f){ return isBld(f)&&OI.key(f)===g.k; }).sort(flatSort);
+  return '<div class="card"><button class="btn ghost" data-own="" style="padding:0;font-size:15px">‹ All owners</button>'
+   +'<h2 style="margin:6px 0 2px">👤 '+esc(g.name)+'</h2><div class="muted">'+(g.phone?esc(g.phone)+' · ':'')+s.n+' flat'+(s.n>1?'s':'')+' in '+esc(p.name)+(bf.length?' · also '+bf.map(function(f){return esc(f.no);}).join(', ')+' (paid by the builder)':'')+'</div>'
+   +'<div class="pjmoney owm"><button type="button" tabindex="-1"><span>Bill</span><b>'+money(s.bill)+'</b>'+(s.quote>0.5?'<small>+ '+money(s.quote)+' not confirmed</small>':'')+'</button><button type="button" tabindex="-1" class="good"><span>Received</span><b>'+money(s.recv)+'</b></button><button type="button" tabindex="-1" class="'+(s.pend>0.5?'warn':'good')+'"><span>'+(s.adv>0.5?'Advance with us':'Pending')+'</span><b>'+money(s.adv>0.5?s.adv:s.pend)+'</b></button></div>'
+   +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="opay" data-k="'+esc(g.k)+'">+ Payment</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">📤 Send to owner</button></div></div>'
+   +'<div class="card"><h2>Flats</h2><table class="bldt"><thead><tr><th>Flat</th><th>Status</th><th class="num">Bill</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody>'+g.flats.map(function(f){ var t=orderTotal(f), pd=paid(f);
+      return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></td><td class="num">'+(f.stage>=1?money(t):'<span class="faint">'+money(t)+'</span>')+'</td><td class="num">'+(pd>0.5?money(pd):'—')+'</td><td class="num">'+(f.stage>=1?(t-pd>0.5?'<b class="warnt">'+money(t-pd)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</td></tr>'; }).join('')+'</tbody></table></div>'
+   +'<div class="card"><h2>Payments</h2>'+(s.pays.length?'<table class="bldt"><tbody>'+s.pays.map(function(r){ return '<tr><td>'+dShort(r.x.on)+'</td><td style="white-space:nowrap">'+esc(r.f.no)+'</td><td>'+esc(r.x.mode||'Cash')+(r.x.note?' · '+esc(r.x.note):'')+'</td><td class="num"><b class="goodt">'+money(r.x.amt)+'</b></td></tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment yet</div>')+'</div>'; }
+function ownFind(p,k){ var all=projFlats(p.id), OI=ownIdx(all); return ownGroups(all.filter(function(f){ return !isBld(f); }),OI).filter(function(g){ return g.k===k; })[0]; }
+function ownPayPop(p,g){ var due=function(f){ return f.stage>=1?Math.max(0,orderTotal(f)-paid(f)):0; }, first=g.flats.filter(function(f){ return due(f)>0.5; })[0]||g.flats[0];
+  pjPop('Payment from '+esc(g.name),'<div class="grid2"><label class="f"><span>For flat</span><select id="op_f">'+g.flats.map(function(f){ return '<option value="'+f.id+'"'+(f===first?' selected':'')+'>'+esc(f.no)+(due(f)>0.5?' — due '+money(due(f)):'')+'</option>'; }).join('')+(g.flats.length>1?'<option value="*">All his flats (fills each flat\'s due)</option>':'')+'</select></label>'
+    +pjFld('op_on','Date',today(),'date')+pjFld('op_amt','Amount ₹','','number',' inputmode="decimal"')+'<label class="f"><span>Mode</span><select id="op_md">'+MODES.map(function(m){ return '<option>'+m+'</option>'; }).join('')+'</select></label></div>'+pjFld('op_note','Note','','text',' placeholder="e.g. Advance / Cheque 123456"')+'<div id="op_err" class="warnt" style="font-size:13px"></div>',
+    '<button class="btn primary" data-act="opaysave" data-k="'+esc(g.k)+'">Save payment</button><button class="btn" data-pjx="1">Cancel</button>'); }
+function ownPaySave(p,g){ var amt=Math.round(n(pjV('op_amt'))*100)/100, er=document.getElementById('op_err'), to=pjV('op_f'), on=pjV('op_on')||today(), md=pjV('op_md')||'Cash', nt=pjV('op_note');
+  if(!(amt>0)){ if(er) er.textContent='Enter the amount'; return; }
+  var parts=[]; if(to==='*'){ var left=amt, due=function(f){ return f.stage>=1?Math.max(0,orderTotal(f)-paid(f)):0; };
+      g.flats.forEach(function(f){ var d=Math.min(left,Math.round(due(f)*100)/100); if(d>0.005){ parts.push([f,d]); left=Math.round((left-d)*100)/100; } });
+      if(left>0.005){ var last=parts.length?parts[parts.length-1]:null; if(last) last[1]=Math.round((last[1]+left)*100)/100; else parts.push([g.flats[0],left]); } }
+    else { var f1=flatById(to); if(!f1) return; parts.push([f1,amt]); }
+  parts.forEach(function(x){ x[0].payments=x[0].payments||[]; x[0].payments.push({on:on,note:nt+(parts.length>1?(nt?' · ':'')+'part of '+money(amt):''),mode:md,amt:x[1]}); });
+  pjPopX(); save(); render(); toast('✓ '+money(amt)+' from '+g.name+' saved'+(parts.length>1?' ('+parts.map(function(x){ return x[0].no+' '+money(x[1]); }).join(', ')+')':' on '+parts[0][0].no)); }
+function ownText(p,g){ var s=ownSum(g.flats);
+  return (D.company.name||'')+'\n'+p.name+' — statement for '+g.name+'\nAs on '+dShort(today())+'\n\nFlats:\n'
+    +g.flats.map(function(f){ var ty=typeById(f.ftype); return f.no+(ty?' ('+ty.name+')':'')+' — '+flatStatus(f)+' — '+money(orderTotal(f))+(f.stage>=1?'':' (not confirmed yet)'); }).join('\n')
+    +'\nTotal bill: '+money(s.bill)+'\n\nPayments:\n'+(s.pays.length?s.pays.map(function(r){ return dShort(r.x.on)+' — '+r.f.no+' — '+(r.x.mode||'Cash')+(r.x.note?' — '+r.x.note:'')+' — '+money(r.x.amt); }).join('\n'):'None yet')
+    +'\nTotal received: '+money(s.recv)+'\n\n'+(s.pend>0.5?'Balance to pay: '+money(s.pend):s.adv>0.5?'Advance with us: '+money(s.adv):'Nothing pending — thank you!')+(D.company.phone?'\n\n'+D.company.name+' · '+D.company.phone:''); }
+function ownPendText(p){ var all=projFlats(p.id), OI=ownIdx(all), G=ownGroups(all.filter(function(f){ return !isBld(f); }),OI).map(function(g){ return {g:g,s:ownSum(g.flats)}; }).filter(function(r){ return r.s.pend>0.5; }).sort(function(a,b){ return b.s.pend-a.s.pend; }), tot=G.reduce(function(a,r){ return a+r.s.pend; },0);
+  return p.name+' — owners\' payments pending ('+dShort(today())+')\n'+G.map(function(r){ return r.g.name+(r.g.phone?' '+r.g.phone:'')+' ('+r.g.flats.map(function(f){return f.no;}).join(', ')+') — '+money(r.s.pend); }).join('\n')+'\nTotal pending: '+money(tot)+' from '+G.length+' owner'+(G.length===1?'':'s'); }
+function ownSend(p,g){ var t=ownText(p,g), d=String(g.phone||'').replace(/\D/g,'').slice(-10); if(d.length===10) window.open('https://wa.me/91'+d+'?text='+encodeURIComponent(t),'_blank'); else pjShare(t); }
+/* Excel: one row per owner (their flats clubbed) */
+function ownXls(p){ var all=projFlats(p.id), OI=ownIdx(all), G=ownGroups(all.filter(function(f){ return !isBld(f); }),OI), R=Math.round, T={n:0,bill:0,recv:0,pend:0};
+  var rows=[['Owner','Phone','Flats','No. of flats','Confirmed','Delivered','Bill','Received','Pending','Advance','Last payment']].concat(G.map(function(g){ var s=ownSum(g.flats); T.n+=s.n; T.bill+=s.bill; T.recv+=s.recv; T.pend+=s.pend; return [g.name,g.phone||'',g.flats.map(function(f){return f.no;}).join(', '),s.n,s.conf,s.done,R(s.bill),R(s.recv),R(s.pend),s.adv>0.5?R(s.adv):'',s.last||'']; }));
+  return rows.concat([[],['Total',G.length+' owner'+(G.length===1?'':'s'),'',T.n,'','',R(T.bill),R(T.recv),R(T.pend),'','']]); }
+/* the flats list, clubbed by owner (all roles but production) */
+function ownChips(F){ if(prod()) return ''; return '<button class="btn sm'+(F.grp?' primary':'')+'" data-act="pgrp">👥 By owner</button>'+(F.grp||F.multi?'<button class="btn sm'+(F.multi?' primary':'')+'" data-act="pmulti">2+ flats</button>':''); }
+function ownLabel(F,fl){ if(!F.ow) return ''; var OI=ownIdx(fl); return ' · <b>👤 '+esc(OI.name(F.ow))+'</b> <button class="btn ghost sm" data-act="pownx">show all</button>'; }
+function ownRows(list,lim,fl){ var OI=ownIdx(fl), by={}, order=[], none=[], out='', shown=0;
+  list.forEach(function(f){ var k=OI.key(f); if(!k){ none.push(f); return; } if(!by[k]){ by[k]=[]; order.push(k); } by[k].push(f); });
+  order.sort(function(a,b){ var x=OI.name(a).toLowerCase(), y=OI.name(b).toLowerCase(); return x<y?-1:x>y?1:0; });
+  order.forEach(function(k){ if(shown>=lim) return; var g=by[k], own=g.filter(function(f){ return !isBld(f); }), s=admin()&&own.length?ownSum(own):null;
+    out+='<div class="fgh"><span class="grow"><b>👤 '+esc(OI.name(k))+'</b>'+(OI.phone(k)?' <small>'+esc(OI.phone(k))+'</small>':'')+' <small class="faint">· '+OI.n[k]+' flat'+(OI.n[k]>1?'s':'')+'</small>'+(s&&s.pend>0.5?' <b class="warnt">'+money(s.pend)+' pending</b>':'')+'</span>'
+      +(S.pf&&S.pf.ow===k?'':'<button class="btn sm ghost" data-act="pown" data-k="'+esc(k)+'">Only these</button>')+(s?'<button class="btn sm ghost" data-act="ownst" data-k="'+esc(k)+'">Statement ›</button>':'')+'</div>';
+    g.forEach(function(f){ if(shown<lim){ out+=pjRow(f); shown++; } }); });
+  if(none.length&&shown<lim){ out+='<div class="fgh"><span class="grow"><b>No owner yet</b> <small class="faint">· '+none.length+' flat'+(none.length>1?'s':'')+'</small></span></div>'; none.forEach(function(f){ if(shown<lim){ out+=pjRow(f); shown++; } }); }
+  return out; }
 function bldBillPop(p){ pjPop('Extra bill to the builder — '+esc(p.name),'<p class="faint" style="margin:0 0 8px">For work outside the builder\'s flats (e.g. common areas). The flats are billed by themselves when delivered.</p><div class="grid2">'+pjFld('bb_on','Date',today(),'date')+pjFld('bb_amt','Amount ₹','','number',' inputmode="decimal"')+'</div>'+pjFld('bb_note','Note','','text',' placeholder="e.g. Lobby windows"')+'<div id="bb_err" class="warnt" style="font-size:13px"></div>',
   '<button class="btn primary" data-act="bldbillsave" data-pid="'+p.id+'">Save bill</button><button class="btn" data-pjx="1">Cancel</button>'); }
 function bldPayPop(p){ var s=pjStmt(p).b;
@@ -2697,21 +2785,6 @@ function bldText(p){ var S2=pjStmt(p), s=S2.b, B=bldOf(p), done=s.list.filter(fu
     +(L.length?'\n'+L.map(function(r){ var x=r[2]; return dShort(x.on)+'  '+(r[1]==='Bill'?'Extra bill':'Paid'+(x.mode?' ('+x.mode+')':''))+(x.note?' — '+x.note:'')+'  '+money(x.amt); }).join('\n')+'\n':'')
     +'\nTotal due for work done: '+money(s.due)+'\nReceived: '+money(s.recv)+'\n'+(s.pend<-0.5?'Advance with us: '+money(-s.pend):'Balance: '+money(Math.max(0,s.pend)))
     +(s.n?'\n\nFull order ('+s.n+' flats): '+money(s.fullVal)+(s.extra?' + extra '+money(s.extra):'')+' · balance on full order: '+money(s.pendFull):''); }
-/* the whole statement (for the shop) */
-function stmtText(p){ var S2=pjStmt(p), b=S2.b, o=S2.o;
-  return (D.company.name||'')+' — '+p.name+'\nStatement as on '+dShort(today())+'\n\n'
-    +'🏗 BUILDER'+(p.builder?' ('+p.builder+')':'')+' — '+b.n+' flat'+(b.n===1?'':'s')+'\nWork done: '+b.done+' · ready: '+b.ready+' · in production: '+b.work+' · not started: '+b.todo
-    +'\nValue of work done: '+money(b.doneVal)+(b.extra?'\nExtra bills: '+money(b.extra):'')+'\nReceived: '+money(b.recv)+'\n'+(b.pend<-0.5?'Advance from builder: '+money(-b.pend):'Pending: '+money(Math.max(0,b.pend)))
-    +(b.n?'\n(Full order '+money(b.fullVal)+' · balance '+money(b.pendFull)+')':'')
-    +'\n\n👤 OWNERS — '+o.n+' flat'+(o.n===1?'':'s')+'\nWork done: '+o.done+' · ready: '+o.ready+' · in production: '+o.work+' · confirmed: '+o.conf
-    +'\nBill (confirmed flats): '+money(o.billed)+'\nReceived: '+money(o.recv)+'\nPending: '+money(o.pend)+(o.pendDone>0.5?' (on delivered flats: '+money(o.pendDone)+')':'')
-    +'\n\nTOTAL received: '+money(S2.recv)+'\nTOTAL pending now: '+money(S2.pend); }
-/* the statement as Excel rows */
-function stmtRows(p){ var S2=pjStmt(p), b=S2.b, o=S2.o, R=Math.round;
-  return [['Statement — '+p.name,'as on '+today()],[],['Builder pays'+(p.builder?' ('+p.builder+')':''),''],['Flats',b.n],['Work done (delivered)',b.done],['Ready to deliver',b.ready],['In production',b.work],['Not started',b.todo],
-    ['Value of work done',R(b.doneVal)],['Extra bills',R(b.extra)],['Received from builder',R(b.recv)],[b.pend<-0.5?'Advance from builder':'Pending now',R(Math.abs(b.pend))],['Full order (all builder flats)',R(b.fullVal)],['Balance on the full order',R(b.pendFull)],[],
-    ['Owners pay',''],['Flats',o.n],['Work done (delivered)',o.done],['Ready to deliver',o.ready],['In production',o.work],['Confirmed (owner said yes)',o.conf],['Bill (confirmed flats)',R(o.billed)],['Received from owners',R(o.recv)],['Pending',R(o.pend)],['… of it on delivered flats',R(o.pendDone)],[],
-    ['Total received',R(S2.recv)],['Total pending now',R(S2.pend)]]; }
 /* ticked flats → who pays */
 function payerBulk(v){ var fl=pjSelIds().map(flatById).filter(function(f){ return f&&!f.del; }), ch=fl.filter(function(f){ return isBld(f)!==(v==='b'); });
   if(!fl.length) return; if(!ch.length){ toast('Already '+(v==='b'?'🏗 builder pays':'👤 owner pays')); return; }
@@ -2722,7 +2795,13 @@ document.addEventListener('change',function(e){ var t=e.target; if(t&&t.id==='fa
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!t) return; var a=t.dataset.act, p=t.dataset.pid?projById(t.dataset.pid):(S.tab==='project'?projById(S.pid):null);
   if(a==='pone'&&p&&!prod()){ oneFlatPop(p); return; }
   if(a==='ponesave'&&p&&!prod()){ oneFlatSave(p); return; }
+  if(!prod()&&(a==='pgrp'||a==='pmulti'||a==='pown'||a==='pownx')){ var F=S.pf||(S.pf={tower:'',st:'',q:''}); if(a==='pgrp'){ F.grp=!F.grp; if(!F.grp){ F.multi=false; F.ow=''; } } if(a==='pmulti') F.multi=!F.multi; if(a==='pown'){ F.ow=t.dataset.k||''; F.grp=true; } if(a==='pownx') F.ow=''; S.plim=60; render(); return; }
   if(!admin()||!p) return;
+  if(a==='ownst'){ S.psub='owners'; ownRef(p); S.owk=t.dataset.k||''; render(); window.scrollTo(0,0); return; }
+  if(a==='owf'){ S.owf=t.dataset.f||''; S.owlim=80; render(); return; }
+  if(a==='owmore'){ S.owlim=(S.owlim||80)+200; render(); return; }
+  if(a==='opay'||a==='opaysave'||a==='osend'){ var g=ownFind(p,t.dataset.k||''); if(!g) return; if(a==='opay') ownPayPop(p,g); else if(a==='opaysave') ownPaySave(p,g); else ownSend(p,g); return; }
+  if(a==='ownpendshare'){ pjShare(ownPendText(p)); return; }
   if(a==='ppayb'){ payerBulk('b'); return; }
   if(a==='ppayo'){ payerBulk(''); return; }
   if(a==='bldbill'){ bldBillPop(p); return; }
@@ -2730,8 +2809,10 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   if(a==='bldbillsave'){ bldSave(p,'bills'); return; }
   if(a==='bldpaysave'){ bldSave(p,'pays'); return; }
   if(a==='blddel'){ bldDel(p,t.dataset.k,t.dataset.id); return; }
-  if(a==='bldshare'){ pjShare(bldText(p)); return; }
-  if(a==='stshare'){ pjShare(stmtText(p)); return; } });
+  if(a==='bldshare'){ pjShare(bldText(p)); return; } });
+/* an owner row → that owner's statement; '‹ All owners' → back to the list */
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-own]'); if(!t||!admin()||S.tab!=='project') return; var p=projById(S.pid); if(!p) return; ownRef(p); S.owk=t.dataset.own||''; render(); window.scrollTo(0,0); });
+document.addEventListener('input',function(e){ var t=e.target; if(!t||t.id!=='owq') return; S.owq=t.value; S.owlim=80; var p=projById(S.pid); if(!p) return; var all=projFlats(p.id), L=document.querySelector('.owl'); if(L) L.innerHTML=ownList(p,ownGroups(all.filter(function(f){ return !isBld(f); }),ownIdx(all))); });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -2864,7 +2945,7 @@ function viewExpenses(){
   var kp='<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi good"><span>Receipts '+mLabel(m)+'</span><b>'+money(inn)+'</b></div><div class="kpi warn"><span>Payments '+mLabel(m)+'</span><b>'+money(out)+'</b></div><div class="kpi'+(inn-out<0?' warn':'')+'"><span>Net cash flow</span><b>'+money(inn-out)+'</b></div></div>';
   var body='';
   if(sub==='day'){ body='<div class="card"><div class="row between"><h2>Day book — '+mLabel(m)+'</h2><button class="btn sm" data-act="vxlsx">⬇ Excel</button></div><div class="tscroll"><table class="db"><thead><tr><th>Date</th><th>Vch no</th><th>Type</th><th>Ledger / Party</th><th>Mode</th><th>Narration</th><th class="num">Receipt</th><th class="num">Payment</th><th></th></tr></thead><tbody>'
-     +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):(v.pid?'<button class="btn ghost sm" style="padding:0;min-height:0" data-proj="'+v.pid+'" data-psubgo="stmt">open</button>':'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>'))+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
+     +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):(v.pid?'<button class="btn ghost sm" style="padding:0;min-height:0" data-proj="'+v.pid+'" data-psubgo="builder">open</button>':'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>'))+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
      +'</tbody><tfoot><tr><td colspan="6" class="right">Total</td><td class="num" data-l="In">'+money(inn)+'</td><td class="num" data-l="Out">'+money(out)+'</td><td></td></tr></tfoot></table></div></div>'; }
   if(sub==='pay'){ body='<div class="card"><h2>Payment voucher <span class="faint" style="font-weight:400;font-size:13px">P-'+D.vseq+'</span></h2><div class="grid2"><label class="f"><span>Date</span><input type="date" id="eon" value="'+today()+'"></label><label class="f"><span>Ledger head</span><select id="ecat">'+D.heads.map(function(h){return '<option>'+esc(h.name)+'</option>';}).join('')+'</select></label>'
      +'<label class="f"><span>Paid to (party)</span><input type="text" id="eparty" placeholder="Supplier / person"></label><label class="f"><span>Mode</span><select id="emode">'+opts(MODES,'Cash')+'</select></label></div><label class="f"><span>Narration</span><input type="text" id="enote" placeholder="Bill no, what for…"></label><div class="row"><label class="f" style="margin:0;max-width:200px"><span>Amount ₹</span><input type="number" id="eamt" style="font-size:18px;font-weight:600"></label><button class="btn primary" data-act="exp" style="margin-top:18px">Save voucher</button></div></div>'
