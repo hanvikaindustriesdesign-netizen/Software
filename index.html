@@ -410,6 +410,14 @@ body.dzon{overflow:hidden}
 }
 #netbar:empty{display:none} .netbar{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fcd34d;font-size:13.5px;line-height:1.45} .netbar.bad{background:#fef2f2;border-color:#fca5a5} .netbar .btn{margin-left:4px;vertical-align:middle;min-height:30px}
 .snapopt{margin:0 0 12px} .snapopt .btn{width:100%;margin-bottom:6px} .ph .phup{position:absolute;top:4px;left:4px;background:rgba(255,255,255,.92);border-radius:99px;font-size:12px;padding:1px 6px;line-height:18px}
+.noamt .amth,.noamt .prth,.noamt td.amt,.noamt td.c-pr,.noamt tfoot{display:none!important}
+.pjmoney b{overflow-wrap:anywhere}
+.bldm{grid-template-columns:1fr}
+.bldm button{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.bldm span{font-size:13.5px}
+@media(min-width:700px){.bldm{grid-template-columns:repeat(3,minmax(0,1fr))}.bldm button{display:block}}
+.bldt td:first-child,.bldt td.num{white-space:nowrap}
+.pjbld{display:block;width:100%;margin-top:8px;padding:8px 10px;border-radius:10px;background:#f4f6f9;border:1.5px solid transparent;font:inherit;font-size:13.5px;line-height:1.4;text-align:left;white-space:normal;color:var(--ink);cursor:pointer}
 </style>
 </head>
 <body>
@@ -464,7 +472,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='01 Nov 2026, 15:44';
+var APPV='01 Nov 2026, 22:55';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -479,7 +487,7 @@ function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sas
 function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name===name) return D.brands[i]; return D.brands[0]; }
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
-var PRIVK=['expenses','staff','att','saladj','pins','opening','heads','vseq','users','lockc','carry'];
+var PRIVK=['expenses','staff','att','saladj','pins','opening','heads','vseq','users','lockc','carry','bldr'];
 var PV={mode:localStorage.getItem('wpmode')||'', last:localStorage.getItem('wpseen')||'', base:localStorage.getItem('wpbase'), busy:null, okAt:0, tries:0, chk:''}, PRIVJ='';
 function pvSave(){ try{ localStorage.setItem('wpmode',PV.mode||''); localStorage.setItem('wpseen',PV.last||''); if(PV.base==null) localStorage.removeItem('wpbase'); else localStorage.setItem('wpbase',PV.base); }catch(e){} }
 var saveT, DSIZE=0, STFULL=false;
@@ -523,8 +531,8 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "create or replace function ws_private.row_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := coalesce(old.data, '{}'::jsonb); n jsonb := coalesce(new.data, '{}'::jsonb);\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;\n  if ws_private.is_admin() then return new; end if;\n  if coalesce(o->>'del', '') = 'true' or coalesce(n->>'del', '') = 'true' then new.data := old.data; return new; end if;\n  if o ? 'payments' then n := jsonb_set(n, '{payments}', ws_private.keep_items(o->'payments', n->'payments'), true); end if;\n  if o ? 'photos' then n := jsonb_set(n, '{photos}', ws_private.keep_photos(o->'photos', n->'photos'), true); end if;\n  new.data := n;\n  return new;\nend $$;",
  "create or replace function ws_private.has_private() returns boolean language sql stable security definer set search_path = '' as $$ select exists(select 1 from public.shop_data where id = 'private') $$;",
  "revoke execute on function ws_private.has_private() from public, anon; grant execute on function ws_private.has_private() to authenticated;",
- "create or replace function ws_private.strip_private(d jsonb) returns jsonb language sql immutable set search_path = '' as $$\n  select case when jsonb_typeof(d) is distinct from 'object' then d\n    else (d - array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bcost', 'bcostx'])\n      || case when jsonb_typeof(d->'brands') = 'array' then jsonb_build_object('brands', (select coalesce(jsonb_agg(case when jsonb_typeof(b.v) = 'object' then b.v - 'cost' - 'doorCost' - 'nc' else b.v end order by b.ord), '[]'::jsonb) from jsonb_array_elements(d->'brands') with ordinality as b(v, ord))) else '{}'::jsonb end\n  end $$;",
- "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := '{}'::jsonb; n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; adm boolean;\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;   -- the database owner (SQL editor) is not checked\n  adm := ws_private.is_admin();\n  if tg_op = 'UPDATE' then\n    o := coalesce(old.data, '{}'::jsonb);\n    if new.id is distinct from old.id and not adm then raise exception 'only an admin can rename shop data' using errcode = '42501'; end if;\n  end if;\n  if new.id = 'main' then\n    if ws_private.has_private() then\n      -- the shared record never carries admin-only data once the admin record exists\n      o := ws_private.strip_private(o); n := ws_private.strip_private(n); new.data := n;\n    elsif tg_op = 'UPDATE' and coalesce(n->'pins'->>'admin', '') like '-%' then\n      -- a phone whose admin data was cleared (it was a staff phone) never overwrites the real admin data\n      foreach k in array array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry'] loop\n        if o ? k then n := jsonb_set(n, array[k], o->k, true); else n := n - k; end if;\n      end loop;\n      if jsonb_typeof(n->'brands') = 'array' then\n        n := jsonb_set(n, '{brands}', (select coalesce(jsonb_agg(case when ob.v is null then nb.v - 'nc' else (nb.v - 'nc' - 'cost' - 'doorCost') || jsonb_strip_nulls(jsonb_build_object('cost', ob.v->'cost', 'doorCost', ob.v->'doorCost')) end order by nb.ord), '[]'::jsonb)\n          from jsonb_array_elements(n->'brands') with ordinality as nb(v, ord)\n          left join lateral (select x.v from jsonb_array_elements(case when jsonb_typeof(o->'brands') = 'array' then o->'brands' else '[]'::jsonb end) as x(v) where x.v->>'name' = nb.v->>'name' limit 1) as ob on true), true);\n      end if;\n      new.data := n;\n    end if;\n  end if;\n  if adm then return new; end if;\n  r := o;\n  foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders'] loop\n    if n ? k then r := jsonb_set(r, array[k], n->k, true); end if;\n  end loop;\n  s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end;\n  s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end;\n  if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if;\n  if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if;\n  new.data := r;\n  return new;\nend $$;",
+ "create or replace function ws_private.strip_private(d jsonb) returns jsonb language sql immutable set search_path = '' as $$\n  select case when jsonb_typeof(d) is distinct from 'object' then d\n    else (d - array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bldr', 'bcost', 'bcostx'])\n      || case when jsonb_typeof(d->'brands') = 'array' then jsonb_build_object('brands', (select coalesce(jsonb_agg(case when jsonb_typeof(b.v) = 'object' then b.v - 'cost' - 'doorCost' - 'nc' else b.v end order by b.ord), '[]'::jsonb) from jsonb_array_elements(d->'brands') with ordinality as b(v, ord))) else '{}'::jsonb end\n  end $$;",
+ "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := '{}'::jsonb; n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; adm boolean;\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;   -- the database owner (SQL editor) is not checked\n  adm := ws_private.is_admin();\n  if tg_op = 'UPDATE' then\n    o := coalesce(old.data, '{}'::jsonb);\n    if new.id is distinct from old.id and not adm then raise exception 'only an admin can rename shop data' using errcode = '42501'; end if;\n  end if;\n  if new.id = 'main' then\n    if ws_private.has_private() then\n      -- the shared record never carries admin-only data once the admin record exists\n      o := ws_private.strip_private(o); n := ws_private.strip_private(n); new.data := n;\n    elsif tg_op = 'UPDATE' and coalesce(n->'pins'->>'admin', '') like '-%' then\n      -- a phone whose admin data was cleared (it was a staff phone) never overwrites the real admin data\n      foreach k in array array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bldr'] loop\n        if o ? k then n := jsonb_set(n, array[k], o->k, true); else n := n - k; end if;\n      end loop;\n      if jsonb_typeof(n->'brands') = 'array' then\n        n := jsonb_set(n, '{brands}', (select coalesce(jsonb_agg(case when ob.v is null then nb.v - 'nc' else (nb.v - 'nc' - 'cost' - 'doorCost') || jsonb_strip_nulls(jsonb_build_object('cost', ob.v->'cost', 'doorCost', ob.v->'doorCost')) end order by nb.ord), '[]'::jsonb)\n          from jsonb_array_elements(n->'brands') with ordinality as nb(v, ord)\n          left join lateral (select x.v from jsonb_array_elements(case when jsonb_typeof(o->'brands') = 'array' then o->'brands' else '[]'::jsonb end) as x(v) where x.v->>'name' = nb.v->>'name' limit 1) as ob on true), true);\n      end if;\n      new.data := n;\n    end if;\n  end if;\n  if adm then return new; end if;\n  r := o;\n  foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders'] loop\n    if n ? k then r := jsonb_set(r, array[k], n->k, true); end if;\n  end loop;\n  s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end;\n  s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end;\n  if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if;\n  if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if;\n  new.data := r;\n  return new;\nend $$;",
  "create or replace trigger shop_data_guard before insert or update on public.shop_data for each row execute function ws_private.main_guard();",
  "create or replace trigger shop_orders_guard before update on public.shop_orders for each row execute function ws_private.row_guard();",
  "create or replace trigger shop_flats_guard before update on public.shop_flats for each row execute function ws_private.row_guard();",
@@ -811,8 +819,8 @@ function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWor
     if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
     else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,oTitleT(o)+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
     else if(p&&p.late) al.push(['y',o.id,oTitleT(o)+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
-    if(o.stage>=3&&balance(o)>0.5) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
-    if(o.stage===1&&paid(o)<0.5) al.push(['y',o.id,oTitleT(o)+' — confirmed but no advance received']); });
+    if(o.stage>=3&&balance(o)>0.5&&!noAmt(o)) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
+    if(o.stage===1&&paid(o)<0.5&&!noAmt(o)) al.push(['y',o.id,oTitleT(o)+' — confirmed but no advance received']); });
   if(admin()){ var lows=lowStock(); if(lows.length) al.push(['y','','inventory',lows.length+' item'+(lows.length>1?'s':'')+' low in stock — '+lows.slice(0,3).map(function(k){return D.inv[k].name;}).join(', ')+(lows.length>3?'…':'')]);
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
     if(DSIZE>3.5*1048576) al.push(['y','','settings','Shared data is '+(DSIZE/1048576).toFixed(1)+' MB — close to the phone limit (Settings → App version → Space used).']);
@@ -856,11 +864,11 @@ function showReminders(){ var v=document.createElement('div'); v.className='view
 function viewHome(){
   if(prod()) return homeProd();
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
-  var due=open.reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0);
-  var mo=allOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
+  var due=open.filter(function(o){return !noAmt(o);}).reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0);
+  var mo=moneyOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
   var sales=mo.reduce(function(a,o){return a+subTotal(o);},0), prof=mo.reduce(function(a,o){return a+profit(o);},0);
   var exp=monthExp(m);
-  var inn=allOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
+  var inn=moneyOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0)+bldIn(m);
   var kp='<div class="kpis"><div class="kpi"><span>Sales this month</span><b>'+money(sales)+'</b><i>'+pl(mo.length,'order')+' confirmed</i></div><div class="kpi good"><span>Received this month</span><b>'+money(inn)+'</b></div>'
    +'<div class="kpi'+(due>0?' warn':'')+'"><span>To collect</span><b>'+money(due)+'</b></div>'
    +(admin()?'<div class="kpi'+(prof-exp<0?' warn':' good')+'"><span>Profit this month</span><b>'+money(prof-exp)+'</b><i>after '+money(exp)+' expenses</i></div>':'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){return o.stage<3&&o.stage>0;}).reduce(function(a,o){return a+leftQty(o);},0)+'</b></div>')+'</div>';
@@ -870,7 +878,7 @@ function viewHome(){
   var q=queue();
   var work='<div class="card h-wk"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
    +(q.length?'<table><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
-  var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5;}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
+  var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5&&!noAmt(o);}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
   var payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending</div>')+'</div></div>';
   return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
@@ -906,11 +914,12 @@ function viewOrder0(){
     var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
     return hd+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
-   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right"><div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div>'
-   +(o.stage>0||paid(o)>0?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
+   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div>')
+   +(!noAmt(o)&&(o.stage>0||paid(o)>0)?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
    +'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
   var subs=[['items',o.kind==='doors'?'Doors':'Windows'],['customer','Customer'],['quote','Quote'],['payments','Payments'],['cutting','Cutting list'],['production','Production']];
+  if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'; }); if(S.sub==='quote'||S.sub==='payments') S.sub='items'; }
   var tabs='<div class="subtabs osub">'+subs.map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
   return head+tabs+({items:subItems,customer:subCustomer,quote:subQuote,payments:subPayments,cutting:subCutting,production:subProduction}[S.sub])(o);
 }
@@ -920,11 +929,11 @@ function nextBtn(o){
   if(o.stage===1) return '<button class="btn primary big" data-act="next">Start production</button>';
   if(o.stage===2) return '<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>';
   if(o.stage===3) return '<button class="btn good big" data-act="next">Delivered</button>';
-  if(balance(o)>0.5) return '<span class="muted">Delivered. Collect '+money(balance(o))+' to archive.</span> '+(admin()?'<button class="btn ghost sm" data-act="back">Undo delivered</button>':'');
+  if(balance(o)>0.5) return '<span class="muted">Delivered.'+(noAmt(o)?'':' Collect '+money(balance(o))+' to archive.')+'</span> '+(admin()?'<button class="btn ghost sm" data-act="back">Undo delivered</button>':'');
   return '<button class="btn big" data-act="archive">Move to archive</button>';
 }
 
-function subItems(o){ return lockLine(o)+subItems0(o); }
+function subItems(o){ return (noAmt(o)?'':lockLine(o))+noAmtItems(o,subItems0(o)); }
 function subItems0(o){
   var head,rows,cols;
   if(o.kind==='doors'){ cols=8;
@@ -1623,7 +1632,7 @@ function flatsMerge(cur,inc){ cur=cur||[]; if(!Array.isArray(inc)) return cur; v
 function pad2(v){ v=String(v); return v.length<2?'0'+v:v; }
 function flatNo(t,fl,u){ return (t?t+'-':'')+fl+pad2(u); }
 function flatSort(a,b){ return (a.tower||'')<(b.tower||'')?-1:(a.tower||'')>(b.tower||'')?1:(n(a.floor)-n(b.floor))||(n(a.unit)-n(b.unit))||((a.no||'')<(b.no||'')?-1:1); }
-function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Production done':f.stage===2?'In production':f.stage===1?(paid(f)>0.5?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
+function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Production done':f.stage===2?'In production':f.stage===1?(paid(f)>0.5&&admin()?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
 var FSTC={'Not measured':'s0','Measured':'s1','Confirmed':'s1','Advance paid':'s1','In production':'s2','Production done':'s3','Ready':'s3','Delivered':'s4'};
 function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(paid(f)>0.5) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.measured||f.stage>=1) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
 function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
@@ -1665,7 +1674,7 @@ function pjV(id){ var e=document.getElementById(id); return e?String(e.value||''
 function projCard(){ var all=D.projects||[], live=all.filter(function(p){return !p.archived;}), ar=all.length-live.length, list=S.pjarch?all.filter(function(p){return p.archived;}):live;
   if(!all.length&&!admin()) return '';
   return '<div class="card pjc"><div class="row between"><h2>🏢 Apartment projects</h2>'+(admin()?'<button class="btn sm" data-act="pnew">+ New project</button>':'')+'</div>'
-   +(list.length?list.map(function(p){ var fl=projFlats(p.id), st=projStats(p,fl); return '<button class="pjrow" data-proj="'+p.id+'"><b>'+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</b><span>'+fl.length+' flats · '+st.measured+' measured · '+st.paid+' advance paid · '+st.delivered+' delivered'+(p.site?' · '+esc(p.site):'')+'</span>'+(prod()?'':'<span class="faint">'+money(st.received)+' received of '+money(st.billed)+'</span>')+'</button>'; }).join('')
+   +(list.length?list.map(function(p){ var fl=projFlats(p.id), st=projStats(p,fl); return '<button class="pjrow" data-proj="'+p.id+'"><b>'+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</b><span>'+fl.length+' flats · '+st.measured+' measured · '+(admin()?st.paid+' advance paid · ':'')+st.delivered+' delivered'+(p.site?' · '+esc(p.site):'')+'</span>'+(admin()?'<span class="faint">'+money(st.received)+' received of '+money(st.billed)+'</span>':'')+'</button>'; }).join('')
      :'<div class="faint" style="margin-top:6px">'+(S.pjarch?'No archived projects.':'For apartment jobs: each flat is its own order with the owner, measured sizes and payments.')+'</div>')
    +(ar||S.pjarch?'<button class="btn ghost sm" data-act="pjarchlist" style="margin-top:8px;padding-left:2px">'+(S.pjarch?'‹ Active projects':'Archived projects ('+ar+')')+'</button>':'')+'</div>'; }
 
@@ -1675,15 +1684,16 @@ function pjPayRows(fl){ var rows=[]; fl.forEach(function(f){ (f.payments||[]).fo
 function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">Project not found. <button class="btn ghost" data-go="orders">Back</button></div>';
   if(!FL.loaded) return '<div class="card"><h2>🏢 '+esc(p.name)+'</h2><div class="faint">Loading flats…</div></div>';
   var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), F=S.pf||(S.pf={tower:'',st:'',q:''}), hasB=(p.batches||[]).length>0, np=fl.reduce(function(a,f){return a+(f.payments||[]).length;},0);
-  var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length],['pay','Advance & payments',np],['types','Flat types',(p.types||[]).length]].concat(hasB?[['batches','Batches',p.batches.length]]:[]);
+  if(!admin()&&(F.st==='pend'||F.st==='Advance paid')) F.st='';
+  var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length]].concat(admin()?[['pay','Advance & payments',np],['builder','Builder',bldSum(p).n||null]]:[]).concat([['types','Flat types',(p.types||[]).length]]).concat(hasB?[['batches','Batches',p.batches.length]]:[]);
   var sub=tabs.some(function(t){return t[0]===S.psub;})?S.psub:'flats';
-  var tiles=PJST.filter(function(x){ return x[0]!=='Confirmed'||c.Confirmed; }).map(function(x){ var on=!prod()&&sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='Confirmed'?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('');
+  var tiles=PJST.filter(function(x){ return (x[0]!=='Confirmed'||c.Confirmed)&&(admin()||x[0]!=='Advance paid'); }).map(function(x){ if(!admin()&&x[0]==='Confirmed') x=['Confirmed','Confirmed']; var on=!prod()&&sub==='flats'&&(F.st||'')===x[0]; return '<button data-pst="'+x[0]+'" class="'+(on?'on':'')+(x[0]==='Confirmed'&&admin()?' due':'')+'"'+(prod()?' disabled':'')+'><b>'+(c[x[0]]||0)+'</b><span>'+x[1]+'</span></button>'; }).join('');
   var pend=fl.reduce(function(a,f){ return a+(f.stage>0?Math.max(0,balance(f)):0); },0);
   var head='<div class="card"><div class="row between"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>'+(prod()?'':'<button class="btn sm" data-act="pjedit">✎ Edit project</button>')+'</div>'
    +'<h2 style="margin:4px 0 0;font-size:24px">🏢 '+esc(p.name)+(p.archived?' <span class="stage">Archived</span>':'')+'</h2>'+(p.site||p.builder||p.bphone||p.maplink?'<div class="muted">'+esc([p.site,p.builder,p.bphone].filter(Boolean).join(' · '))+(p.maplink?' <a href="'+esc(p.maplink)+'" target="_blank" rel="noopener" class="pjmap">📍 Map</a>':'')+'</div>':'')
    +'<div class="pjst">'+tiles+'</div>'
-   +(prod()?'':'<div class="pjmoney"><button data-psub="pay"><span>Billed</span><b>'+money(st.billed)+'</b></button><button data-psub="pay" class="good"><span>Received</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>Pending</span><b>'+money(pend)+'</b></button></div>')+'</div>';
-  var body=sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
+   +(!admin()?'':'<div class="pjmoney"><button data-psub="pay"><span>Billed</span><b>'+money(st.billed)+'</b></button><button data-psub="pay" class="good"><span>Received</span><b>'+money(st.received)+'</b><small>'+st.paid+' flat'+(st.paid===1?'':'s')+' paid</small></button><button data-pst="pend" class="'+(pend>0.5?'warn':'')+(F.st==='pend'&&sub==='flats'?' on':'')+'"><span>Pending</span><b>'+money(pend)+'</b></button></div>'+bldLine(p))+'</div>';
+  var body=sub==='builder'?bldView(p):sub==='pay'?pjPays(p,fl):sub==='types'?pjTypes(p,fl):sub==='batches'?pjBatches(p,fl):pjFlats(p,fl);
   return head+'<div class="subtabs">'+tabs.map(function(s){return '<button data-psub="'+s[0]+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+(s[2]!=null?' <small>'+s[2]+'</small>':'')+'</button>';}).join('')+'</div>'+body; }
 function pjFilter(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), q=(F.q||'').toLowerCase();
   return fl.filter(function(f){ if(F.tower&&f.tower!==F.tower) return false; if(F.st==='pend'){ if(!(f.stage>0&&balance(f)>0.5)) return false; } else if(F.st&&flatStatus(f)!==F.st) return false;
@@ -1692,9 +1702,9 @@ function pjRow(f){ var ty=typeById(f.ftype), st=flatStatus(f), pd=paid(f), lp=la
   return '<div class="ftr'+((S.psel||{})[f.id]?' sel':'')+'"><input type="checkbox" class="fsel" data-fsel="'+f.id+'"'+((S.psel||{})[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
    +'<span class="c-ow">'+(f.customer?esc(f.customer):'<span class="faint">No owner yet</span>')+(f.phone?'<small>'+esc(f.phone)+'</small>':'')+'</span>'
    +'<span class="c-st"><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span></span>'
-   +'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+'</span>'
+   +(!admin()?'<span class="c-bill" data-l="Windows">'+qty(f)+'</span><span class="c-rec"></span><span class="c-due"></span>':'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+'</span>'
    +'<span class="c-rec" data-l="Received">'+(pd>0.5?'<b class="goodt">'+money(pd)+'</b>'+(lp?'<small>'+dShort(lp.on)+' · '+esc(lp.mode||'Cash')+'</small>':''):'<span class="faint">—</span>')+'</span>'
-   +'<span class="c-due" data-l="Due">'+(f.stage>0||pd>0.5?(bal>0.5?'<b class="warnt">'+money(bal)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</span></button>'
+   +'<span class="c-due" data-l="Due">'+(f.stage>0||pd>0.5?(bal>0.5?'<b class="warnt">'+money(bal)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</span>')+'</button>'
    +(prod()?'':'<button class="btn sm ghost fe" data-fedit="'+f.id+'" aria-label="Edit '+esc(f.no)+'" title="Edit flat">✎</button>')+'</div>'; }
 function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(function(f){return f.tower||'';}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(), list=pjFilter(p,fl), lim=S.plim||60, types=p.types||[], empty=fl.filter(function(f){return !f.items||!f.items.length;}).length;
   if(prod()) list=list.filter(function(f){ return f.stage>=1&&f.stage<=3; });
@@ -1706,18 +1716,18 @@ function pjFlats(p,fl){ var F=S.pf||(S.pf={tower:'',st:'',q:''}), towers=fl.map(
    +(many?'<div id="fa_plan">'+faPlanHtml(p)+'</div>':'')
    +'<div class="muted" id="fa_prev" style="margin:4px 0 10px">'+faPreview(p)+'</div><button class="btn primary" data-act="padd"'+(types.length?'':' disabled')+'>Add flats</button></div>';
   var note=!prod()&&empty?'<div class="pjnote">⚠ '+empty+' flat'+(empty>1?'s have':' has')+' no windows yet. Add the windows to the flat type, then tap <b>Update</b> on the flat type page.'+(types.length?' <button class="btn sm" data-psub="types">Open flat types</button>':'')+'</div>':'';
-  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'">'+(prod()?'':'<button class="btn" data-act="paddshow">+ Add flats</button>'+(many&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':''))+'</div>';
+  var bar='<div class="row pjsel"><input type="text" class="grow" id="pq" placeholder="Search flat no, owner, phone" value="'+esc(F.q||'')+'">'+(prod()?'':'<button class="btn" data-act="paddshow">+ Add flats</button><button class="btn" data-act="pone">+ One flat</button>'+(many&&fl.length?'<button class="btn" data-act="pjplan">🏠 Floor plan</button>':''))+'</div>';
   var tw=towers.length>1?'<div class="subtabs">'+[['','All towers']].concat(towers.map(function(t){return [t,'Tower '+(t||'—')];})).map(function(x){return '<button data-pft="'+esc(x[0])+'" class="'+(F.tower===x[0]?'on':'')+'">'+esc(x[1])+'</button>';}).join('')+'</div>':'';
   var stl=F.st==='pend'?'Pending payment':(PJST.filter(function(x){return x[0]===(F.st||'');})[0]||['',''])[1];
   var cnt='<div class="row pjsel2"><span class="muted">'+(prod()?list.length+' flat'+(list.length===1?'':'s')+' confirmed / in production — tap one to tick its windows':list.length+' flat'+(list.length===1?'':'s')+(F.st?' · <b>'+esc(stl)+'</b> <button class="btn ghost sm" data-pst="">show all</button>':''))+'</span><span class="grow"></span>'+(list.length?'<button class="btn sm" data-act="pselall">Select all '+list.length+'</button>':'')+(pjSelIds().length?'<button class="btn sm ghost" data-act="pselnone">Clear</button>':'')+(prod()||!fl.length?'':'<button class="btn sm" data-act="pjxls">⬇ Excel</button>')+'</div>';
   var rows=list.slice(0,lim).map(pjRow).join('');
-  return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span><span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span></div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
+  return add+note+bar+tw+cnt+'<div class="card ft"><div class="fth"><span>Flat</span><span>Type</span><span>Owner</span><span>Status</span>'+(admin()?'<span class="r">Bill</span><span class="r">Received</span><span class="r">Due</span>':'<span class="r">Windows</span><span></span><span></span>')+'</div>'+(rows||'<div class="empty">'+(fl.length?'No flats here':'No flats yet — add them above')+'</div>')+(list.length>lim?'<button class="btn" data-act="pmore" style="margin:8px 12px">Show more ('+(list.length-lim)+' more)</button>':'')+'</div><div id="pjbarw">'+pjSelBar()+'</div>'; }
 /* ---- ticked flats: what they are (confirmed / production done / pending) and what to do with them ---- */
 var STOPT=[[0,'Not confirmed yet','owner has not said yes'],[1,'Confirmed','owner said yes'],[2,'In production',''],[3,'Production done','all windows made — ready to deliver'],[4,'Delivered','']];
 function pendRows(fl){ return fl.filter(function(f){ return f.stage>0&&balance(f)>0.5; }).sort(function(a,b){ return (balance(b)-balance(a))||flatSort(a,b); }); }
 function pjSelBar(){ var ids=pjSelIds(); if(!ids.length) return ''; var fl=ids.map(flatById), k=fl.length, cf=fl.filter(function(f){return f.stage>=1;}).length, done=fl.filter(function(f){return f.stage>=3;}).length, pr=pendRows(fl), pa=pr.reduce(function(a,f){return a+balance(f);},0);
-  return '<div class="pjbar"><div class="pjbt"><b>'+k+' flat'+(k>1?'s':'')+' selected</b><span>'+cf+' confirmed · '+done+' production done · <b class="'+(pa>0.5?'warnt':'goodt')+'">'+money(pa)+' pending</b>'+(pr.length?' ('+pr.length+' flat'+(pr.length>1?'s':'')+')':'')+'</span></div>'
-   +'<div class="pjbb">'+(prod()?'<button class="btn sm primary" data-act="pjdone">✔ Production done</button>':'<button class="btn sm primary" data-act="pjstat">✔ Set status</button><button class="btn sm" data-act="pjpend">₹ Pending details</button><button class="btn sm" data-act="pjxlsel">⬇ Excel</button>')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div></div>'; }
+  return '<div class="pjbar"><div class="pjbt"><b>'+k+' flat'+(k>1?'s':'')+' selected</b><span>'+cf+' confirmed · '+done+' production done'+(admin()?' · <b class="'+(pa>0.5?'warnt':'goodt')+'">'+money(pa)+' pending</b>'+(pr.length?' ('+pr.length+' flat'+(pr.length>1?'s':'')+')':''):'')+'</span></div>'
+   +'<div class="pjbb">'+(prod()?'<button class="btn sm primary" data-act="pjdone">✔ Production done</button>':'<button class="btn sm primary" data-act="pjstat">✔ Set status</button>'+(admin()?'<button class="btn sm" data-act="pjpend">₹ Pending details</button>':'')+'<button class="btn sm" data-act="pjxlsel">⬇ Excel</button>')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div></div>'; }
 function statPop(ids){ var fl=ids.map(flatById), opts=prod()?STOPT.filter(function(x){return x[0]===2||x[0]===3;}):STOPT;
   pjPop('Set status — '+ids.length+' flat'+(ids.length>1?'s':''),'<div class="stlist">'+opts.map(function(x){ var now=fl.filter(function(f){return Math.min(4,f.stage)===x[0];}).length; return '<label class="chk stopt"><input type="radio" name="pjst" value="'+x[0]+'"'+(x[0]===(prod()?3:1)?' checked':'')+'><span><b>'+x[1]+'</b>'+(x[2]?' <small class="faint">— '+x[2]+'</small>':'')+(now?' <small class="faint">· '+now+' now</small>':'')+'</span></label>'; }).join('')+'</div><p class="faint" style="margin:6px 0 0">Material is taken from stock once per flat, when it goes into production.</p>',
     '<button class="btn primary" data-act="pjstatset">Apply to '+ids.length+' flat'+(ids.length>1?'s':'')+'</button>'); }
@@ -1728,7 +1738,7 @@ function setFlatStage(f,st){ var took=0; st=Math.max(0,Math.min(4,st));
   if(st===4){ if(!f.deliveredOn) f.deliveredOn=today(); } else delete f.deliveredOn;
   f.stage=st; return took; }
 function applyStage(fl,st){ var lab=STOPT[st][1], warn=[];
-  if(st===4){ var due=fl.filter(function(f){return balance(f)>0.5;}); if(due.length) warn.push(due.length+' flat'+(due.length>1?'s still have ':' still has ')+money(due.reduce(function(a,f){return a+balance(f);},0))+' pending'); }
+  if(st===4){ var due=fl.filter(function(f){return balance(f)>0.5;}); if(due.length) warn.push(due.length+' flat'+(due.length>1?'s still have ':' still has ')+(admin()?money(due.reduce(function(a,f){return a+balance(f);},0))+' pending':'payment pending')); }
   if(st>=2){ var nm=fl.filter(function(f){return !f.measured;}); if(nm.length) warn.push(nm.length+' flat'+(nm.length>1?'s are':' is')+' not marked measured ('+nm.slice(0,5).map(function(f){return f.no;}).join(', ')+(nm.length>5?'…':'')+')'); }
   if(st>=1){ var no=fl.filter(function(f){return !f.customer;}); if(no.length) warn.push(no.length+' flat'+(no.length>1?'s have':' has')+' no owner name yet'); }
   if(warn.length&&!confirm(warn.join('\n')+'\n\nSet '+(fl.length>1?'them':'it')+' to "'+lab+'" anyway?')) return false;
@@ -1759,11 +1769,16 @@ function pjPays(p,fl){ var all=pjPayRows(fl), q=(S.pyq||'').trim().toLowerCase()
    +'<div class="pyt"><div class="pyh"><span>Date</span><span>Flat</span><span>Owner</span><span>Note</span><span>Mode</span><span class="r">Amount</span></div>'
    +(rows.slice(0,lim).map(function(r){ return '<button class="pyr" data-fpay="'+r.f.id+'"><span class="c-dt">'+dShort(r.x.on)+'</span><b class="c-fn">'+esc(r.f.no)+'</b><span class="c-ow">'+esc(r.f.customer||'—')+'</span><span class="c-nt">'+esc(r.x.note||'')+'</span><span class="c-md">'+esc(r.x.mode||'Cash')+'</span><b class="c-am goodt">'+money(r.x.amt)+'</b></button>'; }).join('')||'<div class="empty">'+(all.length?'No payments match':'No advance received yet — open a flat → Payments to add one')+'</div>')
    +(rows.length>lim?'<button class="btn" data-act="pymore" style="margin-top:8px">Show more ('+(rows.length-lim)+' more)</button>':'')+'</div></div>'; }
-function pjXls(p,ids,name){ var fl=(ids?ids.map(flatById).filter(function(f){return f&&!f.del;}):projFlats(p.id)).sort(flatSort), pr=pjPayRows(fl), pe=pendRows(fl);
+function pjXls(p,ids,name){ var fl=(ids?ids.map(flatById).filter(function(f){return f&&!f.del;}):projFlats(p.id)).sort(flatSort), fn=(p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - '+(name||'flats')+'.xlsx';
+  if(!admin()){ download(fn,xlsx([['Flats',[['Flat','Tower','Floor','Type','Owner','Phone','Status','Measured on','Windows']].concat(fl.map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',flatStatus(f),f.measuredOn||'',qty(f)]; }))]])); return; }
+  var pr=pjPayRows(fl), pe=pendRows(fl);
   var A=[['Flat','Tower','Floor','Type','Owner','Phone','Status','Measured on','Windows','Bill','Received','Due','Last payment','Mode']].concat(fl.map(function(f){ var lp=lastPay(f), ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',flatStatus(f),f.measuredOn||'',qty(f),Math.round(orderTotal(f)),Math.round(paid(f)),f.stage>0||paid(f)>0.5?Math.round(Math.max(0,balance(f))):'',lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
   var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',r.x.note||'',r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
   var C=[['Flat','Owner','Phone','Status','Bill','Received','Pending','Last payment','Mode']].concat(pe.map(function(f){ var lp=lastPay(f); return [f.no,f.customer||'',f.phone||'',flatStatus(f),Math.round(orderTotal(f)),Math.round(paid(f)),Math.round(balance(f)),lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
-  download((p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - '+(name||'flats')+'.xlsx',xlsx([['Flats',A],['Pending',C],['Payments',B]])); }
+  var sh=[['Flats',A],['Pending',C],['Payments',B]], bs=bldSum(p);
+  if(!ids&&bs.n){ var Bd=bldOf(p), R=Bd.bills.map(function(x){ return [x.on||'','Bill',x.note||'','',Math.round(n(x.amt))]; }).concat(Bd.pays.map(function(x){ return [x.on||'','Payment',x.note||'',x.mode||'Cash',Math.round(n(x.amt))]; })).sort(function(a,b){ return a[0]<b[0]?-1:a[0]>b[0]?1:0; });
+    sh.push(['Builder',[['Date','Entry','Note','Mode','Amount']].concat(R).concat([['','','','Builder bill',Math.round(bs.billed)],['','','','Received',Math.round(bs.received)],['','','','Balance',Math.round(bs.bal)]])]); }
+  download(fn,xlsx(sh)); }
 function faRead(){ var g=function(id){ return ($('#'+id)||{}).value; };
   var a={t:String(g('fa_t')||'').trim().toUpperCase(),ty:g('fa_ty'),f1:Math.round(n(g('fa_f1'))),f2:Math.round(n(g('fa_f2'))),n:Math.min(30,Math.round(n(g('fa_n')))),u:Math.max(0,Math.round(n(g('fa_u'))))};
   a.pt=(S.fa_pt||[]).slice(); [].slice.call(document.querySelectorAll('[data-fapt]')).forEach(function(x){ a.pt[+x.dataset.fapt]=x.value; }); return a; }
@@ -1796,7 +1811,7 @@ function planPop(p){ var types=p.types||[], all=projFlats(p.id); if(types.length
 function pjTypes(p,fl){ var types=p.types||[];
   return '<div class="card"><div class="row between"><h2>Flat types</h2><button class="btn sm primary" data-act="ptypenew">+ New flat type</button></div><p class="faint">One window list per flat layout (2BHK, 3BHK…). New flats copy it; each flat then gets its own measured sizes.</p>'+(types.length>1&&fl.length?'<div class="pjnote">Different types on one floor? <button class="btn sm" data-act="pjplan">🏠 Floor plan</button></div>':'')
    +(types.length?types.map(function(t){ var used=fl.filter(function(f){return f.ftype===t.id;}).length, nw=qty(t);
-     return '<div class="pjitem"><button class="pjrow" data-open="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+(nw?nw+' window'+(nw===1?'':'s')+' · '+fmt(t.items.reduce(function(a,it){return a+sqft(it.w,it.h)*n(it.qty);},0))+' sq ft · typical '+money(subTotal(t)):'<b class="warnt" style="font-size:13.5px">No windows yet — tap to add them</b>')+'</span><span class="faint">'+used+' flat'+(used===1?'':'s')+' use it</span></button>'
+     return '<div class="pjitem"><button class="pjrow" data-open="'+t.id+'"><b>'+esc(t.name)+'</b><span>'+(nw?nw+' window'+(nw===1?'':'s')+' · '+fmt(t.items.reduce(function(a,it){return a+sqft(it.w,it.h)*n(it.qty);},0))+' sq ft'+(admin()?' · typical '+money(subTotal(t)):''):'<b class="warnt" style="font-size:13.5px">No windows yet — tap to add them</b>')+'</span><span class="faint">'+used+' flat'+(used===1?'':'s')+' use it</span></button>'
       +'<div class="pjacts"><button class="btn sm" data-open="'+t.id+'">✎ Edit</button><button class="btn sm" data-tyc="'+t.id+'">⧉ Copy</button>'+(admin()?'<button class="btn sm danger" data-tyd="'+t.id+'">🗑 Delete</button>':'')+'</div></div>'; }).join(''):'<div class="empty">No flat types yet</div>')+'</div>'; }
 function pjBatches(p,fl){ var bs=(p.batches||[]).slice().reverse();
   return '<div class="card"><h2>Batches</h2><p class="faint">Tick flats in the Flats tab → <b>Make batch</b>. Each batch has one cutting list and its own production ticks.</p>'
@@ -1912,9 +1927,9 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
         function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); toast('⚠ '+er.message); }); return; }
   if(a==='pjarch'){ var pa=projById(d.pid); if(!pa||!admin()) return; pa.archived=!pa.archived; pjPopX(); save(); if(pa.archived){ S.pjarch=false; go('orders'); toast(pa.name+' archived — find it under Archived projects'); } else { render(); toast(pa.name+' is back'); } return; }
   if(a==='pjdel'){ var pd=projById(d.pid); if(!pd||!admin()) return; var pf=projFlats(pd.id), got=pf.reduce(function(x,f){return x+paid(f);},0);
-    if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+'\n\nThis cannot be undone.')) return;
+    if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+(bldSum(pd).n?'\nThe builder\'s bills and payments ('+money(bldSum(pd).received)+' received) will be removed too.':'')+'\n\nThis cannot be undone.')) return;
     var cf=prompt('To confirm, type DELETE'); if(!cf||cf.trim().toUpperCase()!=='DELETE'){ toast('Not deleted'); return; }
-    pf.forEach(flatTomb); D.projects=D.projects.filter(function(x){return x.id!==pd.id;}); pjPopX(); save(); S.pjarch=false; go('orders'); toast('Project '+pd.name+' deleted'); return; }
+    pf.forEach(flatTomb); if(D.bldr&&D.bldr[pd.id]) delete D.bldr[pd.id]; D.projects=D.projects.filter(function(x){return x.id!==pd.id;}); pjPopX(); save(); S.pjarch=false; go('orders'); toast('Project '+pd.name+' deleted'); return; }
   if(a==='paddshow'){ S.padd=true; render(); var el=$('#pjadd'); if(el) el.scrollIntoView({block:'start'}); return; }
   if(a==='paddx'){ S.padd=false; render(); return; }
   if(a==='padd'&&p){ pjAddFlats(p); return; }
@@ -2559,6 +2574,74 @@ function yeXls(fy,btn){ var lab=btn.textContent; btn.disabled=true; btn.textCont
     .catch(function(e){ toast('Could not get '+fy+' — '+((e&&e.message)||'check internet')); }).then(function(){ btn.disabled=false; btn.textContent=lab; }); }
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-yexl]'); if(!t||!isAdm()) return; yeXls(t.dataset.yexl,t); });
 
+/* ============================================================
+   APARTMENT PROJECTS — money is for the admin only: sales and production see no bills, payments or
+   balances of flats. The builder has its own bill(s) and payments, apart from the flat owners
+   (kept with the admin-only data). Flats can also be added one at a time.
+   ============================================================ */
+function noAmt(o){ return !!o&&!!o.proj&&!admin(); }
+function noAmtItems(o,h){ if(!noAmt(o)) return h;
+  return h.replace('<div class="card"><div class="tscroll"><table class="items','<div class="card noamt"><div class="tscroll"><table class="items')
+    .replace('<th class="num">Amount</th>','<th class="num amth">Amount</th>').replace('<th class="num">Price</th>','<th class="num prth">Price</th>').replace(' Price = sq ft × rate.',''); }
+function moneyOrders(){ return admin()?allOrders():D.orders.slice(); }
+/* ---- one flat at a time ---- */
+function oneFlatPop(p){ var types=p.types||[];
+  pjPop('Add one flat — '+esc(p.name),'<div class="grid2">'+pjFld('of_no','Flat number','','text',' placeholder="e.g. A-1203"')+pjFld('of_t','Tower / block','','text',' maxlength="6" placeholder="from flat no."')+pjFld('of_fl','Floor','','number',' placeholder="from flat no."')
+    +'<label class="f"><span>Flat type</span><select id="of_ty"><option value="">— none —</option>'+types.map(function(t,i){ return '<option value="'+t.id+'"'+(i===0?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>'; }).join('')+'</select></label>'
+    +pjFld('of_c','Owner name','')+pjFld('of_ph','Owner phone','','tel')+'</div><div id="of_err" class="warnt" style="font-size:13px"></div>',
+    '<button class="btn primary" data-act="ponesave" data-pid="'+p.id+'">Add flat</button><button class="btn" data-pjx="1">Cancel</button>');
+  setTimeout(function(){ var e=document.getElementById('of_no'); if(e) e.focus(); },50); }
+function oneFlatSave(p){ var no=pjV('of_no'), er=document.getElementById('of_err'), key=function(x){ return String(x||'').toLowerCase().replace(/\s+/g,''); };
+  if(!no){ if(er) er.textContent='Enter the flat number'; return; }
+  if(projFlats(p.id).some(function(f){ return key(f.no)===key(no); })){ if(er) er.textContent='Flat '+no+' is already in this project'; return; }
+  var mt=no.match(/^([A-Za-z]{1,2})\s*-\s*\d+$/), tw=pjV('of_t').toUpperCase()||(mt?mt[1].toUpperCase():''), flr=pjV('of_fl'), ty=typeById(pjV('of_ty')), dg=(no.match(/(\d+)\s*$/)||[])[1];
+  /* blank tower / floor: taken from the flat number (A-1203 → tower A, floor 12) */
+  var f=newFlat(p,ty,tw,flr!==''?Math.round(n(flr)):(dg&&dg.length>=3?+dg.slice(0,-2):''),dg?+dg.slice(-2):0); f.no=no; f.customer=pjV('of_c'); f.phone=pjV('of_ph'); f.address='Flat '+no+', '+p.name+(p.site?', '+p.site:'');
+  D.flats.push(f); pjPopX(); save(); render(); toast('Flat '+no+' added'+(ty?' ('+ty.name+')':'')); }
+/* ---- the builder: its own bill(s) and payments ---- */
+function bldOf(p,make){ var B=D.bldr&&D.bldr[p.id]; if(!B&&make){ D.bldr=D.bldr||{}; B=D.bldr[p.id]={bills:[],pays:[]}; } if(B){ B.bills=B.bills||[]; B.pays=B.pays||[]; } return B||{bills:[],pays:[]}; }
+function bldSum(p){ var B=bldOf(p), b=B.bills.reduce(function(a,x){return a+n(x.amt);},0), r=B.pays.reduce(function(a,x){return a+n(x.amt);},0); return {billed:b,received:r,bal:Math.round((b-r)*100)/100,n:B.bills.length+B.pays.length}; }
+function bldIn(m){ var t=0; if(!admin()) return 0; Object.keys(D.bldr||{}).forEach(function(id){ ((D.bldr[id]||{}).pays||[]).forEach(function(x){ if((x.on||'').slice(0,7)===m) t+=n(x.amt); }); }); return t; }
+function bldReceipts(){ var out=[]; if(!admin()) return out; (D.projects||[]).forEach(function(p){ (bldOf(p).pays||[]).forEach(function(x){ out.push({on:x.on,kind:'Receipt',vno:'R-B',head:'Builder receipt',party:(p.builder||'Builder')+' · '+p.name,mode:x.mode||'Cash',narr:x.note||'',amt:n(x.amt),pid:p.id}); }); }); return out; }
+function bldByOn(a,b){ return (a.on||'')<(b.on||'')?-1:(a.on||'')>(b.on||'')?1:0; }
+function bldLine(p){ var s=bldSum(p); if(!s.n&&!p.builder) return '';
+  return '<button type="button" class="pjbld" data-psub="builder">🏗 <b>Builder</b>'+(p.builder?' ('+esc(p.builder)+')':'')+': bill '+money(s.billed)+' · received '+money(s.received)+' · <b class="'+(s.bal>0.5?'warnt':'goodt')+'">balance '+money(s.bal)+'</b> ›</button>'; }
+function bldView(p){ var B=bldOf(p), s=bldSum(p), bl=B.bills.slice().sort(bldByOn), py=B.pays.slice().sort(bldByOn);
+  var del=function(k,x){ return '<td class="dl"><button class="del" data-act="blddel" data-pid="'+p.id+'" data-k="'+k+'" data-id="'+esc(x.id)+'" aria-label="Delete">×</button></td>'; };
+  return '<div class="card"><div class="row between"><h2>🏗 Builder'+(p.builder?' — '+esc(p.builder):'')+'</h2>'+(p.builder?'':'<button class="btn sm" data-act="pjedit">+ Builder name</button>')+'</div>'
+   +'<p class="faint" style="margin:0 0 8px">The builder\'s own bill and payments — kept apart from the flat owners. Only admins see this.</p>'
+   +'<div class="pjmoney bldm"><button type="button" tabindex="-1"><span>Builder bill</span><b>'+money(s.billed)+'</b></button><button type="button" tabindex="-1" class="good"><span>Received</span><b>'+money(s.received)+'</b></button><button type="button" tabindex="-1" class="'+(s.bal>0.5?'warn':'')+'"><span>Balance</span><b>'+money(s.bal)+'</b></button></div>'
+   +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="bldbill" data-pid="'+p.id+'">+ Bill</button><button class="btn primary" data-act="bldpay" data-pid="'+p.id+'">+ Payment received</button>'+(s.n?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">📤 Share statement</button>':'')+'</div></div>'
+   +'<div class="card"><h2>Bills to the builder</h2>'+(bl.length?'<table class="bldt"><tbody>'+bl.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.note||'')+'</td><td class="num"><b>'+money(x.amt)+'</b></td>'+del('bills',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No builder bill yet — tap + Bill</div>')+'</div>'
+   +'<div class="card"><h2>Payments from the builder</h2>'+(py.length?'<table class="bldt"><tbody>'+py.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.mode||'Cash')+(x.note?' · '+esc(x.note):'')+'</td><td class="num"><b class="goodt">'+money(x.amt)+'</b></td>'+del('pays',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment from the builder yet</div>')+'</div>'; }
+function bldBillPop(p){ pjPop('Builder bill — '+esc(p.name),'<div class="grid2">'+pjFld('bb_on','Date',today(),'date')+pjFld('bb_amt','Amount ₹','','number',' inputmode="decimal"')+'</div>'+pjFld('bb_note','Note','','text',' placeholder="e.g. Running bill 1"')+'<div id="bb_err" class="warnt" style="font-size:13px"></div>',
+  '<button class="btn primary" data-act="bldbillsave" data-pid="'+p.id+'">Save bill</button><button class="btn" data-pjx="1">Cancel</button>'); }
+function bldPayPop(p){ var s=bldSum(p);
+  pjPop('Payment from the builder — '+esc(p.name),'<div class="muted" style="margin-bottom:8px">Balance now <b class="'+(s.bal>0.5?'warnt':'goodt')+'">'+money(s.bal)+'</b></div><div class="grid2">'+pjFld('bp_on','Date',today(),'date')+pjFld('bp_amt','Amount ₹','','number',' inputmode="decimal"')
+    +'<label class="f"><span>Mode</span><select id="bp_md">'+MODES.map(function(m){ return '<option>'+m+'</option>'; }).join('')+'</select></label>'+pjFld('bp_note','Note','','text',' placeholder="e.g. Cheque 123456"')+'</div><div id="bp_err" class="warnt" style="font-size:13px"></div>',
+    '<button class="btn primary" data-act="bldpaysave" data-pid="'+p.id+'">Save payment</button><button class="btn" data-pjx="1">Cancel</button>'); }
+function bldSave(p,k){ var pre=k==='bills'?'bb':'bp', amt=n(pjV(pre+'_amt')), er=document.getElementById(pre+'_err');
+  if(!(amt>0)){ if(er) er.textContent='Enter the amount'; return; }
+  var B=bldOf(p,true), x={id:uid(),on:pjV(pre+'_on')||today(),amt:Math.round(amt*100)/100,note:pjV(pre+'_note')}; if(k==='pays') x.mode=pjV('bp_md')||'Cash';
+  B[k].push(x); pjPopX(); save(); render(); toast(k==='bills'?'✓ Builder bill '+money(x.amt)+' saved':'✓ '+money(x.amt)+' from the builder saved'); }
+function bldDel(p,k,id){ var B=bldOf(p), x=(B[k]||[]).filter(function(y){ return y.id===id; })[0]; if(!x) return;
+  if(!confirm('Delete this '+(k==='bills'?'bill':'payment')+' of '+money(x.amt)+' ('+dShort(x.on)+')?')) return;
+  B[k]=B[k].filter(function(y){ return y.id!==id; }); save(); render(); toast('Deleted'); }
+function bldText(p){ var B=bldOf(p), s=bldSum(p), L=B.bills.map(function(x){ return [x.on,'Bill',x]; }).concat(B.pays.map(function(x){ return [x.on,'Paid',x]; })).sort(function(a,b){ return (a[0]||'')<(b[0]||'')?-1:(a[0]||'')>(b[0]||'')?1:0; });
+  return (D.company.name||'')+' — '+p.name+(p.builder?' ('+p.builder+')':'')+'\nAccount as on '+dShort(today())+'\n\n'
+    +L.map(function(r){ var x=r[2]; return dShort(x.on)+'  '+(r[1]==='Bill'?'Bill':'Paid'+(x.mode?' ('+x.mode+')':''))+(x.note?' — '+x.note:'')+'  '+money(x.amt); }).join('\n')
+    +'\n\nTotal bill: '+money(s.billed)+'\nReceived: '+money(s.received)+'\nBalance: '+money(s.bal); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!t) return; var a=t.dataset.act, p=t.dataset.pid?projById(t.dataset.pid):(S.tab==='project'?projById(S.pid):null);
+  if(a==='pone'&&p&&!prod()){ oneFlatPop(p); return; }
+  if(a==='ponesave'&&p&&!prod()){ oneFlatSave(p); return; }
+  if(!admin()||!p) return;
+  if(a==='bldbill'){ bldBillPop(p); return; }
+  if(a==='bldpay'){ bldPayPop(p); return; }
+  if(a==='bldbillsave'){ bldSave(p,'bills'); return; }
+  if(a==='bldpaysave'){ bldSave(p,'pays'); return; }
+  if(a==='blddel'){ bldDel(p,t.dataset.k,t.dataset.id); return; }
+  if(a==='bldshare'){ pjShare(bldText(p)); return; } });
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
@@ -2567,8 +2650,8 @@ function drawPanel(o,di){
    +F('type','Type','<select data-dk="type">'+opts(ro?DTYPES:WTYPES,it.type)+'</select>')+F('brand','Brand','<select data-dk="brand">'+opts(brandNames(),it.brand)+'</select>')
    +(ro?F('price','Price ₹','<input type="number" data-dk="price" value="'+it.price+'">'):F('series','Series','<select data-dk="series">'+opts(SERIES,it.series)+'</select>')+F('glass','Glass','<select data-dk="glass">'+opts(GLASS,it.glass)+'</select>')
    +(it.type==='Ventilator'?F('fan','Exhaust fan','<select data-dk="fan">'+opts(FAN,it.fan||'No fan')+'</select>')+(it.fan&&it.fan!=='No fan'?F('fanSz','Fan size','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″ fan</option>';}).join('')+'</select>')+F('fanW','Fan section width mm','<input type="number" data-dk="fanW" value="'+fanSec(it)+'">')+F('fanH','Fan section height mm','<input type="number" data-dk="fanH" value="'+(n(it.fanH)||fanSec(it))+'">')+'<div style="grid-column:1/-1;margin-bottom:8px"><button class="btn sm" data-act="dzopen">✎ Edit layout</button> <span class="faint">make the fan section bigger, put glass beside the fan, move lines… (or just tap / draw on the drawing)</span></div>':''):it.type==='Custom'?(leafPaths(it).length>1&&!shapeOf(it)?F('join','Frames','<select data-dk="join"><option value="">Separate windows ('+splitParts(it,di+1).map(function(q){return q.label;}).join(', ')+')</option><option value="mullion"'+(it.join==='mullion'?' selected':'')+'>One frame with mullions</option></select>'):'')+F('fanSz','Fan size (for fan cells)','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″</option>';}).join('')+'</select>'):(it.type==='Openable'?F('hinge','Hinge side','<select data-dk="hinge"><option value="L"'+(it.hinge!=='R'?' selected':'')+'>Left</option><option value="R"'+(it.hinge==='R'?' selected':'')+'>Right</option></select>'):F('mesh','Mesh','<select data-dk="mesh"'+(it.type.indexOf('Track')<0?' disabled':'')+'>'+opts(MESH,it.mesh)+'</select>'))))+'</div>'
-   +'<div class="muted" id="dsum">'+(ro?'':fmt(sqft(it.w,it.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it))+'</b></div>'
-   +(!ro&&it.fixed!=null&&it.fixed!==''?'<div class="faint" style="margin-top:6px">Price kept from the old app: '+money(Math.round(n(it.fixed)))+' per piece. <button class="btn ghost sm" style="padding:0 4px;min-height:0" data-act="unfix">Use rate card instead</button></div>':'');
+   +'<div class="muted" id="dsum">'+(noAmt(o)?(ro?'':fmt(sqft(it.w,it.h))+' sq ft'):(ro?'':fmt(sqft(it.w,it.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it))+'</b>')+'</div>'
+   +(!noAmt(o)&&!ro&&it.fixed!=null&&it.fixed!==''?'<div class="faint" style="margin-top:6px">Price kept from the old app: '+money(Math.round(n(it.fixed)))+' per piece. <button class="btn ghost sm" style="padding:0 4px;min-height:0" data-act="unfix">Use rate card instead</button></div>':'');
   var tools='';
   var pick='';
   if(!ro&&it.type!=='Custom'){ pick='<div style="margin-top:8px"><div class="faint" style="margin-bottom:4px">Window type — tap to choose</div><div class="row">'+WTYPES.filter(function(x){return x!=='Custom';}).concat(['Vent + fan']).map(function(tp){ var on=tp==='Vent + fan'?(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'):(it.type===tp&&!(tp==='Ventilator'&&it.fan&&it.fan!=='No fan')); return '<button class="btn sm'+(on?' primary':'')+'" data-wt="'+tp+'">'+tp+'</button>'; }).join('')+'</div></div>'; }
@@ -2680,7 +2763,7 @@ function subProduction(o){
    +(o.items.length?'<div class="row" style="margin-top:10px"><button class="btn sm" data-act="allmade">Tick all</button></div>':'<div class="empty">No items</div>')+'</div>';
 }
 
-function receipts(){ var out=[]; allOrders().forEach(function(o){ (o.payments||[]).forEach(function(p){ out.push({on:p.on,kind:'Receipt',vno:'R-'+o.no,head:'Customer receipt',party:(o.customer||'')+(o.proj?' · Flat '+o.no:''),mode:p.mode||'Cash',narr:p.note||'',amt:n(p.amt),oid:o.id}); }); }); return out; }
+function receipts(){ var out=[]; allOrders().forEach(function(o){ (o.payments||[]).forEach(function(p){ out.push({on:p.on,kind:'Receipt',vno:'R-'+o.no,head:'Customer receipt',party:(o.customer||'')+(o.proj?' · Flat '+o.no:''),mode:p.mode||'Cash',narr:p.note||'',amt:n(p.amt),oid:o.id}); }); }); return out.concat(bldReceipts()); }
 function vouchers(){ var v=receipts().concat(D.expenses.map(function(e,i){ return {on:e.on,kind:'Payment',vno:'P-'+e.vno,head:e.head,party:e.party||'',mode:e.mode||'Cash',narr:e.note||'',amt:n(e.amt),ei:i}; })); v.sort(function(a,b){ return a.on<b.on?-1:a.on>b.on?1:0; }); return v; }
 function viewExpenses(){
   var m=S.em||today().slice(0,7), sub=S.esub||'day', months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
@@ -2690,7 +2773,7 @@ function viewExpenses(){
   var kp='<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi good"><span>Receipts '+mLabel(m)+'</span><b>'+money(inn)+'</b></div><div class="kpi warn"><span>Payments '+mLabel(m)+'</span><b>'+money(out)+'</b></div><div class="kpi'+(inn-out<0?' warn':'')+'"><span>Net cash flow</span><b>'+money(inn-out)+'</b></div></div>';
   var body='';
   if(sub==='day'){ body='<div class="card"><div class="row between"><h2>Day book — '+mLabel(m)+'</h2><button class="btn sm" data-act="vxlsx">⬇ Excel</button></div><div class="tscroll"><table class="db"><thead><tr><th>Date</th><th>Vch no</th><th>Type</th><th>Ledger / Party</th><th>Mode</th><th>Narration</th><th class="num">Receipt</th><th class="num">Payment</th><th></th></tr></thead><tbody>'
-     +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
+     +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):(v.pid?'<button class="btn ghost sm" style="padding:0;min-height:0" data-proj="'+v.pid+'" data-psubgo="builder">open</button>':'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>'))+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
      +'</tbody><tfoot><tr><td colspan="6" class="right">Total</td><td class="num" data-l="In">'+money(inn)+'</td><td class="num" data-l="Out">'+money(out)+'</td><td></td></tr></tfoot></table></div></div>'; }
   if(sub==='pay'){ body='<div class="card"><h2>Payment voucher <span class="faint" style="font-weight:400;font-size:13px">P-'+D.vseq+'</span></h2><div class="grid2"><label class="f"><span>Date</span><input type="date" id="eon" value="'+today()+'"></label><label class="f"><span>Ledger head</span><select id="ecat">'+D.heads.map(function(h){return '<option>'+esc(h.name)+'</option>';}).join('')+'</select></label>'
      +'<label class="f"><span>Paid to (party)</span><input type="text" id="eparty" placeholder="Supplier / person"></label><label class="f"><span>Mode</span><select id="emode">'+opts(MODES,'Cash')+'</select></label></div><label class="f"><span>Narration</span><input type="text" id="enote" placeholder="Bill no, what for…"></label><div class="row"><label class="f" style="margin:0;max-width:200px"><span>Amount ₹</span><input type="number" id="eamt" style="font-size:18px;font-weight:600"></label><button class="btn primary" data-act="exp" style="margin-top:18px">Save voucher</button></div></div>'
@@ -2825,7 +2908,7 @@ function viewReports(){
   var months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
   var rows=months.map(function(m){ var os=allOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
     var sales=os.reduce(function(a,o){return a+subTotal(o);},0), cost=os.reduce(function(a,o){return a+orderCost(o);},0), w=os.filter(function(o){return o.kind==='windows';}).reduce(function(a,o){return a+qty(o);},0), dr=os.filter(function(o){return o.kind==='doors';}).reduce(function(a,o){return a+qty(o);},0);
-    var inn=allOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0);
+    var inn=moneyOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0)+bldIn(m);
     var exp=monthExp(m);
     return {m:m,n:os.length,w:w,d:dr,sales:sales,cost:cost,inn:inn,exp:exp,net:sales-cost-exp}; });
   var T=rows.reduce(function(a,r){ for(var k in r) if(typeof r[k]==='number') a[k]=(a[k]||0)+r[k]; return a; },{});
@@ -3001,7 +3084,7 @@ document.addEventListener('click',function(e){
   if(a==='dup'&&o){ snap(o); var l=S.di!=null&&o.items[S.di]?o.items[S.di]:o.items[o.items.length-1]; if(l){ var cpy=JSON.parse(JSON.stringify(l)); cpy.loc=''; cpy.made=false; o.items.push(cpy); if(S.di!=null) S.di=o.items.length-1; save(); render(); } }
   if(a==='next'&&o){ if(prod()&&o.stage!==1&&o.stage!==2) return; if(o.stage===0&&!o.items.length){toast('Add items first');return;}
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
-    if(o.stage===3&&balance(o)>0.5&&!confirm('⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
+    if(o.stage===3&&balance(o)>0.5&&!confirm(noAmt(o)?'⚠ Payment is still pending.\nMark as delivered anyway?':'⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
     if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if(o.stage===0&&!o.customer){toast('Enter the customer name first'); S.sub='customer'; render(); return;}
     o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
@@ -3069,7 +3152,7 @@ function onInput(e){
   if(d.dk&&o&&S.di!=null){ snap(o,true); var it2=o.items[S.di];
     if(d.dk==='w'||d.dk==='h'){ var L3=it2.layout; if(L3&&L3.rc){ var nv=n(t.value); if(nv>0){ if(d.dk==='h'){ var oh=L3.rows.reduce(function(a,b){return a+b;},0); if(oh>0) L3.rows=L3.rows.map(function(v){return v*nv/oh;}); } else L3.rc=L3.rc.map(function(row){ var ow=row.reduce(function(a,b){return a+b;},0); return ow>0?row.map(function(v){return v*nv/ow;}):row; }); } } }
     it2[d.dk]=t.type==='number'?n(t.value):t.value; if(d.dk==='type'&&o.kind==='doors') it2.price=brandOf(it2.brand).doorRate[it2.type]; save();
-    if(t.tagName==='SELECT'||d.dk==='loc') render(); else { $('#bigsk').innerHTML=bigSketch(o,it2); var tr2=document.querySelector('tr[data-i="'+S.di+'"]'); if(tr2){ var ii=tr2.querySelector('[data-k='+d.dk+']'); if(ii) ii.value=it2[d.dk]; var am2=tr2.querySelector('.amt'), sq2=tr2.querySelector('.sq'); if(am2) am2.textContent=money(itemPrice(o,it2)); if(sq2) sq2.textContent=fmt(sqft(it2.w,it2.h)*n(it2.qty))+' ft²'; } var ms=$('#dsum'); if(ms) ms.innerHTML=(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it2))+'</b>'; refreshTotals(o); } return; }
+    if(t.tagName==='SELECT'||d.dk==='loc') render(); else { $('#bigsk').innerHTML=bigSketch(o,it2); var tr2=document.querySelector('tr[data-i="'+S.di+'"]'); if(tr2){ var ii=tr2.querySelector('[data-k='+d.dk+']'); if(ii) ii.value=it2[d.dk]; var am2=tr2.querySelector('.amt'), sq2=tr2.querySelector('.sq'); if(am2) am2.textContent=money(itemPrice(o,it2)); if(sq2) sq2.textContent=fmt(sqft(it2.w,it2.h)*n(it2.qty))+' ft²'; } var ms=$('#dsum'); if(ms) ms.innerHTML=noAmt(o)?(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft'):(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it2))+'</b>'; refreshTotals(o); } return; }
   if(t.id==='disc'&&o){ o.discount=n(t.value); save(); refreshTotals(o); return; }
   if(d.o&&o){ o[d.o]=t.value; save(); if(d.o==='remind') render(); if(d.o==='customer'){ $('#oh').textContent='#'+o.no+' · '+(o.customer||'New order'); } if(d.o==='kind') render(); return; }
   if(d.c){ D.company[d.c]=t.value; save(); if(d.c==='name') $('.top h1').textContent=t.value; }
