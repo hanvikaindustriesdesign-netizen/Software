@@ -464,7 +464,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='01 Nov 2026, 11:05';
+var APPV='01 Nov 2026, 15:44';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -479,9 +479,12 @@ function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sas
 function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name===name) return D.brands[i]; return D.brands[0]; }
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
+var PRIVK=['expenses','staff','att','saladj','pins','opening','heads','vseq','users','lockc','carry'];
+var PV={mode:localStorage.getItem('wpmode')||'', last:localStorage.getItem('wpseen')||'', base:localStorage.getItem('wpbase'), busy:null, okAt:0, tries:0, chk:''}, PRIVJ='';
+function pvSave(){ try{ localStorage.setItem('wpmode',PV.mode||''); localStorage.setItem('wpseen',PV.last||''); if(PV.base==null) localStorage.removeItem('wpbase'); else localStorage.setItem('wpbase',PV.base); }catch(e){} }
 var saveT, DSIZE=0, STFULL=false;
-function keepLocal(){ var c0=Object.assign({},D); delete c0.flats; if(typeof ORS!=='undefined'&&ORS.loaded) delete c0.orders; var j=JSON.stringify(c0); DSIZE=j.length; MAINJ=j; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
-function save(){ keepLocal(); if(MAINSENT===null||MAINJ!==MAINSENT){ try{ localStorage.setItem('wdirty','1'); }catch(e){} } if(D.flats) flatsTouch(); if(typeof ORS!=='undefined') ORS.touch(); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
+function keepLocal(){ var c0=Object.assign({},D); delete c0.flats; if(typeof ORS!=='undefined'&&ORS.loaded) delete c0.orders; var j=JSON.stringify(c0); DSIZE=j.length; MAINJ=privSplit()?JSON.stringify(sharedOf(c0)):j; PRIVJ=isAdm()?JSON.stringify(privOf(c0)):''; try{ localStorage.setItem('wshop',j); STFULL=false; }catch(e){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online. ':'')+'Remove some photos.'); STFULL=true; } }
+function save(){ keepLocal(); privMark(); if(MAINSENT===null||MAINJ!==MAINSENT){ try{ localStorage.setItem('wdirty','1'); }catch(e){} } if(D.flats) flatsTouch(); if(typeof ORS!=='undefined') ORS.touch(); clearTimeout(saveT); saveT=setTimeout(function(){ saveT=null; cloudPush(); },1200); }
 
 function sbOn(){ return D.sb.url&&D.sb.key; }
 var SESS=(function(){ try{ return JSON.parse(localStorage.getItem('sbsess')||'null'); }catch(e){ return null; } })();
@@ -494,7 +497,7 @@ function sbRefresh(){ if(!SESS||!SESS.refresh_token) return Promise.reject(new E
 function sbLogout(){ SESS=null; localStorage.removeItem('sbsess'); }
 var LASTSEEN=localStorage.getItem('sbseen')||'';
 function sqlPol(name,tbl,cmd,using,check){ var t=tbl.split('.'); return "do $$ begin if not exists (select 1 from pg_policies where schemaname = '"+t[0]+"' and tablename = '"+t[1]+"' and policyname = '"+name+"') then create policy \""+name+"\" on "+tbl+" for "+cmd+" to authenticated"+(using?" using ("+using+")":"")+(check?" with check ("+check+")":"")+"; end if; end $$;"; }
-function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin()', P="bucket_id = 'photos' and ";
+function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin()', P="bucket_id = 'photos' and ", MD=M+" and (id <> 'private' or "+A+")", MK=M+" and (kind not like 'priv%' or "+A+")";
   return ["-- Hanvika app: tables, rules and the photo store. Safe to run again.",
  "create table if not exists public.shop_data (id text primary key, data jsonb, updated_at timestamptz default now());",
  "create table if not exists public.app_users (email text primary key, role text not null default 'sales' check (role in ('admin','sales','production')));",
@@ -514,23 +517,31 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "create or replace trigger shop_backups_prune after insert on public.shop_backups for each statement execute function ws_private.backups_prune();",
  "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; alter table public.shop_flats enable row level security; alter table public.shop_orders enable row level security; alter table public.shop_backups enable row level security; alter table public.shop_archive enable row level security;",
  "revoke all on public.shop_data, public.app_users, public.shop_flats, public.shop_orders, public.shop_backups, public.shop_archive from anon;",
- "create or replace function ws_private.keep_items(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$ declare rest jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; i int; begin if jsonb_typeof(oa) is distinct from 'array' then return na; end if; for e in select value from jsonb_array_elements(oa) loop i := null; select min(x.ord) - 1 into i from jsonb_array_elements(rest) with ordinality as x(v, ord) where x.v = e; if i is not null then rest := rest - i; end if; end loop; return oa || rest; end $$;",
- "create or replace function ws_private.keep_photos(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$ declare res jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; begin if jsonb_typeof(oa) is distinct from 'array' then return na; end if; for e in select value from jsonb_array_elements(oa) loop if not (e ? 'path' or e ? 'src') then continue; end if; if not exists (select 1 from jsonb_array_elements(res) x where (e ? 'path' and x.value->>'path' = e->>'path') or (not (e ? 'path') and x.value->>'src' = e->>'src')) then res := res || jsonb_build_array(e); end if; end loop; return res; end $$;",
- "create or replace function ws_private.guard_projects(op jsonb, np jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$ declare res jsonb := '[]'::jsonb; p jsonb; q jsonb; t jsonb; ts jsonb; begin if jsonb_typeof(op) is distinct from 'array' then op := '[]'::jsonb; end if; if jsonb_typeof(np) is distinct from 'array' then np := '[]'::jsonb; end if; for p in select value from jsonb_array_elements(np) loop q := null; select x.value into q from jsonb_array_elements(op) x where x.value->>'id' = p->>'id' limit 1; if q is null then continue; end if; if q ? 'archived' then p := jsonb_set(p, '{archived}', q->'archived', true); else p := p - 'archived'; end if; for t in select value from jsonb_array_elements(case when jsonb_typeof(q->'types') = 'array' then q->'types' else '[]'::jsonb end) loop ts := case when jsonb_typeof(p->'types') = 'array' then p->'types' else '[]'::jsonb end; if not exists (select 1 from jsonb_array_elements(ts) y where y.value->>'id' = t->>'id') then p := jsonb_set(p, '{types}', ts || jsonb_build_array(t), true); end if; end loop; res := res || jsonb_build_array(p); end loop; for q in select value from jsonb_array_elements(op) loop if not exists (select 1 from jsonb_array_elements(np) z where z.value->>'id' = q->>'id') then res := res || jsonb_build_array(q); end if; end loop; return res; end $$;",
- "create or replace function ws_private.row_guard() returns trigger language plpgsql set search_path = '' as $$ declare o jsonb := coalesce(old.data, '{}'::jsonb); n jsonb := coalesce(new.data, '{}'::jsonb); begin if ws_private.is_admin() then return new; end if; if coalesce(o->>'del', '') = 'true' or coalesce(n->>'del', '') = 'true' then new.data := old.data; return new; end if; if o ? 'payments' then n := jsonb_set(n, '{payments}', ws_private.keep_items(o->'payments', n->'payments'), true); end if; if o ? 'photos' then n := jsonb_set(n, '{photos}', ws_private.keep_photos(o->'photos', n->'photos'), true); end if; new.data := n; return new; end $$;",
- "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$ declare o jsonb := coalesce(old.data, '{}'::jsonb); n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; begin if ws_private.is_admin() then return new; end if; r := o; foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders'] loop if n ? k then r := jsonb_set(r, array[k], n->k, true); end if; end loop; s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end; s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end; if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if; if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if; new.data := r; return new; end $$;",
- "create or replace trigger shop_data_guard before update on public.shop_data for each row execute function ws_private.main_guard();",
+ "create or replace function ws_private.keep_items(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare rest jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; i int;\nbegin\n  if jsonb_typeof(oa) is distinct from 'array' then return na; end if;\n  for e in select value from jsonb_array_elements(oa) loop\n    i := null; select min(x.ord) - 1 into i from jsonb_array_elements(rest) with ordinality as x(v, ord) where x.v = e;\n    if i is not null then rest := rest - i; end if;\n  end loop;\n  return oa || rest;\nend $$;",
+ "create or replace function ws_private.keep_photos(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare res jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb;\nbegin\n  if jsonb_typeof(oa) is distinct from 'array' then return na; end if;\n  for e in select value from jsonb_array_elements(oa) loop\n    if not (e ? 'path' or e ? 'src') then continue; end if;\n    if not exists (select 1 from jsonb_array_elements(res) x where (e ? 'path' and x.value->>'path' = e->>'path') or (not (e ? 'path') and x.value->>'src' = e->>'src')) then\n      res := res || jsonb_build_array(e);\n    end if;\n  end loop;\n  return res;\nend $$;",
+ "create or replace function ws_private.guard_projects(op jsonb, np jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare res jsonb := '[]'::jsonb; p jsonb; q jsonb; t jsonb; ts jsonb;\nbegin\n  if jsonb_typeof(op) is distinct from 'array' then op := '[]'::jsonb; end if;\n  if jsonb_typeof(np) is distinct from 'array' then np := '[]'::jsonb; end if;\n  for p in select value from jsonb_array_elements(np) loop\n    q := null; select x.value into q from jsonb_array_elements(op) x where x.value->>'id' = p->>'id' limit 1;\n    if q is null then continue; end if;\n    if q ? 'archived' then p := jsonb_set(p, '{archived}', q->'archived', true); else p := p - 'archived'; end if;\n    for t in select value from jsonb_array_elements(case when jsonb_typeof(q->'types') = 'array' then q->'types' else '[]'::jsonb end) loop\n      ts := case when jsonb_typeof(p->'types') = 'array' then p->'types' else '[]'::jsonb end;\n      if not exists (select 1 from jsonb_array_elements(ts) y where y.value->>'id' = t->>'id') then p := jsonb_set(p, '{types}', ts || jsonb_build_array(t), true); end if;\n    end loop;\n    res := res || jsonb_build_array(p);\n  end loop;\n  for q in select value from jsonb_array_elements(op) loop\n    if not exists (select 1 from jsonb_array_elements(np) z where z.value->>'id' = q->>'id') then res := res || jsonb_build_array(q); end if;\n  end loop;\n  return res;\nend $$;",
+ "create or replace function ws_private.row_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := coalesce(old.data, '{}'::jsonb); n jsonb := coalesce(new.data, '{}'::jsonb);\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;\n  if ws_private.is_admin() then return new; end if;\n  if coalesce(o->>'del', '') = 'true' or coalesce(n->>'del', '') = 'true' then new.data := old.data; return new; end if;\n  if o ? 'payments' then n := jsonb_set(n, '{payments}', ws_private.keep_items(o->'payments', n->'payments'), true); end if;\n  if o ? 'photos' then n := jsonb_set(n, '{photos}', ws_private.keep_photos(o->'photos', n->'photos'), true); end if;\n  new.data := n;\n  return new;\nend $$;",
+ "create or replace function ws_private.has_private() returns boolean language sql stable security definer set search_path = '' as $$ select exists(select 1 from public.shop_data where id = 'private') $$;",
+ "revoke execute on function ws_private.has_private() from public, anon; grant execute on function ws_private.has_private() to authenticated;",
+ "create or replace function ws_private.strip_private(d jsonb) returns jsonb language sql immutable set search_path = '' as $$\n  select case when jsonb_typeof(d) is distinct from 'object' then d\n    else (d - array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bcost', 'bcostx'])\n      || case when jsonb_typeof(d->'brands') = 'array' then jsonb_build_object('brands', (select coalesce(jsonb_agg(case when jsonb_typeof(b.v) = 'object' then b.v - 'cost' - 'doorCost' - 'nc' else b.v end order by b.ord), '[]'::jsonb) from jsonb_array_elements(d->'brands') with ordinality as b(v, ord))) else '{}'::jsonb end\n  end $$;",
+ "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := '{}'::jsonb; n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; adm boolean;\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;   -- the database owner (SQL editor) is not checked\n  adm := ws_private.is_admin();\n  if tg_op = 'UPDATE' then\n    o := coalesce(old.data, '{}'::jsonb);\n    if new.id is distinct from old.id and not adm then raise exception 'only an admin can rename shop data' using errcode = '42501'; end if;\n  end if;\n  if new.id = 'main' then\n    if ws_private.has_private() then\n      -- the shared record never carries admin-only data once the admin record exists\n      o := ws_private.strip_private(o); n := ws_private.strip_private(n); new.data := n;\n    elsif tg_op = 'UPDATE' and coalesce(n->'pins'->>'admin', '') like '-%' then\n      -- a phone whose admin data was cleared (it was a staff phone) never overwrites the real admin data\n      foreach k in array array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry'] loop\n        if o ? k then n := jsonb_set(n, array[k], o->k, true); else n := n - k; end if;\n      end loop;\n      if jsonb_typeof(n->'brands') = 'array' then\n        n := jsonb_set(n, '{brands}', (select coalesce(jsonb_agg(case when ob.v is null then nb.v - 'nc' else (nb.v - 'nc' - 'cost' - 'doorCost') || jsonb_strip_nulls(jsonb_build_object('cost', ob.v->'cost', 'doorCost', ob.v->'doorCost')) end order by nb.ord), '[]'::jsonb)\n          from jsonb_array_elements(n->'brands') with ordinality as nb(v, ord)\n          left join lateral (select x.v from jsonb_array_elements(case when jsonb_typeof(o->'brands') = 'array' then o->'brands' else '[]'::jsonb end) as x(v) where x.v->>'name' = nb.v->>'name' limit 1) as ob on true), true);\n      end if;\n      new.data := n;\n    end if;\n  end if;\n  if adm then return new; end if;\n  r := o;\n  foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders'] loop\n    if n ? k then r := jsonb_set(r, array[k], n->k, true); end if;\n  end loop;\n  s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end;\n  s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end;\n  if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if;\n  if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if;\n  new.data := r;\n  return new;\nend $$;",
+ "create or replace trigger shop_data_guard before insert or update on public.shop_data for each row execute function ws_private.main_guard();",
  "create or replace trigger shop_orders_guard before update on public.shop_orders for each row execute function ws_private.row_guard();",
  "create or replace trigger shop_flats_guard before update on public.shop_flats for each row execute function ws_private.row_guard();",
  "do $$ begin if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'shop_data' and policyname = 'ws members add data') then alter policy \"ws members add data\" on public.shop_data rename to \"ws admins add data\"; end if; end $$;",
- sqlPol('ws members read data','public.shop_data','select',M), sqlPol('ws admins add data','public.shop_data','insert','',A), sqlPol('ws members change data','public.shop_data','update',M,M),
+ "do $$ begin if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'shop_backups' and policyname = 'ws members add backups') then if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'shop_backups' and policyname = 'ws admins add backups') then alter policy \"ws members add backups\" on public.shop_backups with check (ws_private.is_admin()); else alter policy \"ws members add backups\" on public.shop_backups rename to \"ws admins add backups\"; end if; end if; end $$;",
+ sqlPol('ws members read data','public.shop_data','select',MD), sqlPol('ws admins add data','public.shop_data','insert','',A), sqlPol('ws members change data','public.shop_data','update',MD,MD),
  sqlPol('ws members see users','public.app_users','select',M), sqlPol('ws admins manage users','public.app_users','all',A,A),
  sqlPol('ws members read flats','public.shop_flats','select',M), sqlPol('ws members add flats','public.shop_flats','insert','',M), sqlPol('ws members change flats','public.shop_flats','update',M,M),
  sqlPol('ws members read orders','public.shop_orders','select',M), sqlPol('ws members add orders','public.shop_orders','insert','',M), sqlPol('ws members change orders','public.shop_orders','update',M,M),
- sqlPol('ws admins read backups','public.shop_backups','select',A), sqlPol('ws members add backups','public.shop_backups','insert','',"ws_private.is_admin() or (ws_private.is_member() and id ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')"),
- "do $$ begin if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'shop_data' and policyname = 'ws admins add data') then alter policy \"ws admins add data\" on public.shop_data with check (ws_private.is_admin()); else create policy \"ws admins add data\" on public.shop_data for insert to authenticated with check (ws_private.is_admin()); end if; end $$;",
- "do $$ begin if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'shop_backups' and policyname = 'ws members add backups') then alter policy \"ws members add backups\" on public.shop_backups with check (ws_private.is_admin() or (ws_private.is_member() and id ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')); end if; end $$;",
- sqlPol('ws members read archive','public.shop_archive','select',M), sqlPol('ws members add archive','public.shop_archive','insert','',M),
+ sqlPol('ws admins read backups','public.shop_backups','select',A), sqlPol('ws admins add backups','public.shop_backups','insert','',A),
+ sqlPol('ws members read archive','public.shop_archive','select',MK), sqlPol('ws members add archive','public.shop_archive','insert','',MK),
+ "alter policy \"ws admins add data\" on public.shop_data with check (ws_private.is_admin());",
+ "alter policy \"ws members read data\" on public.shop_data using (ws_private.is_member() and (id <> 'private' or ws_private.is_admin()));",
+ "alter policy \"ws members change data\" on public.shop_data using (ws_private.is_member() and (id <> 'private' or ws_private.is_admin())) with check (ws_private.is_member() and (id <> 'private' or ws_private.is_admin()));",
+ "alter policy \"ws admins add backups\" on public.shop_backups with check (ws_private.is_admin());",
+ "alter policy \"ws members read archive\" on public.shop_archive using (ws_private.is_member() and (kind not like 'priv%' or ws_private.is_admin()));",
+ "alter policy \"ws members add archive\" on public.shop_archive with check (ws_private.is_member() and (kind not like 'priv%' or ws_private.is_admin()));",
  "insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values ('photos', 'photos', false, 5242880, array['image/jpeg','image/png','image/webp']) on conflict (id) do nothing;",
  sqlPol('ws members read photos','storage.objects','select',P+M), sqlPol('ws members add photos','storage.objects','insert','',P+M), sqlPol('ws admins remove photos','storage.objects','delete',P+A),
  "insert into public.app_users(email, role) values ('"+String(owner||'your@email.com').toLowerCase().replace(/'/g,"")+"','admin') on conflict (email) do update set role = 'admin';"].join('\n'); }
@@ -542,8 +553,8 @@ function loadUsers(){ S.ru='loading'; sbUsers().then(function(u){ S.ru=u; if(S.t
 var PUSHING=null, PUSHAGAIN=false;
 function cloudPush(){ if(!sbOn()||!SESS) return Promise.resolve(); if(PUSHING){ PUSHAGAIN=true; return PUSHING; }
   PUSHING=pushNow().then(function(){ PUSHING=null; if(PUSHAGAIN){ PUSHAGAIN=false; return cloudPush(); } }); return PUSHING; }
-function pushNow(){ return ORS.push().catch(function(){}).then(function(){ var md=MAINSENT===null||MAINJ!==MAINSENT||!!localStorage.getItem('wdirty'); return md?pushMain():null; }).then(function(){ return flatsPush(); },function(){ return flatsPush(); }); }
-function pushMain(){ keepLocal(); var sentJ=MAINJ, c=JSON.parse(sentJ); delete c.sb; var now=new Date().toISOString();
+function pushNow(){ return ORS.push().catch(function(){}).then(function(){ var md=MAINSENT===null||MAINJ!==MAINSENT||!!localStorage.getItem('wdirty'); return md?pushMain():null; }).then(function(){ return isAdm()&&localStorage.getItem('wpdirty')?privPush():null; }).then(function(){ return flatsPush(); },function(){ return flatsPush(); }); }
+function pushMain(){ if(privStale()&&PV.mode!=='row'&&!MAINNONE){ setSync('Loading admin data first…'); return cloudPull(true); } keepLocal(); var sentJ=MAINJ, c=JSON.parse(sentJ); delete c.sb; var now=new Date().toISOString();
   return sbRefresh().then(function(){
     if(!LASTSEEN&&!MAINNONE){ setSync('Loading from online first…'); return cloudPull(true); }
     if(!LASTSEEN){ return fetch(sbUrl('/rest/v1/shop_data'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify([{id:'main',data:c,updated_at:now}])}).then(function(r){ if(!r.ok) throw new Error('save '+r.status); LASTSEEN=now; setBase(sentJ); localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online'); }); }
@@ -551,7 +562,7 @@ function pushMain(){ keepLocal(); var sentJ=MAINJ, c=JSON.parse(sentJ); delete c
       pushMain.tries=0; PUSHAGAIN=false; localStorage.removeItem('wdirty'); setSync('Someone else saved first — loading their version'); toast('⚠ Another user saved first. Reloading their data — please redo your last change.'); return cloudPull(true); } if(mainKept(rows[0],sentJ)) return; pushMain.tries=0; LASTSEEN=now; setBase(sentJ); localStorage.setItem('sbseen',now); if(!PUSHAGAIN) localStorage.removeItem('wdirty'); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); }); });
   }).catch(function(e){ setSync('Offline — saved on this device ('+(e&&e.message||'')+')'); }); }
 function cloudPull(force){ if(!sbOn()||!SESS) return Promise.resolve();
-  return sbRefresh().then(function(){ return mainFetch(force); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } if(!r.ok) throw new Error('server '+r.status); return r.json(); }).then(function(rows){ PULLOK=true; netOk(); if(rows&&rows[0]&&rows[0].data){ if(!force&&rows[0].updated_at===LASTSEEN){ if(localStorage.getItem('wdirty')) cloudPush(); else if(MAINSENT===null){ keepLocal(); setBase(MAINJ); } return; } if(localStorage.getItem('wdirty')&&MAINSENT!==null){ keepLocal(); mainMergeRow(rows[0],MAINJ,MAINSENT); try{ localStorage.setItem('wdirty','1'); }catch(e){} setSync('Loaded from online — changes from this phone kept'); setTimeout(function(){ cloudPush(); },300); return; } var sb=D.sb, fl0=D.flats, or0=D.orders; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); var lg=D.orders; D.sb=sb; D.flats=fl0; D.orders=or0; ORS.legacy(lg); keepLocal(); setBase(MAINJ); if(lg&&lg.length&&ORS.loaded){ try{ localStorage.setItem('wdirty','1'); }catch(e){} setTimeout(function(){ cloudPush(); },300); } if(!PUSHING&&!(lg&&lg.length&&ORS.loaded)) localStorage.removeItem('wdirty'); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); renderSoon(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); MAINNONE=Array.isArray(rows); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); netBad(e); }).then(function(){ return Promise.all([flatsPull().catch(function(){}),ORS.pull().catch(function(){})]); }).then(function(){ if(PUSHING) return; var w=[]; if(Object.keys(FL.dirty).length&&!FL.busy) w.push(flatsPush()); if(ORS.unsent()&&!ORS.busy) w.push(ORS.push()); return Promise.all(w); }).then(function(){ lockOldSoon(); cloudAfter(); }); }
+  return sbRefresh().then(function(){ return mainFetch(force||privStale()); }).then(function(r){ if(r.status===401){ sbLogout(); S.role=''; render(); throw new Error('Session expired — log in again'); } if(!r.ok) throw new Error('server '+r.status); return r.json(); }).then(function(rows){ PULLOK=true; netOk(); if(rows&&rows[0]&&rows[0].data){ if(rows[0].data.__same||(!force&&!privStale()&&rows[0].updated_at===LASTSEEN)){ if(privStale()){ setTimeout(function(){ cloudPull(true); },0); return; } if(localStorage.getItem('wdirty')) cloudPush(); else if(MAINSENT===null){ keepLocal(); setBase(MAINJ); } return; } if(privStale()) privFromMain(rows[0].data); privAdopt(rows[0].data); if(localStorage.getItem('wdirty')&&MAINSENT!==null){ keepLocal(); mainMergeRow(rows[0],MAINJ,MAINSENT); try{ localStorage.setItem('wdirty','1'); }catch(e){} setSync('Loaded from online — changes from this phone kept'); setTimeout(function(){ cloudPush(); },300); return; } var sb=D.sb, fl0=D.flats, or0=D.orders, pv=privOf(D); D=migrate(merge(JSON.parse(JSON.stringify(DEF)),rows[0].data)); var lg=D.orders; D.sb=sb; D.flats=fl0; D.orders=or0; privAfterMain(pv); ORS.legacy(lg); keepLocal(); setBase(MAINJ); if(lg&&lg.length&&ORS.loaded){ try{ localStorage.setItem('wdirty','1'); }catch(e){} setTimeout(function(){ cloudPush(); },300); } if(!PUSHING&&!(lg&&lg.length&&ORS.loaded)) localStorage.removeItem('wdirty'); LASTSEEN=rows[0].updated_at; localStorage.setItem('sbseen',LASTSEEN); setSync('Loaded from online'); renderSoon(); } else { LASTSEEN=''; localStorage.removeItem('sbseen'); MAINNONE=Array.isArray(rows); cloudPush(); } }).catch(function(e){ setSync('Offline — using this device'+(e&&e.message?' ('+e.message+')':'')); netBad(e); }).then(function(){ return Promise.all([flatsPull().catch(function(){}),ORS.pull().catch(function(){}),privPull().catch(function(){})]); }).then(function(){ if(PUSHING) return; var w=[]; if(Object.keys(FL.dirty).length&&!FL.busy) w.push(flatsPush()); if(ORS.unsent()&&!ORS.busy) w.push(ORS.push()); return Promise.all(w); }).then(function(){ lockOldSoon(); cloudAfter(); }); }
 setInterval(function(){ if(document.visibilityState==='visible'&&S.role&&sbOn()&&SESS&&!saveT&&!PUSHING&&!FL.busy&&!ORS.busy) cloudPull(); },45000);
 var syncMsg=''; function setSync(m){ syncMsg=m; var e=document.getElementById('sync'); if(e) e.textContent=m; }
 
@@ -790,7 +801,7 @@ function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){
    ============================================================ */
 function pinOK(){ try{ return localStorage.getItem('pinok')==='1'||localStorage.getItem('sbrole')==='admin'; }catch(e){ return false; } }
 function wrongCopy(){ return !BAKED.url&&/^https?:$/.test(location.protocol)&&window.top===window&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!/claude|anthropic/.test(location.hostname); }
-function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px"></div><p class="faint" style="margin-top:14px">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
+function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px"></div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
   return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
@@ -815,7 +826,7 @@ function shareMsg(email,role,pw,link){ return 'Hi, please use our '+D.company.na
   +'Open: '+(link||'(app link)')+'\nEmail: '+email+'\nPassword: '+(pw||'I will tell you separately')+'\nAccess: '+(ROLEDESC[role]||role)+'\n\n'
   +'Keep it on your phone like an app:\n• Android: open the link in Chrome, sign in, then tap "Install" (or ⋮ menu → Add to Home screen)\n• iPhone: open the link in Safari → Share → Add to Home Screen\n\n'
   +'Please do not share your password with anyone.'; }
-function showShare(email,role){ var link=appLink(), v=document.createElement('div'); v.className='viewer share';
+function showShare(email,role,pw){ var link=appLink(), v=document.createElement('div'); v.className='viewer share';
   v.innerHTML='<div class="card" style="max-width:520px;width:94vw;margin:auto"><div class="row between"><h2>📤 Send app link</h2><button class="btn sm" data-x="close">Close</button></div>'
    +'<div class="muted" style="margin:2px 0 10px">To <b>'+esc(email)+'</b> · '+esc(ROLEDESC[role]||role)+'</div>'+(wrongCopy()?'<div class="wrongnote">⚠ Your website has the <b>preview copy</b>, so this link opens a PIN screen on new phones. Upload the right <b>index.html</b> first (see the red bar).</div>':'')
    +(link?'':'<label class="f"><span>App link (your website address)</span><input type="text" id="shlink" placeholder="https://….github.io/Software/"></label>')
@@ -823,7 +834,7 @@ function showShare(email,role){ var link=appLink(), v=document.createElement('di
    +'<label class="f"><span>Message</span><textarea id="shmsg" rows="12"></textarea></label>'
    +'<div class="row"><button class="btn good" data-x="wa">WhatsApp</button>'+(navigator.share?'<button class="btn" data-x="share">Share…</button>':'')+'<button class="btn" data-x="copy">Copy</button></div></div>';
   document.body.appendChild(v);
-  var q=function(sel){ return v.querySelector(sel); };
+  var q=function(sel){ return v.querySelector(sel); }; if(pw) q('#shpw').value=pw;
   var upd=function(){ var l=q('#shlink'); if(l){ link=l.value.trim(); D.appUrl=link; save(); } q('#shmsg').value=shareMsg(email,role,q('#shpw').value.trim(),link); };
   upd();
   v.addEventListener('input',function(e){ if(e.target.id==='shpw'||e.target.id==='shlink') upd(); });
@@ -1446,8 +1457,24 @@ function renderSoon(){ if(!S.role) return; if(!typingNow()){ render(); return; }
 function sameJ(a,b){ if(a===b) return true; if(a===null||b===null||typeof a!=='object'||typeof b!=='object') return false; if(Array.isArray(a)!==Array.isArray(b)) return false;
   if(Array.isArray(a)){ if(a.length!==b.length) return false; for(var i=0;i<a.length;i++) if(!sameJ(a[i],b[i])) return false; return true; }
   var ka=Object.keys(a), kb=Object.keys(b); if(ka.length!==kb.length) return false; for(var j=0;j<ka.length;j++){ if(!Object.prototype.hasOwnProperty.call(b,ka[j])||!sameJ(a[ka[j]],b[ka[j]])) return false; } return true; }
+/* merge one record changed on two phones: b = last online copy this phone had, l = this phone's, s = online now.
+   Fields changed on one side take that side; lists of windows / payments are merged by position, with additions from both. */
+var RMX={clash:false};
+function rowMerge(b,l,s){ var J=function(x){ return x===undefined?'\u0000u':JSON.stringify(x); }, ob=function(x){ return !!x&&typeof x==='object'&&!Array.isArray(x); };
+  var jb=J(b), jl=J(l), js=J(s); if(jl===jb) return s; if(js===jb||jl===js) return l;
+  if(Array.isArray(b)&&Array.isArray(l)&&Array.isArray(s)) return listMerge(b,l,s);
+  if(ob(b)&&ob(l)&&ob(s)){ var o={}, ks={}; [b,l,s].forEach(function(x){ Object.keys(x).forEach(function(k){ ks[k]=1; }); }); Object.keys(ks).forEach(function(k){ var v=rowMerge(b[k],l[k],s[k]); if(v!==undefined) o[k]=v; }); return o; }
+  RMX.clash=true; return s; }   /* the same detail changed on both phones: the one saved first stays (this phone is told) */
+function listMerge(b,l,s){ var n=b.length, ids=function(a){ return a.every(function(x){ return x&&typeof x==='object'&&x.id!=null; }); }, i, out;
+  if(ids(b)&&ids(l)&&ids(s)){ var bi={}, li={}, si={}; b.forEach(function(x){ bi[x.id]=x; }); l.forEach(function(x){ li[x.id]=x; }); s.forEach(function(x){ si[x.id]=x; }); out=[];
+    s.forEach(function(x){ if(bi[x.id]&&!li[x.id]) return; out.push(li[x.id]&&bi[x.id]?rowMerge(bi[x.id],li[x.id],x):x); });
+    l.forEach(function(x){ if(!si[x.id]&&!bi[x.id]) out.push(x); }); return out; }
+  if(l.length>=n&&s.length>=n){ out=[]; for(i=0;i<n;i++) out.push(rowMerge(b[i],l[i],s[i])); return out.concat(s.slice(n),l.slice(n)); }   /* edits in place + additions at the end on either phone */
+  var key=function(x){ return JSON.stringify(x); }, cnt={}; b.forEach(function(x){ cnt[key(x)]=(cnt[key(x)]||0)-1; }); l.forEach(function(x){ cnt[key(x)]=(cnt[key(x)]||0)+1; });
+  out=[]; s.forEach(function(x){ var k=key(x); if((cnt[k]||0)<0){ cnt[k]++; return; } out.push(x); });                                     /* something was removed: take it out of theirs too */
+  l.forEach(function(x){ var k=key(x); if((cnt[k]||0)>0){ cnt[k]--; out.push(x); } }); return out; }
 function RowStore(c){
-  var R={c:c,sig:{},seen:{},dirty:{},since:'',busy:null,again:false,scanT:null,loaded:false,ready:Promise.resolve(),idb:true,db:null,wq:{},wt:null,lsk:{},tomb:{},warned:false};
+  var R={c:c,sig:{},base:{},seen:{},dirty:{},since:'',busy:null,again:false,scanT:null,loaded:false,ready:Promise.resolve(),idb:true,db:null,wq:{},wt:null,lsk:{},tomb:{},warned:false};
   var L=function(){ var a=c.get(); if(!a){ a=[]; c.set(a); } return a; };
   var busyInput=function(){ return document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName); };
   var full=function(){ if(!STFULL) toast('⚠ Phone storage is full — '+(sbOn()&&SESS?'still saving online.':'free some space.')); STFULL=true; };
@@ -1455,7 +1482,7 @@ function RowStore(c){
   R.open=function(){ if(R.db) return R.db; R.db=new Promise(function(res,rej){ try{ if(!window.indexedDB) return rej(new Error('no indexedDB')); var rq=indexedDB.open(c.dbn,1);
       rq.onupgradeneeded=function(){ try{ rq.result.createObjectStore(c.store); }catch(e){} }; rq.onsuccess=function(){ var db=rq.result; db.onversionchange=function(){ db.close(); }; res(db); };
       rq.onerror=function(){ rej(rq.error||new Error('indexedDB')); }; rq.onblocked=function(){ rej(new Error('indexedDB blocked')); }; }catch(e){ rej(e); } }); return R.db; };
-  R.boot=function(){ if(c.clear) c.set([]); R.sig={}; R.tomb={}; R.loaded=false;
+  R.boot=function(){ if(c.clear) c.set([]); R.sig={}; R.tomb={}; R.base={}; R.loaded=false;
     try{ R.seen=JSON.parse(localStorage.getItem(c.mp+'seen')||'{}')||{}; R.dirty=JSON.parse(localStorage.getItem(c.mp+'dirty')||'{}')||{}; R.since=localStorage.getItem(c.mp+'since')||''; }catch(e){ R.seen={}; R.dirty={}; R.since=''; }
     var lk=[], ls={}, pl=c.ls.length; for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,pl)===c.ls) lk.push(k); } lk.forEach(function(k){ ls[k.slice(pl)]=localStorage.getItem(k); R.lsk[k.slice(pl)]=1; });
     var slow=new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('indexedDB slow')); },6000); });
@@ -1470,6 +1497,8 @@ function RowStore(c){
         /* copies the phone lost (storage cleared, slow start): forget we had them, so the next refresh downloads them again */
         var gone=Object.keys(R.seen).filter(function(id){ return !had[id]; }); gone.forEach(function(id){ delete R.seen[id]; delete R.dirty[id]; }); Object.keys(R.dirty).forEach(function(id){ if(!had[id]) delete R.dirty[id]; });
         if(gone.length) R.since=''; R.loaded=true; if(gone.length) R.meta();
+        var bp=c.mp+'b:', bk=[]; for(var bi=0;bi<localStorage.length;bi++){ var kk=localStorage.key(bi); if(kk&&kk.slice(0,bp.length)===bp) bk.push(kk); }
+        bk.forEach(function(kk){ var id=kk.slice(bp.length); if(R.dirty[id]) R.base[id]=localStorage.getItem(kk); else try{ localStorage.removeItem(kk); }catch(e){} });
         if(R.idb&&lk.length){ Object.keys(ls).forEach(function(id){ if(by[id]) R.wq[id]=by[id]; }); R.flush(); }
         R.scan();
         if(c.after) c.after();
@@ -1482,8 +1511,10 @@ function RowStore(c){
     R.open().then(function(db){ var tx=db.transaction(c.store,'readwrite'), st=tx.objectStore(c.store); ids.forEach(function(id){ st.put(q[id],id); });
         tx.oncomplete=function(){ if(done) return; done=true; ids.forEach(function(id){ if(R.lsk[id]){ try{ if(localStorage.getItem(c.ls+id)===q[id]){ localStorage.removeItem(c.ls+id); delete R.lsk[id]; } }catch(e){} } }); if(cb) cb(true); };
         tx.onerror=tx.onabort=function(){ R.idb=false; toLs(); }; }).catch(function(){ R.idb=false; toLs(); }); };
+  R.setBase=function(id,s){ R.base[id]=s; try{ localStorage.setItem(c.mp+'b:'+id,s); }catch(e){} };
+  R.dropBase=function(id){ if(R.base[id]==null) return; delete R.base[id]; try{ localStorage.removeItem(c.mp+'b:'+id); }catch(e){} };
   R.jot=function(id,s){ try{ localStorage.setItem(c.ls+id,s); R.lsk[id]=1; }catch(e){} };
-  R.keep=function(f){ var s=JSON.stringify(f); if(s===R.sig[f.id]) return false; R.sig[f.id]=s; R.dirty[f.id]=1; delete R.tomb[f.id]; R.queue(f.id,s); R.jot(f.id,s); return true; };
+  R.keep=function(f){ var s=JSON.stringify(f); if(s===R.sig[f.id]) return false; if(!R.dirty[f.id]&&R.sig[f.id]&&R.base[f.id]==null) R.setBase(f.id,R.sig[f.id]); R.sig[f.id]=s; R.dirty[f.id]=1; delete R.tomb[f.id]; R.queue(f.id,s); R.jot(f.id,s); return true; };
   R.scan=function(){ if(!R.loaded) return false; var ch=false, here={}; L().forEach(function(f){ if(!f||!f.id) return; here[f.id]=1; if(R.keep(f)) ch=true; });
     if(c.deletes){ var miss=Object.keys(R.sig).filter(function(id){ return !here[id]&&!R.tomb[id]; });
       if(miss.length){ var known=Object.keys(R.sig).length-Object.keys(R.tomb).length;
@@ -1497,7 +1528,7 @@ function RowStore(c){
   var apply=function(rows,lostMsg){ var ch=0, lost=[], idx={}, dels={}, a=L(); a.forEach(function(f,i){ if(f&&f.id) idx[f.id]=i; });
     rows.forEach(function(r){ var f=r.data; if(!f||!f.id) return; if(lostMsg&&R.dirty[r.id]&&R.seen[r.id]) lost.push(c.label(f)||r.id);
       if(c.deletes&&f.del){ dels[f.id]=1; R.tomb[f.id]=1; } else { if(idx[f.id]!=null) a[idx[f.id]]=f; else { idx[f.id]=a.length; a.push(f); } delete R.tomb[f.id]; }
-      var s=JSON.stringify(f); R.sig[f.id]=s; R.queue(f.id,s); if(R.lsk[f.id]) R.jot(f.id,s); R.seen[f.id]=r.updated_at; delete R.dirty[f.id]; ch++; });
+      var s=JSON.stringify(f); R.sig[f.id]=s; R.queue(f.id,s); if(R.lsk[f.id]) R.jot(f.id,s); R.seen[f.id]=r.updated_at; delete R.dirty[f.id]; R.dropBase(f.id); ch++; });
     if(Object.keys(dels).length) c.set(a.filter(function(f){ return !(f&&dels[f.id]); }));
     return {ch:ch,lost:lost}; };
   /* ---- online: pull only what changed ---- */
@@ -1520,7 +1551,7 @@ function RowStore(c){
     var cols=function(id){ if(!c.cols) return ''; var x=byF[id]; if(!x){ try{ x=JSON.parse(R.sig[id]||'{}'); }catch(e){ x={}; } } return c.cols(x); };
     ids=ids.filter(function(id){ return body(id); });
     var sent={}, conflicts=[], kept=[], fresh=ids.filter(function(id){return !R.seen[id];}), old=ids.filter(function(id){return R.seen[id];});
-    var done=function(id,ts){ R.seen[id]=ts; if(R.sig[id]===sent[id]) delete R.dirty[id]; };
+    var done=function(id,ts){ R.seen[id]=ts; if(R.sig[id]===sent[id]){ delete R.dirty[id]; R.dropBase(id); } else R.setBase(id,sent[id]); };
     var insert=function(chunk){ chunk.forEach(function(id){ sent[id]=body(id); });
       return fetch(sbUrl('/rest/v1/'+c.table),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=representation'}),body:'['+chunk.map(function(id){ return '{"id":'+JSON.stringify(id)+','+cols(id)+'"data":'+sent[id]+'}'; }).join(',')+']'})
         .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error(c.name+' save '+r.status); var got={}; (rows||[]).forEach(function(x){ got[x.id]=1; done(x.id,x.updated_at); });
@@ -1536,9 +1567,22 @@ function RowStore(c){
       .then(function(){ if(!kept.length) return; apply(kept,false); var nm=kept.map(function(x){ return c.label(x.data||{})||x.id; });
         toast('⚠ '+c.word+' '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+': only the admin can delete, or remove payments and photos — kept as it was.'); renderSoon(); })
       .then(function(){ if(!conflicts.length) return; return fetch(sbUrl('/rest/v1/'+c.table+'?select=id,data,updated_at&id=in.('+conflicts.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error(c.name+' load '+r.status); return r.json(); }).then(function(rows){ var back={};
-          (rows||[]).forEach(function(x){ back[x.id]=1; }); var res=apply(rows||[],false), nm=(rows||[]).map(function(x){ return c.label(x.data||{})||x.id; });
+          var theirs=[], both=[], nm=[];
+          (rows||[]).forEach(function(x){ back[x.id]=1; var bs=R.base[x.id], ls=R.sig[x.id], m=null, mine=null; try{ mine=JSON.parse(ls||'null'); }catch(e){}
+            RMX.clash=false; if(bs&&ls&&x.data&&!x.data.del&&!R.tomb[x.id]){ try{ m=rowMerge(JSON.parse(bs),mine,x.data); }catch(e){ m=null; } }
+            var cl=RMX.clash, lb=c.label(x.data||{})||x.id;
+            if(m&&!sameJ(m,x.data)){ both.push([x,m,cl]); return; }
+            if(R.dirty[x.id]&&!sameJ(mine,x.data)&&(!m||cl)) nm.push(lb);   /* this phone's change could not be kept */
+            theirs.push(x); });
+          nm=nm.filter(function(v,i,a){ return a.indexOf(v)===i; }); apply(theirs,false);
+          both.forEach(function(p){ var x=p[0], m=p[1], a=L(), s=JSON.stringify(m), at=-1; a.forEach(function(f,i){ if(f&&f.id===x.id) at=i; }); if(at>=0) a[at]=m; else a.push(m);
+            R.seen[x.id]=x.updated_at; R.setBase(x.id,JSON.stringify(x.data)); R.sig[x.id]=s; R.dirty[x.id]=1; R.queue(x.id,s); R.jot(x.id,s); R.again=true; });
           conflicts.forEach(function(id){ if(!back[id]){ delete R.seen[id]; R.again=true; } });
-          if(nm.length){ toast('⚠ '+c.word+' '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+' was saved first on another phone — loaded theirs. Please redo your last change there.'); renderSoon(); } }); })
+          var lst=function(a){ return a.slice(0,3).join(', ')+(a.length>3?' +'+(a.length-3)+' more':''); }, bo=both.filter(function(p){ return !p[2]; }).map(function(p){ return c.label(p[1]||{})||p[0].id; }), bc=both.filter(function(p){ return p[2]; }).map(function(p){ return c.label(p[1]||{})||p[0].id; });
+          if(bo.length) toast('✓ '+c.word+' '+lst(bo)+' was also changed on another phone — both changes kept.');
+          if(bc.length) toast('⚠ '+c.word+' '+lst(bc)+' was also changed on another phone — merged, but where you both changed the same detail theirs was kept. Please check it.');
+          if(nm.length) toast('⚠ '+c.word+' '+lst(nm)+' was saved first on another phone — kept theirs where you both changed the same detail. Please check it.');
+          if(both.length||nm.length){ R.meta(); renderSoon(); } }); })
       .then(function(){ R.meta(); setSync('Saved online '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); },function(e){ R.meta(); setSync('Offline — '+c.name+' saved on this device ('+(e&&e.message||'')+')'); })
       .then(function(){ R.busy=null; if(R.again){ R.again=false; return R.push(); } });
     return R.busy; };
@@ -1979,14 +2023,16 @@ function geoFill(o,btn){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); geoBu
    PRICE LOCK — when the customer / owner says yes, the rates used by that job are copied onto it.
    Changing rates, costs or GST in Settings later only changes enquiries and new jobs.
    ============================================================ */
-function lkVal(o,brand,k,t,sr){ var L=o&&o.rlock, e=L&&L.b&&L.b[brand||''], v=e&&e[k]&&e[k][t]?e[k][t][sr]:undefined; if(v!=null) return v; var B=brandOf(brand); return ((B[k]||{})[t]||{})[sr]; }
-function lkDoor(o,brand,t){ var L=o&&o.rlock, e=L&&L.b&&L.b[brand||''], v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; return (brandOf(brand).doorCost||{})[t]; }
+function lkVal(o,brand,k,t,sr){ var L=o&&o.rlock, e, v; if(L&&k==='cost'&&D.lockc&&o.id&&D.lockc[o.id]&&D.lockc[o.id].on===L.on){ e=(D.lockc[o.id].b||{})[brand||'']; v=e&&e.cost&&e.cost[t]?e.cost[t][sr]:undefined; if(v!=null) return v; }
+  e=L&&L.b&&L.b[brand||'']; v=e&&e[k]&&e[k][t]?e[k][t][sr]:undefined; if(v!=null) return v; var B=brandOf(brand); return ((B[k]||{})[t]||{})[sr]; }
+function lkDoor(o,brand,t){ var L=o&&o.rlock, e, v; if(L&&D.lockc&&o.id&&D.lockc[o.id]&&D.lockc[o.id].on===L.on){ e=(D.lockc[o.id].b||{})[brand||'']; v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; }
+  e=L&&L.b&&L.b[brand||'']; v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; return (brandOf(brand).doorCost||{})[t]; }
 function lockRates(o,force){ if(!o||o.tpl||o.del||(o.rlock&&!force)) return false; var b={};
-  (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), e=b[nm]||(b[nm]={rate:{},cost:{},doorCost:{}});
-    if(o.kind==='doors'){ e.doorCost[it.type]=(B.doorCost||{})[it.type]; return; }
-    (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (e.rate[t]=e.rate[t]||{})[it.series]=((B.rate||{})[t]||{})[it.series]; (e.cost[t]=e.cost[t]||{})[it.series]=((B.cost||{})[t]||{})[it.series]; }); });
-  var L={on:today(),b:b}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=n(D.gstPct); L.gst=1; } o.rlock=L; return true; }
-function unlockRates(o){ if(!o||!o.rlock) return; if(o.rlock.gst) delete o.gstPct; delete o.rlock; }
+  (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), e=b[nm]||(b[nm]={rate:{}}); if(o.kind==='doors') return;
+    (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (e.rate[t]=e.rate[t]||{})[it.series]=((B.rate||{})[t]||{})[it.series]; }); });
+  var L={on:today(),b:b}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=n(D.gstPct); L.gst=1; } o.rlock=L;
+  if(isAdm()&&o.id){ D.lockc=D.lockc||{}; D.lockc[o.id]={on:L.on,b:lockSnap(o)}; } return true; }
+function unlockRates(o){ if(!o||!o.rlock) return; if(o.rlock.gst) delete o.gstPct; delete o.rlock; if(D.lockc&&o.id&&isAdm()) delete D.lockc[o.id]; }
 function lockLine(o){ if(!o||o.tpl||!o.rlock) return ''; return '<div class="lockl">🔒 Prices locked at the rates of <b>'+dShort(o.rlock.on)+'</b> — later rate changes don\'t change this bill.'+(admin()?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':'')+'</div>'; }
 /* jobs confirmed before this version: lock them once, on one phone only (it claims the job through the shared record) */
 var RLDEV=(function(){ try{ var v=localStorage.getItem('wdev'); if(!v){ v=Math.random().toString(36).slice(2,10); localStorage.setItem('wdev',v); } return v; }catch(e){ return 'x'; } })();
@@ -2029,15 +2075,15 @@ function merge3(b,l,s,k){ var jb=mJ(b), jl=mJ(l), js=mJ(s);
   /* both changed one number that counts things (stock qty, order / voucher numbers): add both changes */
   if(typeof l==='number'&&typeof s==='number'&&typeof b==='number'&&(k==='qty'||k==='seq'||k==='vseq')) return Math.round((s+(l-b))*1000)/1000;
   return l===undefined?s:l; }
-function mainShape(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.flats; if(ORS.loaded) delete c.orders; return c; }
+function mainShape(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.flats; if(ORS.loaded) delete c.orders; return privSplit()?sharedOf(c):c; }
 function mainMerge(sentJ){ var baseJ=MAINSENT; if(!baseJ) return Promise.reject(new Error('no base'));
   return fetch(sbUrl('/rest/v1/shop_data?id=eq.main&select=data,updated_at'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error('load '+r.status); return r.json(); }).then(function(rows){
-    if(!rows||!rows[0]||!rows[0].data) throw new Error('no online copy'); return mainMergeRow(rows[0],sentJ,baseJ); }); }
+    if(!rows||!rows[0]||!rows[0].data) throw new Error('no online copy'); privAdopt(rows[0].data); return mainMergeRow(rows[0],sentJ,baseJ); }); }
 /* this phone's unsent changes (sent vs base) put on top of the online copy sv */
-function mainMergeRow(sv,sentJ,baseJ,quiet){ var sb=D.sb, fl0=D.flats, or0=D.orders, strip=function(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.sb; delete c.flats; delete c.orders; return c; };
+function mainMergeRow(sv,sentJ,baseJ,quiet){ var sb=D.sb, fl0=D.flats, or0=D.orders, pv=privOf(D), strip=function(x){ var c=JSON.parse(JSON.stringify(x||{})); delete c.sb; delete c.flats; delete c.orders; return c; };
     var m=merge3(strip(JSON.parse(baseJ)),strip(JSON.parse(sentJ)),strip(sv.data),''), lg=sv.data.orders;
     var Ds=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(JSON.stringify(sv.data)))); Ds.sb=sb;
-    D=migrate(merge(JSON.parse(JSON.stringify(DEF)),m)); D.sb=sb; D.flats=fl0; D.orders=or0; if(lg&&lg.length) ORS.legacy(lg);
+    D=migrate(merge(JSON.parse(JSON.stringify(DEF)),m)); D.sb=sb; D.flats=fl0; D.orders=or0; privAfterMain(pv); if(lg&&lg.length) ORS.legacy(lg);
     LASTSEEN=sv.updated_at; localStorage.setItem('sbseen',LASTSEEN); setBase(JSON.stringify(mainShape(Ds))); keepLocal(); if(!quiet) renderSoon(); return true; }
 ORS.boot();
 
@@ -2182,13 +2228,14 @@ function lastCountDay(){ if(D.lastCount) return D.lastCount; var L=D.invLog||[];
 var SNAPBUSY=false;
 function snapBody(id){ var x=Object.assign({},D); delete x.sb; var j=JSON.stringify(x); return '[{"id":'+JSON.stringify(id)+',"by":'+JSON.stringify((SESS&&SESS.email)||'')+',"size":'+j.length+',"data":'+j+'}]'; }
 /* the day's copy is marked with a tiny row (shop_archive 'snap-<day>') so other phones don't send it again — the shared record is not touched */
-function snapMaybe(){ if(SNAPBUSY||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||!ORS.loaded||!FL.loaded||backWait('snap')) return; var d=today();
+function snapMaybe(){ if(SNAPBUSY||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||!ORS.loaded||!FL.loaded||backWait('snap')||!isAdm()) return; var d=today();
+  if(PV.mode!=='row'||!PV.okAt||Date.now()-PV.okAt>10*60000) return;
   if(!ORS.okAt||!FL.okAt||Date.now()-ORS.okAt>10*60000||Date.now()-FL.okAt>10*60000) return;
-  if(localStorage.getItem('wsnap')===d) return; SNAPBUSY=true; var mark='snap-'+d;
+  if(localStorage.getItem('wsnap')===d) return; SNAPBUSY=true; var mark='snapa-'+d;
   sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive?id=eq.'+encodeURIComponent(mark)+'&select=id'),{headers:sbHeaders()}); })
     .then(function(r){ if(!r.ok) return httpErr(r,'online copy'); return r.json(); })
     .then(function(rows){ if(rows&&rows.length) return;
-      return fetch(sbUrl('/rest/v1/shop_backups'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),body:snapBody(d)})
+      return fetch(sbUrl('/rest/v1/shop_backups'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),body:snapBody(d+'-a')})
         .then(function(r){ if(!r.ok) return httpErr(r,'online copy');
           return fetch(sbUrl('/rest/v1/shop_archive'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),body:JSON.stringify([{id:mark,kind:'snapmark',data:{on:d,by:(SESS&&SESS.email)||''}}])}); })
         .then(function(r){ if(r&&!r.ok) return httpErr(r,'online copy'); }); })
@@ -2196,7 +2243,7 @@ function snapMaybe(){ if(SNAPBUSY||!sbOn()||!SESS||!PULLOK||navigator.onLine===f
     .then(function(){ SNAPBUSY=false; netBar(); }); }
 function snapList(){ S.snaps='loading'; render(); sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_backups?select=id,created_at,by,size&order=created_at.desc&limit=40'),{headers:sbHeaders()}); })
   .then(function(r){ if(!r.ok) throw new Error('backups '+r.status); return r.json(); }).then(function(rows){ S.snaps=rows||[]; render(); }).catch(function(e){ S.snaps={err:e.message||'offline'}; render(); }); }
-function snapName(b){ return /^\d{4}-\d\d-\d\d$/.test(b.id)?dShort(b.id)+' '+b.id.slice(0,4):'Before restore, '+String(b.created_at||'').slice(0,16).replace('T',' '); }
+function snapName(b){ return /^\d{4}-\d\d-\d\d(-a)?$/.test(b.id)?dShort(b.id.slice(0,10))+' '+b.id.slice(0,4):'Before restore, '+String(b.created_at||'').slice(0,16).replace('T',' '); }
 function snapsHtml(){ if(!(sbOn()&&SESS&&admin())) return ''; var s=S.snaps;
   var h='<div style="margin:2px 0 12px"><div class="row between"><b>Online copies</b>'+(s&&s!=='loading'?'<button class="btn sm ghost" data-cs="snapshide">Hide</button>':'<button class="btn sm" data-cs="snaps">Show</button>')+'</div><div class="faint">A full copy of everything is saved online once a day and kept for 21 days'+(localStorage.getItem('wsnap')?' · last: '+dShort(localStorage.getItem('wsnap')):'')+'.</div>';
   if(s==='loading') h+='<div class="faint" style="margin-top:6px">Loading…</div>'; else if(s&&s.err) h+='<div class="warnt" style="margin-top:6px">Could not load: '+esc(s.err)+'</div>';
@@ -2221,9 +2268,9 @@ function restoreDeleted(b){ var k={orders:0,flats:0,projects:0,types:0}, cp=func
   (b.orders||[]).forEach(function(bo){ if(!bo||!bo.id||bo.del||ox[bo.id]) return; D.orders.push(cp(bo)); k.orders++; });
   return k; }
 /* everything as it was on that day; orders and flats added later stay (their stock use is taken out again) */
-function restoreFull(b){ var old={seq:D.seq,vseq:D.vseq}, sb=D.sb, fl0=D.flats, or0=D.orders, inCopy={};
+function restoreFull(b){ var old={seq:D.seq,vseq:D.vseq}, sb=D.sb, fl0=D.flats, or0=D.orders, inCopy={}, cur=privOf(D);
   (b.orders||[]).forEach(function(o){ if(o&&o.id) inCopy[o.id]=1; }); (b.flats||[]).forEach(function(f){ if(f&&f.id) inCopy[f.id]=1; });
-  D=migrate(merge(JSON.parse(JSON.stringify(DEF)),b)); D.sb=sb; D.flats=flatsMerge(fl0,b.flats); D.orders=flatsMerge(or0,b.orders); keepNumbers(old);
+  D=migrate(merge(JSON.parse(JSON.stringify(DEF)),b)); D.sb=sb; D.flats=flatsMerge(fl0,b.flats); D.orders=flatsMerge(or0,b.orders); privKeepIfEmpty(cur); keepNumbers(old);
   var re=0; D.orders.concat(liveFlats()).forEach(function(o){ if(o&&o.consumed&&!inCopy[o.id]&&!o.tpl){ o.consumed=false; consumeOrder(o); re++; } });
   return re; }
 function snapRestore(id,mode,btn){ var nm=id; (Array.isArray(S.snaps)?S.snaps:[]).forEach(function(b){ if(b.id===id) nm=snapName(b); });
@@ -2241,7 +2288,7 @@ function snapRestore(id,mode,btn){ var nm=id; (Array.isArray(S.snaps)?S.snaps:[]
       if(mode==='undel'){ k=restoreDeleted(b); save(); S.snaps=null; render();
         var parts=[]; if(k.orders) parts.push(k.orders+' order'+(k.orders>1?'s':'')); if(k.flats) parts.push(k.flats+' flat'+(k.flats>1?'s':'')); if(k.projects) parts.push(k.projects+' project'+(k.projects>1?'s':'')); if(k.types) parts.push(k.types+' flat type'+(k.types>1?'s':''));
         toast('✓ Brought back '+parts.join(', ')); return; }
-      var re=restoreFull(b); try{ localStorage.setItem('wdirty','1'); }catch(e){} save(); S.snaps=null; render(); toast('✓ Everything is back to '+nm+(re?' — stock updated for '+re+' later job'+(re>1?'s':''):'')); })
+      var re=restoreFull(b); try{ localStorage.setItem('wdirty','1'); }catch(e){} save(); S.snaps=null; render(); toast('✓ Everything is back to '+nm+(re?' — stock updated for '+re+' later job'+(re>1?'s':''):'')+(PRIVKEPT?' (that copy had no accounts or staff — today\'s are kept)':'')); })
     .catch(function(e){ toast('Restore failed — '+(e.message||e)); btn.disabled=false; btn.textContent=lab; }); }
 
 /* ---------- staff roles: the online database keeps what staff may not change ---------- */
@@ -2252,13 +2299,13 @@ function mainKept(sv,sentJ){ if(admin()||!sv||!sv.data) return false;
   pushMain.tries=0; mainMergeRow(sv,MAINJ,sentJ,typingNow());
   if(MAINJ===MAINSENT){ if(!PUSHAGAIN) localStorage.removeItem('wdirty'); } else { try{ localStorage.setItem('wdirty','1'); }catch(e){} }
   setSync('Saved online'); toast('Only the admin can change settings, rates, accounts and staff — kept as they were.'); return true; }
-function rolesLine(){ return '<div class="faint" style="margin-top:8px;line-height:1.5"><b>Admin:</b> everything. <b>Sales:</b> orders, flats, quotes, payments. <b>Production:</b> floor work and stages. Only the admin can delete anything, remove payments or photos, or change settings, rates, accounts and staff — the online database itself keeps this rule.</div>'; }
+function rolesLine(){ return '<div class="faint" style="margin-top:8px;line-height:1.5"><b>Admin:</b> everything. <b>Sales:</b> orders, flats, quotes, payments. <b>Production:</b> floor work and stages. Accounts, staff, salaries, PINs and cost prices never reach staff phones. Only the admin can delete anything, remove payments or photos, or change settings, rates, accounts and staff — the online database itself keeps this rule.</div>'; }
 
 /* ---------- 4. warnings ---------- */
 var NET={bad:0,since:0,msg:''}, UNS={since:+(localStorage.getItem('wunsince')||0)};
 function netOk(){ if(/^Offline/.test(syncMsg)) setSync('Online ✓ '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})); if(NET.bad){ NET.bad=0; NET.since=0; NET.msg=''; netBar(); } }
 function netBad(e){ if(navigator.onLine===false) return; var m=(e&&e.message)||''; if(/Session expired|Not signed in/.test(m)) return; NET.bad++; if(!NET.since) NET.since=Date.now(); NET.msg=m; netBar(); }
-function unsentN(){ var n=0; ROWSTORES.forEach(function(R){ if(R.loaded) n+=R.unsent(); }); try{ if(localStorage.getItem('wdirty')) n++; }catch(e){} return n; }
+function unsentN(){ var n=0; ROWSTORES.forEach(function(R){ if(R.loaded) n+=R.unsent(); }); try{ if(localStorage.getItem('wdirty')) n++; if(localStorage.getItem('wpdirty')) n++; }catch(e){} return n; }
 function hhmm(t){ var d=new Date(t); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+(ymd(d)!==today()?', '+dShort(ymd(d)):''); }
 function netBarHtml(){ var h='', off=navigator.onLine===false, n=unsentN(), np=PHQ.length;
   if(S.role&&sbOn()&&SESS){
@@ -2278,7 +2325,7 @@ function csTick(){ var n=unsentN()+PHQ.length;
   if(n&&!UNS.since){ UNS.since=Date.now(); try{ localStorage.setItem('wunsince',String(UNS.since)); }catch(e){} }
   if(!n&&UNS.since){ UNS.since=0; try{ localStorage.removeItem('wunsince'); }catch(e){} }
   netBar(); if(!S.role||!sbOn()||!SESS) return;
-  if((PHQ.length||PHDQ.length)&&!backWait('phup')) phKick(); phMigrate(); logArchive(); snapMaybe(); phPrune(); }
+  if((PHQ.length||PHDQ.length)&&!backWait('phup')) phKick(); phMigrate(); logArchive(); lockCosts(); yearEnd(); snapMaybe(); phPrune(); }
 function cloudAfter(){ csTick(); }
 setInterval(function(){ if(document.visibilityState==='visible') csTick(); },20000);
 window.addEventListener('online',function(){ setTimeout(csTick,1500); });
@@ -2302,6 +2349,215 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   var a=t.getAttribute('data-cs');
   if(a==='snaps') snapList(); else if(a==='snapshide'){ S.snaps=null; render(); } else if(a==='phzip') phZip(t,+t.getAttribute('data-part')||0); else if(a==='logxls') logXls(t);
   else if(a==='nethelp') netHelp(); else if(a==='sendnow'){ backOk('phup'); cloudPush(); phKick(); toast('Sending…'); } });
+
+/* ============================================================
+   ADMIN-ONLY DATA — accounts, staff, salaries, attendance, PINs and cost prices live in a separate
+   online record ('private') that only admins can read; staff phones never receive them.
+   The first admin phone on this version creates that record from the shared record; from then on
+   the shared record carries none of it (the online database also removes it from there).
+   ============================================================ */
+function isAdm(){ return typeof S!=='undefined'&&!!S&&S.role==='admin'; }
+/* staff phones always leave admin-only data out of the shared record; admin phones do once the private record exists */
+function privSplit(){ return !isAdm()||PV.mode==='row'; }
+function privHas(d){ if(!d||typeof d!=='object') return false; for(var i=0;i<PRIVK.length;i++) if(d[PRIVK[i]]!==undefined) return true; return false; }
+function privHasJ(j){ try{ return !!j&&privHas(JSON.parse(j)); }catch(e){ return false; } }
+/* cost prices of a brand are only taken from (and sent to) the private record when this phone knows them (nc = not known yet) */
+function privOf(d){ var p={}; PRIVK.forEach(function(k){ if(d[k]!==undefined) p[k]=d[k]; }); var bc=Object.assign({},d.bcostx||{});
+  (d.brands||[]).forEach(function(B){ if(B&&B.name!=null&&!B.nc) bc[B.name]={cost:B.cost||{},doorCost:B.doorCost||{}}; }); p.bcost=bc; return p; }
+function sharedOf(d){ var c=Object.assign({},d); PRIVK.forEach(function(k){ delete c[k]; }); delete c.bcost; delete c.bcostx;
+  if(Array.isArray(d.brands)) c.brands=d.brands.map(function(B){ var b=Object.assign({},B); delete b.cost; delete b.doorCost; delete b.nc; return b; }); return c; }
+function defOf(k){ return DEF[k]===undefined?undefined:JSON.parse(JSON.stringify(DEF[k])); }
+function defCost(k){ return JSON.parse(JSON.stringify(DEF.brands[0][k])); }
+function privJoin(p){ if(!p) return; PRIVK.forEach(function(k){ var v=p[k]!==undefined?JSON.parse(JSON.stringify(p[k])):defOf(k); if(v===undefined) delete D[k]; else D[k]=v; });
+  var bc=p.bcost||{}, here={}, xx={}; (D.brands||[]).forEach(function(B){ here[B.name]=1; var x=bc[B.name]; if(!x){ B.nc=1; return; }
+    B.cost=merge(defCost('cost'),JSON.parse(JSON.stringify(x.cost||{}))); B.doorCost=merge(defCost('doorCost'),JSON.parse(JSON.stringify(x.doorCost||{}))); delete B.nc; });
+  Object.keys(bc).forEach(function(nm){ if(!here[nm]) xx[nm]=JSON.parse(JSON.stringify(bc[nm])); }); if(Object.keys(xx).length) D.bcostx=xx; else delete D.bcostx; }
+function pinNone(){ return '-'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
+/* a staff phone keeps none of it (PINs can't be guessed either) */
+function privClear(){ PRIVK.forEach(function(k){ var v=defOf(k); if(v===undefined) delete D[k]; else D[k]=v; });
+  D.pins={admin:pinNone(),sales:pinNone(),production:pinNone()}; delete D.bcostx; try{ localStorage.setItem('wstand','1'); }catch(e){}
+  (D.brands||[]).forEach(function(B){ B.cost=defCost('cost'); B.doorCost=defCost('doorCost'); B.nc=1; }); }
+function privForget(){ if(!PV.mode&&!PV.last&&PV.base==null) return; PV.mode=''; PV.last=''; PV.base=null; PV.chk=''; PV.okAt=0; pvSave(); try{ localStorage.removeItem('wpdirty'); }catch(e){} }
+/* after the shared record was loaded again: admin phones put their admin-only data back; staff phones drop any they had */
+function privAfterMain(pv){ if(!isAdm()){ privClear(); privForget(); return; } if(PV.mode==='row') privJoin(pv); }
+/* an admin phone still on the old way finds the shared record without admin data: another admin phone moved it — follow */
+function privAdopt(sd){ if(!isAdm()||PV.mode==='row'||!sd||sd.__same||privHas(sd)) return;
+  var b=null; try{ if(privHasJ(MAINSENT)) b=JSON.stringify(privOf(JSON.parse(MAINSENT))); }catch(e){ b=null; }
+  keepLocal(); PV.mode='row'; PV.last=''; PV.base=b; PV.chk=''; pvSave(); keepLocal(); privMark(); }
+function privMark(){ if(!isAdm()||PV.mode!=='row') return; if(PRIVJ===PV.chk) return; PV.chk=PRIVJ;
+  var same=false; try{ same=PV.base!=null&&(PRIVJ===PV.base||sameJ(JSON.parse(PRIVJ),JSON.parse(PV.base))); }catch(e){} try{ if(same) localStorage.removeItem('wpdirty'); else localStorage.setItem('wpdirty','1'); }catch(e){} }
+function privErr(e){ if(e&&e.status) backOff('priv',e); }
+function privGet(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.private&select=data,updated_at'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) return httpErr(r,'admin data'); return r.json(); }); }
+function privPull(){ if(!isAdm()||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||backWait('priv')) return Promise.resolve(); if(PV.busy) return PV.busy;
+  PV.busy=sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.private&select=updated_at'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) return httpErr(r,'admin data'); return r.json(); })
+    .then(function(rows){ if(!rows||!rows.length) return privCreate();
+      if(PV.mode==='row'&&rows[0].updated_at===PV.last) return localStorage.getItem('wpdirty')?privPush():null;
+      return privGet().then(function(rr){ if(!rr||!rr[0]) return; privTake(rr[0]); if(localStorage.getItem('wpdirty')) return privPush(); }); })
+    .then(function(){ PV.okAt=Date.now(); backOk('priv'); },privErr)
+    .then(function(){ PV.busy=null; });
+  return PV.busy; }
+/* the first admin phone on this version moves the admin-only data out of the shared record —
+   only from data this phone loaded from the shared record (or already keeps for the private record) */
+function pinsCleared(){ try{ return localStorage.getItem('wstand')==='1'; }catch(e){ return false; } }
+function standOff(){ try{ localStorage.removeItem('wstand'); }catch(e){} }
+function privCreate(){ if(pinsCleared()||(PV.mode!=='row'&&!privHasJ(MAINSENT))) return; var now=new Date().toISOString(); keepLocal(); var p=privOf(D), pj=JSON.stringify(p);
+  return fetch(sbUrl('/rest/v1/shop_data?select=updated_at'),{method:'POST',headers:sbHeaders({Prefer:'return=representation'}),body:'[{"id":"private","data":'+pj+',"updated_at":'+JSON.stringify(now)+'}]'})
+    .then(function(r){ if(r.status===409) return privGet().then(function(rr){ if(rr&&rr[0]) privTake(rr[0]); return 'took'; }); if(!r.ok) return httpErr(r,'admin data'); return r.json(); })
+    .then(function(rows){ if(rows==='took') return; var sv=rows&&rows[0]; PV.mode='row'; PV.last=(sv&&sv.updated_at)||now; PV.base=pj; PV.chk=''; pvSave();
+      keepLocal(); privMark(); try{ localStorage.setItem('wdirty','1'); }catch(e){} setTimeout(function(){ cloudPush(); },200); }); }
+/* take the online copy; changes this phone has not sent yet are put on top (three-way, like the shared record) */
+function privTake(sv){ keepLocal(); var loc=PRIVJ, base=null, srv=sv.data||{}, next=srv;
+  if(PV.mode==='row'){ if(localStorage.getItem('wpdirty')) base=PV.base; }
+  else if(privHasJ(MAINSENT)){ try{ base=JSON.stringify(privOf(JSON.parse(MAINSENT))); }catch(e){ base=null; } }
+  if(base!=null){ try{ var b=JSON.parse(base), l=JSON.parse(loc); if(!sameJ(b,l)) next=merge3(b,l,srv,''); }catch(e){ next=srv; } }
+  var was=loc; PV.mode='row'; PV.last=sv.updated_at; PV.base=JSON.stringify(srv); PV.chk=''; pvSave();
+  privJoin(next); standOff(); keepLocal(); privMark();
+  var ch=true; try{ ch=!sameJ(JSON.parse(was),JSON.parse(PRIVJ)); }catch(e){} if(ch) renderSoon(); }
+function privPush(){ if(!isAdm()||PV.mode!=='row'||!sbOn()||!SESS) return Promise.resolve();
+  if(!PV.last) return privPull();   /* never had the online copy: load it (and put this phone's changes on top) first */
+  if(PV.pbusy) return PV.pbusy;
+  keepLocal(); var sentJ=PRIVJ, now=new Date().toISOString();
+  PV.pbusy=sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.private&updated_at=eq.'+encodeURIComponent(PV.last)+'&select=updated_at'),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:'{"data":'+sentJ+',"updated_at":'+JSON.stringify(now)+'}'}); })
+    .then(function(r){ if(!r.ok) return httpErr(r,'admin data save'); return r.json(); })
+    .then(function(rows){ if(rows&&rows.length){ PV.tries=0; PV.last=rows[0].updated_at||now; PV.base=sentJ; PV.chk=''; pvSave(); keepLocal(); privMark(); return; }
+      if(++PV.tries>3){ PV.tries=0; throw new Error('saved on another phone at the same time'); }
+      return privGet().then(function(rr){ if(!rr||!rr[0]) return privCreate(); try{ localStorage.setItem('wpdirty','1'); }catch(e){} privTake(rr[0]); if(!localStorage.getItem('wpdirty')) return; setSync('Merged with changes from another phone'); toast('✓ Saved — changes from another phone were kept too'); PV.pbusy=null; return privPush(); }); })
+    .catch(function(e){ setSync('Offline — admin data saved on this device ('+((e&&e.message)||'')+')'); })
+    .then(function(){ PV.pbusy=null; });
+  return PV.pbusy; }
+/* the cost side of a locked job is kept with the admin-only data (the job itself carries only selling rates) */
+function lockSnap(o){ var cb={}; (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), ce=cb[nm]||(cb[nm]={cost:{},doorCost:{}});
+    if(o.kind==='doors'){ ce.doorCost[it.type]=(B.doorCost||{})[it.type]; return; }
+    (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (ce.cost[t]=ce.cost[t]||{})[it.series]=((B.cost||{})[t]||{})[it.series]; }); }); return cb; }
+/* jobs locked before: their costs move from the job into the admin-only data. A cost equal to the sample price was
+   locked on a phone that did not know the real prices — today's price is taken instead. */
+function lockCosts(){ if(!isAdm()||PV.mode!=='row'||!ORS.loaded||!FL.loaded) return; var ch=false, dc=DEF.brands[0]; D.lockc=D.lockc||{};
+  allJobs().forEach(function(o){ if(!o||!o.rlock||o.tpl||!o.id) return; var L=o.rlock, cb={}, old=false;
+    Object.keys(L.b||{}).forEach(function(nm){ var e=L.b[nm], B=brandOf(nm); if(!e||!(e.cost||e.doorCost)) return; old=true; var c={cost:{},doorCost:{}};
+      Object.keys(e.cost||{}).forEach(function(t){ Object.keys(e.cost[t]||{}).forEach(function(sr){ var v=e.cost[t][sr]; if(v==null||v===((dc.cost||{})[t]||{})[sr]) v=((B.cost||{})[t]||{})[sr]; (c.cost[t]=c.cost[t]||{})[sr]=v; }); });
+      Object.keys(e.doorCost||{}).forEach(function(t){ var v=e.doorCost[t]; if(v==null||v===(dc.doorCost||{})[t]) v=(B.doorCost||{})[t]; c.doorCost[t]=v; });
+      cb[nm]=c; delete e.cost; delete e.doorCost; });
+    var c=D.lockc[o.id]; if(!c||c.on!==L.on){ D.lockc[o.id]={on:L.on,b:old?cb:lockSnap(o)}; ch=true; } else if(old) ch=true; });
+  var gone={}; (D.flats||[]).forEach(function(f){ if(f&&f.del) gone[f.id]=1; });
+  Object.keys(D.lockc).forEach(function(id){ if((ORS.tomb&&ORS.tomb[id])||gone[id]){ delete D.lockc[id]; ch=true; } });
+  if(ch) save(); }
+
+/* ---- phones used by more than one person ---- */
+/* a phone that held staff stand-ins and is now used by an admin: before the split the real admin data comes from the shared record */
+function privStale(){ return isAdm()&&pinsCleared(); }
+function privFromMain(sd){ if(!sd||!privHas(sd)) return false;
+  var put=function(o){ if(!o) return; PRIVK.forEach(function(k){ if(sd[k]!==undefined) o[k]=JSON.parse(JSON.stringify(sd[k])); else { var v=defOf(k); if(v===undefined) delete o[k]; else o[k]=v; } }); delete o.bcostx;
+    var sb={}; (sd.brands||[]).forEach(function(B){ if(B&&B.name!=null) sb[B.name]=B; });
+    (o.brands||[]).forEach(function(B){ var x=sb[B.name]; if(!x) return; if(x.cost) B.cost=JSON.parse(JSON.stringify(x.cost)); if(x.doorCost) B.doorCost=JSON.parse(JSON.stringify(x.doorCost)); delete B.nc; }); };
+  put(D); try{ if(MAINSENT){ var b=JSON.parse(MAINSENT); put(b); setBase(JSON.stringify(b)); } }catch(e){} standOff(); keepLocal(); return true; }
+/* someone who is not an admin signs in (or was made staff): no admin data stays on the phone, from this moment */
+function privStaffNow(){ privClear(); privForget(); keepLocal(); }
+/* nothing of the admin data in a copy or a file (an older phone made it after the move): keep what this phone has */
+function privEmpty(d){ return !d||!((d.expenses||[]).length||(d.staff||[]).length||Object.keys(d.att||{}).length); }
+var PRIVKEPT=false;
+function privKeepIfEmpty(cur){ PRIVKEPT=false; if(!isAdm()||privEmpty(cur)||!privEmpty(D)) return false; privJoin(cur); PRIVKEPT=true; return true; }
+/* log out: admin changes are sent first; when they are online, the phone keeps no admin data */
+function logoutGo(){ NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
+function logoutAsk(){ var adm=isAdm()&&sbOn()&&!!SESS;
+  var go=function(){ var unl=unsentN()+PHQ.length, pd=adm&&!!localStorage.getItem('wpdirty');
+    if(pd&&!confirm('Accounts / staff changes are not sent online yet. If someone else signs in on this phone before you sign in again, they are lost.\n\nLog out anyway?')) return;
+    if(!pd&&unl&&sbOn()&&!confirm(unl+' change'+(unl>1?'s are':' is')+' not sent online yet. '+(unl>1?'They stay':'It stays')+' on this phone and '+(unl>1?'are':'is')+' sent after the next sign-in here.\n\nLog out anyway?')) return;
+    if(adm&&PV.mode==='row'&&!pd){ privClear(); privForget(); keepLocal(); try{ localStorage.removeItem('pinok'); }catch(e){} }
+    logoutGo(); };
+  if(adm&&(localStorage.getItem('wpdirty')||localStorage.getItem('wdirty'))&&navigator.onLine!==false){ setSync('Sending before log out…');
+    Promise.race([cloudPush().catch(function(){}),new Promise(function(res){ setTimeout(res,8000); })]).then(go); }
+  else go(); }
+
+/* ============================================================
+   LOGINS — the admin gives someone on the users list a password (a new login, or a new one when they
+   forgot theirs) right here; no email is sent. Done by the 'staff-login' function online, which checks
+   that the person asking is an admin.
+   ============================================================ */
+function sbSetPassword(email,pw){ return sbRefresh().then(function(){ return fetch(sbUrl('/functions/v1/staff-login'),{method:'POST',headers:sbHeaders(),body:JSON.stringify({action:'password',email:email,password:pw})}); })
+  .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ j=j||{};
+    if(r.status===404&&!j.error) throw new Error('the password tool is not installed online yet');
+    if(!r.ok) throw new Error(j.error||('error '+r.status)); return j; }); }); }
+function pwGen(){ var A='abcdefghjkmnpqrstuvwxyz23456789', out='', b=new Uint8Array(12); try{ crypto.getRandomValues(b); }catch(e){ for(var i=0;i<12;i++) b[i]=Math.floor(Math.random()*256); }
+  for(var k=0;k<12;k++){ if(k&&k%4===0) out+='-'; out+=A[b[k]%A.length]; } return out; }
+function pwPop(email,role,isNew){ var me=!!(SESS&&email===(SESS.email||'').toLowerCase());
+  var v=pjPop('🔑 '+(isNew?'Password for ':'New password for ')+esc(email),
+    '<p class="faint" style="margin-top:0">'+(me?'This changes your own password — use the new one next time you sign in.':'They sign in with their email and this password. Nothing is emailed — you send it to them on the next screen.')+'</p>'
+    +'<label class="f"><span>Password (at least 8 letters or numbers)</span><input type="text" id="pwnew" autocomplete="new-password" autocapitalize="off" spellcheck="false" value="'+esc(pwGen())+'"></label>'
+    +'<button class="btn sm" data-pw="gen">Make another</button><div id="pwerr" class="warnt" style="margin-top:8px;font-size:13px"></div>',
+    '<button class="btn primary" data-pw="save">Save password</button>'+(isNew?'<button class="btn" data-pw="skip">Skip — they have one</button>':'')+'<button class="btn" data-pjx="1">Cancel</button>');
+  v.addEventListener('click',function(e){ var b=e.target.closest('[data-pw]'); if(!b) return; var k=b.dataset.pw, inp=v.querySelector('#pwnew'), er=v.querySelector('#pwerr');
+    if(k==='gen'){ inp.value=pwGen(); return; }
+    if(k==='skip'){ v.remove(); showShare(email,role); return; }
+    if(k!=='save'||b.disabled) return; var pw=inp.value.trim();
+    if(pw.length<8){ er.textContent='At least 8 letters or numbers'; return; } if(pw.length>72){ er.textContent='At most 72 letters or numbers'; return; }
+    if(navigator.onLine===false){ er.textContent='No internet — try again when online'; return; }
+    b.disabled=true; b.textContent='Saving…'; er.textContent='';
+    sbSetPassword(email,pw).then(function(j){ v.remove(); toast(j.created?'✓ Login ready for '+email:'✓ New password saved for '+email); if(!me) showShare(email,role,pw); })
+      .catch(function(err){ b.disabled=false; b.textContent='Save password'; er.textContent='Not saved — '+((err&&err.message)||err); }); });
+  return v; }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-upw]'); if(!t||!isAdm()) return; var p=t.dataset.upw.split('|'); pwPop(p[0],p[1]||'sales',false); });
+
+/* ============================================================
+   YEAR-END — accounts, attendance and salary changes from before last financial year (April–March)
+   move to the online archive (admin-only rows of shop_archive), so the admin record stays small.
+   Cash / Bank / UPI balances and staff advances carry over exactly. Older years download as Excel.
+   ============================================================ */
+var YEPART=1500, YEBUSY=false;
+function fyStart(d){ var y=+String(d).slice(0,4), m=+String(d).slice(5,7); return (m>=4?y:y-1)+'-04-01'; }
+function fyName(d){ var y=+fyStart(d).slice(0,4); return y+'-'+String(y+1).slice(2); }
+function fyKeep(){ return (+fyStart(today()).slice(0,4)-1)+'-04-01'; }           /* first day kept on the phone */
+function yeCarry(md){ return n((((D.carry||{}).mode)||{})[md]); }
+function yeAdv(id){ return n((((D.carry||{}).adv)||{})[id]); }
+function yeDue(){ var cut=fyKeep(), cm=cut.slice(0,7);
+  return {cut:cut,ex:(D.expenses||[]).filter(function(e){ return e&&e.on&&e.on<cut; }),
+    am:Object.keys(D.att||{}).filter(function(m){ return m<cm; }), sm:Object.keys(D.saladj||{}).filter(function(m){ return m<cm; })}; }
+function yearEnd(){ if(YEBUSY||!isAdm()||PV.mode!=='row'||!sbOn()||!SESS||!PULLOK||navigator.onLine===false||backWait('yend')) return;
+  if(!PV.okAt||Date.now()-PV.okAt>10*60000||localStorage.getItem('wpdirty')) return;   /* right after loading the admin record, nothing waiting */
+  var q=yeDue(); if(!q.ex.length&&!q.am.length&&!q.sm.length) return; YEBUSY=true;
+  var by={}, g=function(fy){ return by[fy]||(by[fy]={expenses:[],att:{},saladj:{}}); };
+  q.ex.forEach(function(e){ g(fyName(e.on)).expenses.push(e); }); q.am.forEach(function(m){ g(fyName(m+'-01')).att[m]=D.att[m]; }); q.sm.forEach(function(m){ g(fyName(m+'-01')).saladj[m]=D.saladj[m]; });
+  var rows=[]; Object.keys(by).sort().forEach(function(fy){ var x=by[fy], np=Math.max(1,Math.ceil(x.expenses.length/YEPART));
+    for(var i=0;i<np;i++){ var part={fy:fy,part:i+1,of:np,expenses:x.expenses.slice(i*YEPART,(i+1)*YEPART)}; if(i===0){ part.att=x.att; part.saladj=x.saladj; }
+      var j=JSON.stringify(part); rows.push({id:'priv-'+fy+'-'+(i+1)+'-'+phHash(j),kind:'priv-year',j:j}); } });
+  var exJ={}, amJ={}, smJ={}; q.ex.forEach(function(e){ var k=JSON.stringify(e); exJ[k]=(exJ[k]||0)+1; });
+  q.am.forEach(function(m){ amJ[m]=JSON.stringify(D.att[m]); }); q.sm.forEach(function(m){ smJ[m]=JSON.stringify(D.saladj[m]); });
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive'),{method:'POST',headers:sbHeaders({Prefer:'resolution=ignore-duplicates,return=minimal'}),
+      body:'['+rows.map(function(x){ return '{"id":'+JSON.stringify(x.id)+',"kind":"priv-year","data":'+x.j+'}'; }).join(',')+']'}); })
+    .then(function(r){ if(!r.ok) return httpErr(r,'year-end archive');
+      return fetch(sbUrl('/rest/v1/shop_archive?select=id&id=in.('+rows.map(function(x){ return encodeURIComponent(x.id); }).join(',')+')'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) return httpErr(r,'year-end archive'); return r.json(); })
+    .then(function(got){ var have={}; (got||[]).forEach(function(x){ have[x.id]=1; });
+      if(!rows.every(function(x){ return have[x.id]; })) throw new Error('year-end archive incomplete');
+      /* safely online: take the old lines off this phone, keeping the balances */
+      var C=D.carry=D.carry||{}; C.mode=C.mode||{}; C.adv=C.adv||{}; C.years=C.years||[]; var k=0;
+      D.expenses=(D.expenses||[]).filter(function(e){ var s=JSON.stringify(e); if(!exJ[s]) return true; exJ[s]--; k++;
+        if(MODES.indexOf(e.mode)>=0) C.mode[e.mode]=Math.round((n(C.mode[e.mode])-n(e.amt))*100)/100;
+        if(e.head==='Staff advance'&&e.staffId) C.adv[e.staffId]=Math.round((n(C.adv[e.staffId])+n(e.amt))*100)/100;
+        return false; });
+      Object.keys(amJ).forEach(function(m){ if(D.att[m]&&JSON.stringify(D.att[m])===amJ[m]){ delete D.att[m]; k++; } });
+      Object.keys(smJ).forEach(function(m){ if(D.saladj[m]&&JSON.stringify(D.saladj[m])===smJ[m]){ delete D.saladj[m]; k++; } });
+      Object.keys(by).forEach(function(fy){ if(C.years.indexOf(fy)<0) C.years.push(fy); }); C.years.sort(); C.upTo=q.cut;
+      if(k){ save(); if(S.tab==='expenses'||S.tab==='staff') renderSoon(); } })
+    .then(function(){ backOk('yend'); },function(e){ backOff('yend',e); })
+    .then(function(){ YEBUSY=false; }); }
+function yeCard(){ var ys=((D.carry||{}).years)||[]; if(!ys.length) return '';
+  return '<div class="card"><h2>Older years</h2><p class="faint">Entries from before '+esc(dShort(fyKeep()))+' are kept online so the app stays quick. Balances carry over.</p><div class="row">'
+    +ys.slice().reverse().map(function(fy){ return '<button class="btn sm" data-yexl="'+esc(fy)+'">⬇ '+esc(fy)+' (Excel)</button>'; }).join('')+'</div></div>'; }
+function yeXls(fy,btn){ var lab=btn.textContent; btn.disabled=true; btn.textContent='Getting '+fy+'…';
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive?kind=eq.priv-year&id=like.'+encodeURIComponent('priv-'+fy+'-*')+'&select=data&order=id.asc'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) throw new Error('archive '+r.status); return r.json(); })
+    .then(function(rows){ var ex=[], att={}, sal={}, nm=function(id){ var s=(D.staff||[]).filter(function(x){ return x.id===id; })[0]; return s?s.name:(id||''); };
+      (rows||[]).forEach(function(r){ var d=r&&r.data; if(!d||d.fy!==fy) return; (d.expenses||[]).forEach(function(e){ ex.push(e); }); Object.assign(att,d.att||{}); Object.assign(sal,d.saladj||{}); });
+      if(!ex.length&&!Object.keys(att).length&&!Object.keys(sal).length) throw new Error('nothing found online for '+fy);
+      ex.sort(function(a,b){ return (a.on||'')<(b.on||'')?-1:(a.on||'')>(b.on||'')?1:0; });
+      var V=[['Date','Voucher','Ledger','Party','Mode','Narration','Amount']].concat(ex.map(function(e){ return [e.on||'','P-'+(e.vno||''),e.head||'',e.party||'',e.mode||'',e.note||'',n(e.amt)]; }));
+      var A=[['Month','Worker','Day','Mark','Overtime hours']]; Object.keys(att).sort().forEach(function(m){ Object.keys(att[m]||{}).forEach(function(sid){ var a=att[m][sid]||{}, d=a.d||{}, ot=a.ot||{};
+        Object.keys(d).concat(Object.keys(ot).filter(function(x){ return !(x in d); })).sort(function(x,y){ return +x-+y; }).forEach(function(day){ A.push([m,nm(sid),+day,d[day]||'',ot[day]==null?'':n(ot[day])]); }); }); });
+      var Sd=[['Month','Worker','Advance deducted']]; Object.keys(sal).sort().forEach(function(m){ Object.keys(sal[m]||{}).forEach(function(sid){ Sd.push([m,nm(sid),n(sal[m][sid])]); }); });
+      download('Accounts '+fy+'.xlsx',xlsx([['Vouchers',V],['Attendance',A],['Salary deductions',Sd]])); toast(fy+': '+ex.length+' voucher'+(ex.length===1?'':'s')); })
+    .catch(function(e){ toast('Could not get '+fy+' — '+((e&&e.message)||'check internet')); }).then(function(){ btn.disabled=false; btn.textContent=lab; }); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-yexl]'); if(!t||!isAdm()) return; yeXls(t.dataset.yexl,t); });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -2444,11 +2700,11 @@ function viewExpenses(){
      body='<div class="card"><h2>Ledger summary — '+mLabel(m)+'</h2><table><tbody>'+Object.keys(grps).map(function(g){ var tot=grps[g].reduce(function(a,h){return a+byH[h];},0); return '<tr><td colspan="2" style="background:#f3f4f6"><b>'+esc({Direct:'Direct expenses',Indirect:'Indirect expenses',Capital:'Capital / drawings (not expense)',Advances:'Advances (recoverable, not expense)'}[g]||g)+'</b></td></tr>'+grps[g].map(function(h){return '<tr><td style="padding-left:16px">'+esc(h)+'</td><td class="num">'+money(byH[h])+'</td></tr>';}).join('')+'<tr><td class="right faint">'+esc(g)+' total</td><td class="num"><b>'+money(tot)+'</b></td></tr>'; }).join('')+'<tr><td class="right"><b>All payments</b></td><td class="num"><b>'+money(out)+'</b></td></tr><tr><td class="right goodt">Customer receipts</td><td class="num goodt">'+money(inn)+'</td></tr></tbody></table></div>'
      +'<div class="card"><h2>Month-wise</h2><div class="tscroll"><table><thead><tr><th>Month</th><th class="num">Receipts</th><th class="num">Payments</th><th class="num">Net</th></tr></thead><tbody>'+months.map(function(x){ var vv=all.filter(function(v){return (v.on||'').slice(0,7)===x;}), r=vv.filter(function(v){return v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), p=vv.filter(function(v){return v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0); return '<tr><td>'+mLabel(x)+'</td><td class="num">'+money(r)+'</td><td class="num">'+money(p)+'</td><td class="num '+(r-p<0?'warnt':'')+'"><b>'+money(r-p)+'</b></td></tr>'; }).join('')+'</tbody></table></div></div>'; }
   if(sub==='cash'){ body='<div class="card"><h2>Cash & Bank book — '+mLabel(m)+'</h2><p class="faint">Opening = balance brought forward from all earlier vouchers plus the opening balance in Ledger heads.</p><div class="tscroll"><table><thead><tr><th>Book</th><th class="num">Opening</th><th class="num">Receipts</th><th class="num">Payments</th><th class="num">Closing</th></tr></thead><tbody>'
-     +MODES.map(function(md){ var before=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md]); var r=mv.filter(function(v){return v.mode===md&&v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), p=mv.filter(function(v){return v.mode===md&&v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0); return '<tr><td><b>'+md+'</b></td><td class="num">'+money(before)+'</td><td class="num goodt">'+money(r)+'</td><td class="num warnt">'+money(p)+'</td><td class="num"><b>'+money(before+r-p)+'</b></td></tr>'; }).join('')+'</tbody></table></div></div>'
-     +'<div class="card"><h2>'+mLabel(m)+' — entries by book</h2>'+MODES.map(function(md){ var vv=mv.filter(function(v){return v.mode===md;}); if(!vv.length) return ''; var run=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md]); return '<h3 style="margin:10px 0 4px">'+md+'</h3><table><tbody>'+vv.map(function(v){ run+=v.kind==='Receipt'?v.amt:-v.amt; return '<tr><td>'+dShort(v.on)+'</td><td>'+esc(v.head)+(v.party?' · '+esc(v.party):'')+'</td><td class="num '+(v.kind==='Receipt'?'goodt':'warnt')+'">'+(v.kind==='Receipt'?'+':'−')+money(v.amt)+'</td><td class="num faint">'+money(run)+'</td></tr>'; }).join('')+'</tbody></table>'; }).join('')+'</div>'; }
+     +MODES.map(function(md){ var before=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md])+yeCarry(md); var r=mv.filter(function(v){return v.mode===md&&v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), p=mv.filter(function(v){return v.mode===md&&v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0); return '<tr><td><b>'+md+'</b></td><td class="num">'+money(before)+'</td><td class="num goodt">'+money(r)+'</td><td class="num warnt">'+money(p)+'</td><td class="num"><b>'+money(before+r-p)+'</b></td></tr>'; }).join('')+'</tbody></table></div></div>'
+     +'<div class="card"><h2>'+mLabel(m)+' — entries by book</h2>'+MODES.map(function(md){ var vv=mv.filter(function(v){return v.mode===md;}); if(!vv.length) return ''; var run=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md])+yeCarry(md); return '<h3 style="margin:10px 0 4px">'+md+'</h3><table><tbody>'+vv.map(function(v){ run+=v.kind==='Receipt'?v.amt:-v.amt; return '<tr><td>'+dShort(v.on)+'</td><td>'+esc(v.head)+(v.party?' · '+esc(v.party):'')+'</td><td class="num '+(v.kind==='Receipt'?'goodt':'warnt')+'">'+(v.kind==='Receipt'?'+':'−')+money(v.amt)+'</td><td class="num faint">'+money(run)+'</td></tr>'; }).join('')+'</tbody></table>'; }).join('')+'</div>'; }
   if(sub==='heads'){ body='<div class="card"><div class="row between"><h2>Ledger heads</h2><button class="btn sm primary" data-act="headadd">+ Add head</button></div><table class="items i3"><thead><tr><th>Head</th><th>Group</th><th></th></tr></thead><tbody>'+D.heads.map(function(h,i){return '<tr data-hdi="'+i+'"><td class="c1" data-l="Head"><input type="text" data-hdk="name" value="'+esc(h.name)+'"></td><td data-l="Group"><select data-hdk="grp">'+opts(['Direct','Indirect','Capital','Advances'],h.grp)+'</select></td><td class="dl"><button class="del" data-hddel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'
      +'<div class="card"><h2>Opening balances</h2><div class="grid3">'+MODES.map(function(md){return '<label class="f"><span>'+md+' opening ₹</span><input type="number" data-open="'+md+'" value="'+n(D.opening[md])+'"></label>';}).join('')+'</div></div>'; }
-  return tabs+kp+body;
+  return tabs+kp+body+yeCard();
 }
 /* ---- planning ---- */
 function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(function(o){return (o.stage===1||o.stage===2)&&o.hold;}), t=today(), canEdit=!prod();
@@ -2502,8 +2758,8 @@ function isExpense(e){ var g=headGrp(e.head); return g!=='Advances'&&g!=='Capita
 function monthExp(m){ return D.expenses.filter(function(e){return (e.on||'').slice(0,7)===m&&isExpense(e);}).reduce(function(a,e){return a+n(e.amt);},0); }
 function endOf(ym){ return ym+'-'+('0'+daysIn(ym)).slice(-2); }
 function advOf(st){ return D.expenses.filter(function(e){return e.staffId===st.id&&e.head==='Staff advance';}); }
-function advDue(st){ return advOf(st).reduce(function(a,e){return a+n(e.amt);},0); }
-function advBal(st,ym){ var end=endOf(ym); return advOf(st).filter(function(e){return (e.on||'')<=end&&e.sal!==ym;}).reduce(function(a,e){return a+n(e.amt);},0); }
+function advDue(st){ return yeAdv(st.id)+advOf(st).reduce(function(a,e){return a+n(e.amt);},0); }
+function advBal(st,ym){ var end=endOf(ym); return yeAdv(st.id)+advOf(st).filter(function(e){return (e.on||'')<=end&&e.sal!==ym;}).reduce(function(a,e){return a+n(e.amt);},0); }
 function salRow(ym,st){ var sm=attSum(ym,st), due=Math.max(0,advBal(st,ym)), adj=(D.saladj[ym]||{})[st.id], max=Math.min(due,sm.pay), ded=adj==null?max:Math.max(0,Math.min(n(adj),max));
   var paidE=D.expenses.filter(function(e){return e.sal===ym&&e.staffId===st.id&&e.head==='Salary & wages'&&e.mode!=='Adjust';})[0], postedE=D.expenses.some(function(e){return e.sal===ym&&e.staffId===st.id;});
   return {st:st,sm:sm,gross:sm.pay,due:due,ded:ded,net:sm.pay-ded,paid:paidE?n(paidE.amt):0,posted:postedE,mode:paidE?paidE.mode:''}; }
@@ -2605,8 +2861,8 @@ function viewSettings(){
    +'<div class="row"><button class="btn" data-act="pull">Load from online</button><button class="btn" data-act="push">Save online now</button><span class="faint" id="sync">'+esc(syncMsg)+'</span></div></div>'
    +(function(){ var roleSel=function(attr,cur){ return '<select '+attr+' style="min-height:34px;padding:4px 28px 4px 8px;max-width:150px">'+[['admin','Admin'],['sales','Sales'],['production','Production']].map(function(r){return '<option value="'+r[0]+'"'+(cur===r[0]?' selected':'')+'>'+r[1]+'</option>';}).join('')+'</select>'; };
      if(sbOn()&&SESS){ if(S.ru==null) loadUsers(); var ru=S.ru;
-       return '<div class="card"><h2>Users & roles (allowed list)</h2><p class="faint">Only these emails can sign in. Give each one a password in Supabase → Authentication → Users → Add user'+(sbRef()?' (<a href="https://supabase.com/dashboard/project/'+sbRef()+'/auth/users" target="_blank" rel="noopener">open</a>)':'')+', then tap <b>📤 Send link</b>. Changes apply on their next sign-in.</p>'
-        +(ru==='loading'?'<div class="empty">Loading…</div>':ru&&ru.err?'<div class="warnt">Could not load users: '+esc(ru.err)+'</div>':'<table class="rt"><tbody>'+(ru||[]).map(function(u){ var me=SESS&&u.email===(SESS.email||'').toLowerCase(); return '<tr><td class="rw" style="word-break:break-all">'+esc(u.email)+(me?' <span class="faint">(you)</span>':'')+'</td><td>'+(me?'<b>'+u.role+'</b>':roleSel('data-rurole="'+esc(u.email)+'"',u.role))+'</td><td class="right ra" style="white-space:nowrap">'+(me?'':'<button class="btn sm" data-ushare="'+esc(u.email)+'|'+esc(u.role)+'">📤 Send link</button> <button class="del" data-rudel="'+esc(u.email)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>')
+       return '<div class="card"><h2>Users & roles (allowed list)</h2><p class="faint">Only these emails can sign in. Tap <b>🔑</b> to give someone a password — or a new one if they forget it — then send it with <b>📤 Send link</b>. Changes apply on their next sign-in.</p>'
+        +(ru==='loading'?'<div class="empty">Loading…</div>':ru&&ru.err?'<div class="warnt">Could not load users: '+esc(ru.err)+'</div>':'<table class="rt"><tbody>'+(ru||[]).map(function(u){ var me=SESS&&u.email===(SESS.email||'').toLowerCase(); return '<tr><td class="rw" style="word-break:break-all">'+esc(u.email)+(me?' <span class="faint">(you)</span>':'')+'</td><td>'+(me?'<b>'+u.role+'</b>':roleSel('data-rurole="'+esc(u.email)+'"',u.role))+'</td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-upw="'+esc(u.email)+'|'+esc(u.role)+'" title="Set a password" aria-label="Set a password">🔑</button>'+(me?'':' <button class="btn sm" data-ushare="'+esc(u.email)+'|'+esc(u.role)+'">📤 Send link</button> <button class="del" data-rudel="'+esc(u.email)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>')
         +rolesLine()+(Array.isArray(ru)&&ru.filter(function(u){ return u.role==='admin'; }).length<2?'<div class="netbar" style="margin:10px 0 0">👥 <b>Only one admin.</b> Add a second admin (a partner or a trusted person) so the shop is never locked out if this phone or email is lost.</div>':'')+'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
      if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
      return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
@@ -2737,8 +2993,8 @@ document.addEventListener('click',function(e){
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
-  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
-  if(a==='logout'){ var unl=unsentN()+PHQ.length; if(unl&&sbOn()&&!confirm(unl+' change'+(unl>1?'s are':' is')+' not sent online yet. '+(unl>1?'They stay':'It stays')+' on this phone and '+(unl>1?'are':'is')+' sent after the next sign-in here.\n\nLog out anyway?')) return; NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
+  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); if(role!=='admin') privStaffNow(); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
+  if(a==='logout'){ logoutAsk(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
   if(a==='add'&&o){ snap(o); o.items.push(newItem(o)); if(S.di!=null) S.di=o.items.length-1; save(); render(); setTimeout(function(){var r=document.querySelectorAll('table.items tbody tr'); var inp=r[r.length-1]&&r[r.length-1].querySelector('input'); if(inp) inp.focus();},0); }
@@ -2759,7 +3015,7 @@ document.addEventListener('click',function(e){
   if(a==='pay'&&o){ var amt=n($('#pamt').value); if(!amt){toast('Enter amount');return;} o.payments.push({on:$('#pon').value||today(),note:$('#pnote').value,mode:$('#pmode').value,amt:amt}); save(); render(); toast('Payment added'); }
   if(a==='exp'){ var ea=n($('#eamt').value); if(!ea){toast('Enter amount');return;} var vh=$('#ecat').value, vp=$('#eparty').value, vst=vh==='Staff advance'?D.staff.filter(function(x){return (x.name||'').toLowerCase()===vp.trim().toLowerCase();})[0]:null; if(vh==='Staff advance'&&!vst){ toast('For Staff advance, type the worker name exactly as in Staff (or use Staff → Salary advance)'); return; } D.expenses.push({on:$('#eon').value||today(),head:vh,cat:vh,party:vp,staffId:vst?vst.id:undefined,adv:vst?true:undefined,mode:$('#emode').value,note:$('#enote').value,amt:ea,vno:D.vseq++}); S.em=($('#eon').value||today()).slice(0,7); save(); render(); toast('Voucher P-'+(D.vseq-1)+' saved'); }
   if(a==='copysql'){ var tx=$('#setupsql').textContent; (navigator.clipboard?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('SQL copied');}).catch(function(){ var r=document.createRange(); r.selectNodeContents($('#setupsql')); var sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('Selected — copy it'); }); }
-  if(a==='ruadd'){ var re=($('#ruemail').value||'').trim().toLowerCase(), rr=$('#rurole').value; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(re)){ toast('Enter a valid email'); return; } sbUserSave(re,rr).then(function(){ toast(re+' added as '+rr); loadUsers(); showShare(re,rr); }).catch(function(e){ toast(e.message); }); }
+  if(a==='ruadd'){ var re=($('#ruemail').value||'').trim().toLowerCase(), rr=$('#rurole').value; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(re)){ toast('Enter a valid email'); return; } sbUserSave(re,rr).then(function(){ toast(re+' added as '+rr); loadUsers(); pwPop(re,rr,true); }).catch(function(e){ toast(e.message); }); }
   if(a==='useradd'){ D.users=D.users||[]; D.users.push({email:'',role:'sales'}); save(); render(); }
   if(a==='headadd'){ D.heads.push({name:'',grp:'Indirect'}); save(); render(); }
   if(a==='vxlsx'){ var mm=S.em||today().slice(0,7); download('daybook-'+mm+'.xlsx',xlsx([['Day book',[['Date','Voucher','Type','Ledger','Party','Mode','Narration','Receipt','Payment']].concat(vouchers().filter(function(v){return (v.on||'').slice(0,7)===mm;}).map(function(v){return [v.on,v.vno,v.kind,v.head,v.party,v.mode,v.narr,v.kind==='Receipt'?v.amt:'',v.kind==='Payment'?v.amt:''];}))]])); }
@@ -2769,7 +3025,7 @@ document.addEventListener('click',function(e){
   if(a==='xlsx'&&o) cutXlsx(o);
   if(a==='printcut'&&o) printDoc(cutPrintHtml(o),'landscape');
   if(a==='baddb'){ var nm=prompt('Brand name'); if(nm&&nm.trim()){ var src=D.brands[S.bi||0]; D.brands.push(JSON.parse(JSON.stringify(Object.assign({},src,{name:nm.trim()})))); S.bi=D.brands.length-1; save(); render(); } }
-  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ var nn2=nn.trim(); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn2; }); if(x.rlock&&x.rlock.b&&x.rlock.b[B0.name]&&!x.rlock.b[nn2]){ x.rlock.b[nn2]=x.rlock.b[B0.name]; delete x.rlock.b[B0.name]; } }); B0.name=nn2; save(); render(); } }
+  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ var nn2=nn.trim(); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn2; }); if(x.rlock&&x.rlock.b&&x.rlock.b[B0.name]&&!x.rlock.b[nn2]){ x.rlock.b[nn2]=x.rlock.b[B0.name]; delete x.rlock.b[B0.name]; } }); if(D.lockc) Object.keys(D.lockc).forEach(function(id){ var lb=D.lockc[id].b; if(lb&&lb[B0.name]&&!lb[nn2]){ lb[nn2]=lb[B0.name]; delete lb[B0.name]; } }); B0.name=nn2; save(); render(); } }
   if(a==='bdel'&&D.brands.length>1){ var Bd=D.brands[S.bi||0]; if(confirm('Delete brand '+Bd.name+'? Windows using it will switch to '+(D.brands[0]===Bd?D.brands[1]:D.brands[0]).name+'.')){ D.brands.splice(S.bi||0,1); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand!==Bd.name) return; if(x.rlock&&!x.tpl&&x.kind!=='doors'&&n(it.qty)){ it.fixed=Math.round(itemPrice(x,it)/n(it.qty)); } it.brand=D.brands[0].name; }); }); S.bi=0; save(); render(); } }
   if(a==='holadd'){ var hv=$('#holadd').value; if(hv){ D.holidays=D.holidays||[]; if(D.holidays.indexOf(hv)<0) D.holidays.push(hv); save(); render(); } }
   if(a==='ocadd'){ var oc=$('#ocCode').value, ol=n($('#ocLen').value), oq=n($('#ocQty').value)||1; if(!ol){toast('Enter length');return;} offAdd(oc,ol,oq); save(); render(); toast('Offcut added'); }
@@ -2818,11 +3074,11 @@ function onInput(e){
   if(d.o&&o){ o[d.o]=t.value; save(); if(d.o==='remind') render(); if(d.o==='customer'){ $('#oh').textContent='#'+o.no+' · '+(o.customer||'New order'); } if(d.o==='kind') render(); return; }
   if(d.c){ D.company[d.c]=t.value; save(); if(d.c==='name') $('.top h1').textContent=t.value; }
   if(d.rate){ var p=d.rate.split('|'); D.brands[S.bi||0].rate[p[0]][p[1]]=n(t.value); save(); }
-  if(d.cost){ var p2=d.cost.split('|'); D.brands[S.bi||0].cost[p2[0]][p2[1]]=n(t.value); save(); }
+  if(d.cost){ var p2=d.cost.split('|'); D.brands[S.bi||0].cost[p2[0]][p2[1]]=n(t.value); delete D.brands[S.bi||0].nc; save(); }
   if(d.prof){ var pp=d.prof.split('|'); D.brands[S.bi||0].prof[pp[0]][pp[1]]=t.value.trim(); save(); }
   if(d.rule){ var rr=d.rule.split('|'); D.cutRule[rr[0]]=D.cutRule[rr[0]]||{bars:1,angle:45}; D.cutRule[rr[0]][rr[1]]=+t.value; save(); }
   if(d.cut){ var q=d.cut.split('|'); D.brands[S.bi||0].cut[q[0]][q[1]]=n(t.value); save(); }
-  if(d.dr){ D.brands[S.bi||0].doorRate[d.dr]=n(t.value); save(); } if(d.dc){ D.brands[S.bi||0].doorCost[d.dc]=n(t.value); save(); }
+  if(d.dr){ D.brands[S.bi||0].doorRate[d.dr]=n(t.value); save(); } if(d.dc){ D.brands[S.bi||0].doorCost[d.dc]=n(t.value); delete D.brands[S.bi||0].nc; save(); }
   if(d.d){ D[d.d]=n(t.value); save(); }
   if(d.pd){ D.perDay[d.pd]=n(t.value)||1; save(); }
   if(d.pin){ D.pins[d.pin]=t.value; save(); }
@@ -2860,13 +3116,13 @@ function shrink(file,cb){ var img=new Image(), u=URL.createObjectURL(file); img.
 document.addEventListener('change',function(e){ var t=e.target;
   if(t.dataset&&t.dataset.rurole){ sbUserSave(t.dataset.rurole,t.value).then(function(){ toast('Role updated'); loadUsers(); }).catch(function(e2){ toast(e2.message); }); return; }
   if(t.dataset&&t.dataset.ded){ var ymC=S.am||today().slice(0,7), stC=D.staff.filter(function(x){return x.id===t.dataset.ded;})[0]; if(stC){ var rC=salRow(ymC,stC); if(n(t.value)!==rC.ded){ t.value=rC.ded; D.saladj[ymC][t.dataset.ded]=rC.ded; save(); var c2=$('#sn-'+t.dataset.ded); if(c2) c2.textContent=money(rC.net); toast('Deduction limited to '+money(rC.ded)); } } return; }
-  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}; D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); keepNumbers(sq0); save(); toast('Backup restored'); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
+  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}, cur=privOf(D); D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); privKeepIfEmpty(cur); keepNumbers(sq0); save(); toast('Backup restored'+(PRIVKEPT?' — it had no accounts or staff, today\'s are kept':'')); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
   if(t.tagName==='SELECT') onInput(e); });
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
 function refreshTotals(o){ var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
 
 if(localStorage.getItem('sbrole')==='admin') localStorage.setItem('pinok','1');
-if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); render(); } }).catch(function(){}); }
+if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); if(r!=='admin') privStaffNow(); render(); if(r==='admin') cloudPull(true); } }).catch(function(){}); }
 if(wrongCopy()){ (function(){ var wb=document.createElement('div'); wb.className='wrongcopy'; wb.innerHTML='⚠ <b>Wrong file on the website.</b> This is the <b>preview copy</b> — new phones get a PIN screen and can\'t sign in with email, and updates won\'t show. Upload the <b>index.html</b> that was sent as an attachment (not the preview).'; document.body.insertBefore(wb,document.body.firstChild); })(); }
 /* ---- app install (PWA) ---- */
 var INSTALL=null, isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent), isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
