@@ -644,7 +644,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 22:05';
+var APPV='02 Nov 2026, 22:23';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1046,10 +1046,10 @@ function viewHome(){
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
   var due=open.filter(function(o){return !noAmt(o);}).reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0)+bldPendAll();
   var mo=moneyOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
-  var sales=mo.reduce(function(a,o){return a+subTotal(o);},0), prof=mo.reduce(function(a,o){return a+profit(o);},0);
+  var xb=bldBillsIn(m), sales=mo.reduce(function(a,o){return a+subTotal(o);},0)+xb, prof=mo.reduce(function(a,o){return a+profit(o);},0)+xb;
   var exp=monthExp(m);
   var inn=moneyOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0)+bldIn(m);
-  var kp='<div class="kpis"><div class="kpi"><span>Sales this month</span><b>'+money(sales)+'</b><i>'+pl(mo.length,'order')+' confirmed</i></div><div class="kpi good"><span>Received this month</span><b>'+money(inn)+'</b></div>'
+  var kp='<div class="kpis"><div class="kpi"><span>Sales this month</span><b>'+money(sales)+'</b><i>'+pl(mo.length,'order')+' confirmed'+(xb?' + builder extra bills '+money(xb):'')+'</i></div><div class="kpi good"><span>Received this month</span><b>'+money(inn)+'</b></div>'
    +'<div class="kpi'+(due>0?' warn':'')+'"><span>To collect</span><b>'+money(due)+'</b></div>'
    +(admin()?'<div class="kpi'+(prof-exp<0?' warn':' good')+'"><span>Profit this month</span><b>'+money(prof-exp)+'</b><i>after '+money(exp)+' expenses</i></div>':'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){return o.stage<3&&o.stage>0;}).reduce(function(a,o){return a+leftQty(o);},0)+'</b></div>')+'</div>';
   var AS=alertSets(), al=AS.live;
@@ -2888,6 +2888,7 @@ function bldOn(p){ return projFlats(p.id).some(isBld)||bldSum(p).n>0; }
 function bldIn(m){ var t=0; if(!admin()) return 0; Object.keys(D.bldr||{}).forEach(function(id){ ((D.bldr[id]||{}).pays||[]).forEach(function(x){ if((x.on||'').slice(0,7)===m) t+=n(x.amt); }); }); return t; }
 function bldReceipts(){ var out=[]; if(!admin()) return out; (D.projects||[]).forEach(function(p){ (bldOf(p).pays||[]).forEach(function(x){ out.push({on:x.on,kind:'Receipt',vno:'R-B',head:'Builder receipt',party:(p.builder||'Builder')+' · '+p.name,mode:x.mode||'Cash',narr:x.note||'',amt:n(x.amt),pid:p.id}); }); }); return out; }
 /* home: what builders still have to pay for work done */
+function bldBillsIn(m){ var t=0; if(!admin()) return 0; Object.keys(D.bldr||{}).forEach(function(id){ ((D.bldr[id]||{}).bills||[]).forEach(function(x){ if((x.on||'').slice(0,7)===m) t+=n(x.amt); }); }); return t; }
 function bldPendAll(){ if(!admin()) return 0; return (D.projects||[]).reduce(function(a,p){ return a+(bldOn(p)?bldPendOf(p):0); },0); }
 /* the project's line on the Orders page (admin) */
 function pjCardMoney(p,st){ if(!admin()) return ''; if(!bldOn(p)) return '<span class="faint">'+money(st.received)+' received of '+money(st.billed)+'</span>';
@@ -3739,16 +3740,16 @@ function slipsHtml(ym){ var c=D.company; return D.staff.map(function(st){ var r=
 function viewReports(){
   var months=[]; for(var i=0;i<12;i++){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); months.push(ymd(d).slice(0,7)); }
   var rows=months.map(function(m){ var os=allOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
-    var sales=os.reduce(function(a,o){return a+subTotal(o);},0), cost=os.reduce(function(a,o){return a+orderCost(o);},0), w=os.filter(function(o){return o.kind==='windows';}).reduce(function(a,o){return a+qty(o);},0), dr=os.filter(function(o){return o.kind==='doors';}).reduce(function(a,o){return a+qty(o);},0);
+    var sales=os.reduce(function(a,o){return a+subTotal(o);},0)+bldBillsIn(m), cost=os.reduce(function(a,o){return a+orderCost(o);},0), w=os.filter(function(o){return o.kind==='windows';}).reduce(function(a,o){return a+qty(o);},0), dr=os.filter(function(o){return o.kind==='doors';}).reduce(function(a,o){return a+qty(o);},0);
     var inn=moneyOrders().reduce(function(a,o){return a+(o.payments||[]).filter(function(p){return (p.on||'').slice(0,7)===m;}).reduce(function(x,p){return x+n(p.amt);},0);},0)+bldIn(m);
     var exp=monthExp(m);
     return {m:m,n:os.length,w:w,d:dr,sales:sales,cost:cost,inn:inn,exp:exp,net:sales-cost-exp}; });
   var T=rows.reduce(function(a,r){ for(var k in r) if(typeof r[k]==='number') a[k]=(a[k]||0)+r[k]; return a; },{});
   var owing=openOrders().filter(function(o){return o.stage>0&&balance(o)>0.5;}).sort(function(a,b){return balance(b)-balance(a);});
-  return '<div class="card"><h2>Last 12 months</h2><p class="faint">Sales & material cost by the month the order was confirmed; received by payment date. Net = sales − material − expenses.</p><div class="tscroll"><table><thead><tr><th>Month</th><th class="num">Orders</th><th class="num">Win / Doors</th><th class="num">Sales</th><th class="num">Material</th><th class="num">Expenses</th><th class="num">Net</th><th class="num">Received</th></tr></thead><tbody>'
+  return '<div class="card"><h2>Last 12 months</h2><p class="faint">Sales & material cost by the month the order was confirmed (builder extra bills by their date); received by payment date. Net = sales − material − expenses.</p><div class="tscroll"><table><thead><tr><th>Month</th><th class="num">Orders</th><th class="num">Win / Doors</th><th class="num">Sales</th><th class="num">Material</th><th class="num">Expenses</th><th class="num">Net</th><th class="num">Received</th></tr></thead><tbody>'
    +rows.map(function(r){return '<tr><td>'+mLabel(r.m)+'</td><td class="num">'+r.n+'</td><td class="num">'+r.w+' / '+r.d+'</td><td class="num">'+money(r.sales)+'</td><td class="num">'+money(r.cost)+'</td><td class="num">'+money(r.exp)+'</td><td class="num '+(r.net<0?'warnt':'')+'"><b>'+money(r.net)+'</b></td><td class="num">'+money(r.inn)+'</td></tr>';}).join('')
    +'</tbody><tfoot><tr><td>Total</td><td class="num">'+T.n+'</td><td class="num">'+T.w+' / '+T.d+'</td><td class="num">'+money(T.sales)+'</td><td class="num">'+money(T.cost)+'</td><td class="num">'+money(T.exp)+'</td><td class="num">'+money(T.net)+'</td><td class="num">'+money(T.inn)+'</td></tr></tfoot></table></div></div>'
-   +'<div class="card"><h2>Money to collect — '+money(owing.reduce(function(a,o){return a+balance(o);},0))+'</h2><div class="olist">'+(owing.length?owing.map(oRow).join(''):'<div class="empty">Nothing pending</div>')+'</div></div>'
+   +'<div class="card"><h2>Money to collect — '+money(owing.reduce(function(a,o){return a+balance(o);},0)+bldPendAll())+'</h2><div class="olist">'+(owing.length||bldPendAll()>0.5?bldHomeRows()+owing.map(oRow).join(''):'<div class="empty">Nothing pending</div>')+'</div></div>'
    +'<div class="card"><h2>Export</h2><div class="row"><button class="btn" data-act="csv">Orders → Excel</button><button class="btn" data-act="csvitems">All windows & doors → Excel</button></div></div>';
 }
 function viewSettings(){
