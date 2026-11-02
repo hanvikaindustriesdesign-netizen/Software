@@ -492,7 +492,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 15:56';
+var APPV='02 Nov 2026, 17:35';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -2700,7 +2700,7 @@ function builderView(p){ var b=pjStmt(p).b, B=bldOf(p), bl=B.bills.slice().sort(
     +(b.pend<-0.5?stL('Advance from builder',money(-b.pend),'goodt',true):stL('Pending',money(Math.max(0,b.pend)),b.pend>0.5?'warnt':'goodt',true))+'</div>'
    +(b.n?'':'<p class="faint" style="margin:8px 0 0">No flat is paid by the builder yet. On <b>All flats</b>, tick the flats and tap <b>🏗 Builder pays</b>.</p>')
    +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="bldpay" data-pid="'+p.id+'">+ Payment received</button><button class="btn" data-act="bldbill" data-pid="'+p.id+'">+ Extra bill</button></div>'
-   +'<div class="row" style="margin-top:8px">'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">📤 Send to builder</button>':'')+'<button class="btn" data-act="bldpdf" data-pid="'+p.id+'">📄 PDF</button><button class="btn" data-act="bldxls" data-pid="'+p.id+'">⬇ Excel</button></div></div>'
+   +'<div class="row" style="margin-top:8px"><button class="btn primary" data-act="bldsendpdf" data-pid="'+p.id+'">📤 Send PDF to builder</button><button class="btn" data-act="bldpdfdl" data-pid="'+p.id+'">⬇ PDF</button><button class="btn" data-act="bldxls" data-pid="'+p.id+'">⬇ Excel</button>'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">💬 As text</button>':'')+'</div></div>'
    +'<div class="card"><h2>Delivered flats (work done)</h2>'+(done.length?'<table class="bldt"><tbody>'+done.map(function(f){ return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td class="faint">'+(f.deliveredOn?dShort(f.deliveredOn):'')+'</td><td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')+'</tbody></table>':'<div class="empty">No builder flat delivered yet</div>')
    +(rest>0?'<p class="faint" style="margin:8px 0 0">'+rest+' more builder flat'+(rest===1?' is':'s are')+' not delivered yet — not in this statement.</p>':'')+'</div>'
    +'<div class="card"><h2>Payments from the builder</h2>'+(py.length?'<table class="bldt"><tbody>'+py.map(function(x){ return '<tr><td>'+dShort(x.on)+'</td><td>'+esc(x.mode||'Cash')+(x.note?' · '+esc(x.note):'')+'</td><td class="num"><b class="goodt">'+money(x.amt)+'</b></td>'+del('pays',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment from the builder yet</div>')
@@ -2727,7 +2727,7 @@ function ownersView(p){ ownRef(p); var all=projFlats(p.id), OI=ownIdx(all), fl=a
   return '<div class="card"><div class="row between"><h2>👤 Owners\' statement</h2><span class="faint">as on '+dShort(today())+'</span></div>'
    +'<div class="stb">'+stL('Owners',G.length+(multi?' <small class="faint">('+multi+' with 2+ flats)</small>':''))+stL('Flats paid by owners',o.n+(noOwn?' <small class="faint">('+noOwn+' with no owner yet)</small>':''))+stL('Work done (delivered)',o.done,'goodt')+(o.ready?stL('Ready to deliver',o.ready):'')+(o.work?stL('In production',o.work):'')+stL('Confirmed (owner said yes)',o.conf)
     +'<div class="sthr"></div>'+stL('Bill (confirmed flats)',money(A.bill))+stL('Received from owners',money(A.recv),'goodt')+stL('Pending',money(pend),pend>0.5?'warnt':'goodt',true)+(adv>0.5?stL('Advance with us (paid more than the bill)',money(adv),'sm'):'')+(o.meas?stL(o.meas+' measured, owner not yet confirmed',money(o.measVal),'sm'):'')+'</div>'
-   +'<div class="row" style="margin-top:10px">'+(pend>0.5?'<button class="btn" data-act="ownpendshare" data-pid="'+p.id+'">📤 Share pending list</button>':'')+'<button class="btn" data-act="owpdf" data-pid="'+p.id+'">📄 PDF</button><button class="btn" data-act="owxls" data-pid="'+p.id+'">⬇ Excel</button></div></div>'
+   +'<div class="row" style="margin-top:10px">'+(pend>0.5?'<button class="btn" data-act="ownpendshare" data-pid="'+p.id+'">📤 Share pending list</button>':'')+'<button class="btn" data-act="owpdfdl" data-pid="'+p.id+'">⬇ PDF</button><button class="btn" data-act="owxls" data-pid="'+p.id+'">⬇ Excel</button></div></div>'
    +'<div class="card"><h2>Owners</h2><input type="text" id="owq" placeholder="Search owner, phone, flat no" value="'+esc(S.owq||'')+'" style="width:100%;margin-bottom:8px">'
    +'<div class="subtabs">'+[['','All'],['pend','Payment pending'],['multi','2+ flats'],['nopay','No payment yet']].map(function(x){ return '<button data-act="owf" data-f="'+x[0]+'" class="'+((S.owf||'')===x[0]?'on':'')+'">'+x[1]+'</button>'; }).join('')+'</div>'
    +'<div class="owl">'+ownList(p,G)+'</div></div>'; }
@@ -2745,8 +2745,8 @@ function ownStmtView(p,g,OI,all){ var s=ownSum(g.flats), bf=all.filter(function(
    +'<h2 style="margin:6px 0 2px">👤 '+esc(g.name)+'</h2><div class="muted">'+(g.phone?esc(g.phone)+' · ':'')+s.n+' flat'+(s.n>1?'s':'')+' in '+esc(p.name)+(bf.length?' · also '+bf.map(function(f){return esc(f.no);}).join(', ')+' (paid by the builder)':'')+'</div>'
    +'<div class="pjmoney owm"><button type="button" tabindex="-1"><span>Bill</span><b>'+money(s.bill)+'</b>'+(s.quote>0.5?'<small>+ '+money(s.quote)+' not confirmed</small>':'')+'</button><button type="button" tabindex="-1" class="good"><span>Received</span><b>'+money(s.recv)+'</b></button><button type="button" tabindex="-1" class="'+(s.pend>0.5?'warn':'good')+'"><span>'+(s.adv>0.5?'Advance with us':'Pending')+'</span><b>'+money(s.adv>0.5?s.adv:s.pend)+'</b></button></div>'
    +(s.billGst>0.5?'<div class="faint" style="margin-top:6px">Bill includes GST '+money(s.billGst)+' (before GST '+money(s.billSub)+')</div>':'')
-   +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="opay" data-k="'+esc(g.k)+'">+ Payment</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">📤 Send to owner</button></div>'
-   +'<div class="row" style="margin-top:8px"><button class="btn" data-act="opdf" data-k="'+esc(g.k)+'">📄 PDF</button><button class="btn" data-act="oxls" data-k="'+esc(g.k)+'">⬇ Excel</button></div></div>'
+   +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="opay" data-k="'+esc(g.k)+'">+ Payment</button><button class="btn primary" data-act="osendpdf" data-k="'+esc(g.k)+'">📤 Send PDF to owner</button></div>'
+   +'<div class="row" style="margin-top:8px"><button class="btn" data-act="opdfdl" data-k="'+esc(g.k)+'">⬇ PDF</button><button class="btn" data-act="oxls" data-k="'+esc(g.k)+'">⬇ Excel</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">💬 As text</button></div></div>'
    +'<div class="card"><h2>Flats</h2><table class="bldt"><thead><tr><th>Flat</th><th>Status</th><th class="num">Bill</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody>'+g.flats.map(function(f){ var t=orderTotal(f), pd=paid(f);
       return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></td><td class="num">'+(f.stage>=1?money(t):'<span class="faint">'+money(t)+'</span>')+'</td><td class="num">'+(pd>0.5?money(pd):'—')+'</td><td class="num">'+(f.stage>=1?(t-pd>0.5?'<b class="warnt">'+money(t-pd)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</td></tr>'; }).join('')+'</tbody></table></div>'
    +'<div class="card"><h2>Payments</h2>'+(s.pays.length?'<table class="bldt"><tbody>'+s.pays.map(function(r){ return '<tr><td>'+dShort(r.x.on)+'</td><td style="white-space:nowrap">'+esc(r.f.no)+'</td><td>'+esc(r.x.mode||'Cash')+(r.x.note?' · '+esc(r.x.note):'')+'</td><td class="num"><b class="goodt">'+money(r.x.amt)+'</b></td></tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment yet</div>')+'</div>'; }
@@ -2808,23 +2808,10 @@ function bldText(p){ var s=pjStmt(p).b, B=bldOf(p), done=s.list.filter(function(
     +'Value of work done: '+money(s.doneVal)+(s.doneGst>0.5?' (before GST '+money(s.doneSub)+' + GST '+money(s.doneGst)+')':'')+'\n'
     +(L.length?'\n'+L.map(function(r){ var x=r[2]; return dShort(x.on)+'  '+(r[1]==='Bill'?'Extra bill':'Paid'+(x.mode?' ('+x.mode+')':''))+(x.note?' — '+x.note:'')+'  '+money(x.amt); }).join('\n')+'\n':'')
     +'\nTotal due: '+money(s.due)+'\nReceived: '+money(s.recv)+'\n'+(s.pend<-0.5?'Advance with us: '+money(-s.pend):'Balance: '+money(Math.max(0,s.pend))); }
-/* ---- statements as PDF (Print → Save as PDF, like quotes) and Excel ---- */
+/* ---- statements: Excel (the PDF files are made in stmtpdf.js) ---- */
 function dFull(v){ if(!v) return ''; var d=new Date(v+'T00:00:00'); return isNaN(d)?String(v):d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
-function docTop(title,to){ var c=D.company||{}; return '<div class="hd"><div><h1>'+esc(c.name||'')+'</h1><div>'+esc(c.address||'').replace(/\n/g,'<br>')+'</div><div>'+esc(c.phone||'')+(c.gst?' · GSTIN '+esc(c.gst):'')+'</div></div><div class="right"><h2>'+title+'</h2><div>As on '+dFull(today())+'</div></div></div>'+(to?'<div style="margin-bottom:6px">'+to+'</div>':''); }
-function sumTbl(rows){ return '<table style="width:auto;min-width:55%;margin-left:auto"><tbody>'+rows.map(function(r){ return '<tr'+(r[2]?' class="tot"':'')+'><td>'+r[0]+'</td><td class="num">'+r[1]+'</td></tr>'; }).join('')+'</tbody></table>'; }
-function pjSite(p){ return p.site?', '+esc(p.site).replace(/\n/g,', '):''; }
 function xlsName(p,what){ return ((p.name||'project')+' - '+what).replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim()+'.xlsx'; }
 function bldDone(p){ return pjStmt(p).b.list.filter(function(f){ return f.stage>=4; }).sort(flatSort); }
-function gstCells(f,gx){ return gx?'<td class="num">'+money(subTotal(f))+'</td><td class="num">'+(gstOf(f)?gstOf(f)+'% · '+money(gstAmt(f)):'—')+'</td>':''; }
-function bldDocHtml(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), k=0, gx=done.some(function(f){ return gstOf(f)>0; });
-  return docTop('BUILDER STATEMENT','<b>To:</b> '+esc(p.builder||'Builder')+(p.bphone?' · '+esc(p.bphone):'')+'<br><b>Project:</b> '+esc(p.name)+pjSite(p))
-   +'<h3>Work done — delivered flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Delivered on</th><th class="num">Windows</th>'+(gx?'<th class="num">Before GST</th><th class="num">GST</th>':'')+'<th class="num">Amount</th></tr></thead><tbody>'
-   +(done.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+dFull(f.deliveredOn)+'</td><td class="num">'+qty(f)+'</td>'+gstCells(f,gx)+'<td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="'+(gx?8:6)+'">No flat delivered yet</td></tr>')
-   +'<tr class="tot"><td colspan="5" class="right">Work done — '+done.length+' flat'+(done.length===1?'':'s')+'</td>'+(gx?'<td class="num">'+money(b.doneSub)+'</td><td class="num">'+money(b.doneGst)+'</td>':'')+'<td class="num">'+money(b.doneVal)+'</td></tr></tbody></table>'
-   +(B.bills.length?'<h3>Extra bills</h3><table><thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'+B.bills.slice().sort(bldByOn).map(function(x){ return '<tr><td>'+dFull(x.on)+'</td><td>'+esc(x.note||'')+'</td><td class="num">'+money(x.amt)+'</td></tr>'; }).join('')+'</tbody></table>':'')
-   +'<h3>Payments received</h3><table><thead><tr><th>Date</th><th>Mode</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'+(B.pays.slice().sort(bldByOn).map(function(x){ return '<tr><td>'+dFull(x.on)+'</td><td>'+esc(x.mode||'Cash')+'</td><td>'+esc(x.note||'')+'</td><td class="num">'+money(x.amt)+'</td></tr>'; }).join('')||'<tr><td colspan="4">No payment yet</td></tr>')+'</tbody></table>'
-   +sumTbl((gx?[['Work done before GST',money(b.doneSub)],['GST',money(b.doneGst)],['Work done incl. GST',money(b.doneVal)]]:[['Work done',money(b.doneVal)]]).concat(b.extra?[['Extra bills',money(b.extra)]]:[]).concat([['<b>Total due</b>','<b>'+money(b.due)+'</b>'],['Received',money(b.recv)],[b.pend<-0.5?'ADVANCE WITH US':'BALANCE PENDING',money(Math.abs(b.pend)),1]]))
-   +'<div class="sign"><span>For '+esc(p.builder||'the builder')+'</span><span>For '+esc(D.company.name||'')+'</span></div>'; }
 function bldXlsRows(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), R=Math.round;
   return [['Builder statement — '+p.name,'As on '+today()],['Builder',p.builder||''],[],['Delivered flats (work done)'],['Flat','Tower','Floor','Type','Delivered on','Windows','Before GST','GST %','GST','Amount']]
     .concat(done.map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.deliveredOn||'',qty(f),R(subTotal(f)),gstOf(f),R(gstAmt(f)),R(orderTotal(f))]; }))
@@ -2832,26 +2819,11 @@ function bldXlsRows(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), R=Math.r
     .concat(B.bills.length?[['Extra bills'],['Date','Note','Amount']].concat(B.bills.slice().sort(bldByOn).map(function(x){ return [x.on||'',x.note||'',R(n(x.amt))]; })).concat([[]]):[])
     .concat([['Payments received'],['Date','Mode','Note','Amount']]).concat(B.pays.slice().sort(bldByOn).map(function(x){ return [x.on||'',x.mode||'Cash',x.note||'',R(n(x.amt))]; }))
     .concat([[],['Work done before GST',R(b.doneSub)],['GST',R(b.doneGst)],['Work done incl. GST',R(b.doneVal)],['Extra bills',R(b.extra)],['Total due',R(b.due)],['Received',R(b.recv)],[b.pend<-0.5?'Advance with us':'Balance pending',R(Math.abs(b.pend))]]); }
-function ownDocHtml(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), k=0, j=0, gx=cf.some(function(f){ return gstOf(f)>0; });
-  return docTop('STATEMENT OF ACCOUNT','<b>To:</b> '+esc(g.name)+(g.phone?' · '+esc(g.phone):'')+'<br><b>Project:</b> '+esc(p.name)+pjSite(p)+'<br><b>Flat'+(cf.length===1?'':'s')+':</b> '+(cf.map(function(f){ return esc(f.no); }).join(', ')||'—'))
-   +'<h3>Flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Status</th>'+(gx?'<th class="num">Before GST</th><th class="num">GST</th>':'')+'<th class="num">Amount</th></tr></thead><tbody>'
-   +(cf.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+flatStatus(f)+'</td>'+gstCells(f,gx)+'<td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="'+(gx?7:5)+'">No confirmed flat yet</td></tr>')
-   +'<tr class="tot"><td colspan="4" class="right">Total bill</td>'+(gx?'<td class="num">'+money(s.billSub)+'</td><td class="num">'+money(s.billGst)+'</td>':'')+'<td class="num">'+money(s.bill)+'</td></tr></tbody></table>'
-   +'<h3>Payments</h3><table><thead><tr><th>#</th><th>Date</th><th>Flat</th><th>Mode</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'
-   +(s.pays.map(function(r){ return '<tr><td>'+(++j)+'</td><td>'+dFull(r.x.on)+'</td><td>'+esc(r.f.no)+'</td><td>'+esc(r.x.mode||'Cash')+'</td><td>'+esc(r.x.note||'')+'</td><td class="num">'+money(r.x.amt)+'</td></tr>'; }).join('')||'<tr><td colspan="6">No payment yet</td></tr>')
-   +'<tr class="tot"><td colspan="5" class="right">Total received</td><td class="num">'+money(s.recv)+'</td></tr></tbody></table>'
-   +sumTbl((gx?[['Bill before GST',money(s.billSub)],['GST',money(s.billGst)]]:[]).concat([['Total bill',money(s.bill)],['Received',money(s.recv)],[s.adv>0.5?'ADVANCE WITH US':'BALANCE TO PAY',money(s.adv>0.5?s.adv:s.pend),1]]))
-   +'<div class="sign"><span>'+esc(g.name)+'</span><span>For '+esc(D.company.name||'')+'</span></div>'; }
 function ownXlsRows(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), R=Math.round;
   return [['Statement — '+g.name,'As on '+today()],['Phone',g.phone||''],['Project',p.name],[],['Flats'],['Flat','Type','Status','Before GST','GST %','GST','Amount']]
     .concat(cf.map(function(f){ var ty=typeById(f.ftype); return [f.no,ty?ty.name:'',flatStatus(f),R(subTotal(f)),gstOf(f),R(gstAmt(f)),R(orderTotal(f))]; })).concat([['','','Total bill',R(s.billSub),'',R(s.billGst),R(s.bill)],[],['Payments'],['Date','Flat','Mode','Note','Amount']])
     .concat(s.pays.map(function(r){ return [r.x.on||'',r.f.no,r.x.mode||'Cash',r.x.note||'',R(n(r.x.amt))]; })).concat([['','','','Total received',R(s.recv)],[],[s.adv>0.5?'Advance with us':'Balance to pay',R(s.adv>0.5?s.adv:s.pend)]]); }
 function ownAll(p){ var all=projFlats(p.id), OI=ownIdx(all); return ownGroups(all.filter(function(f){ return !isBld(f); }),OI).map(function(g){ return {g:g,s:ownSum(g.flats)}; }); }
-function ownListDocHtml(p){ var L=ownAll(p), T={bill:0,gst:0,recv:0,pend:0}, k=0, gx=L.some(function(r){ return r.s.billGst>0.5; });
-  return docTop('OWNERS\' STATEMENT','<b>Project:</b> '+esc(p.name)+pjSite(p))
-   +'<table><thead><tr><th>#</th><th>Owner</th><th>Phone</th><th>Flats</th><th class="num">Bill</th>'+(gx?'<th class="num">of which GST</th>':'')+'<th class="num">Received</th><th class="num">Pending</th></tr></thead><tbody>'
-   +(L.map(function(r){ T.bill+=r.s.bill; T.gst+=r.s.billGst; T.recv+=r.s.recv; T.pend+=r.s.pend; return '<tr><td>'+(++k)+'</td><td>'+esc(r.g.name)+'</td><td>'+esc(r.g.phone||'')+'</td><td>'+r.g.flats.map(function(f){ return esc(f.no); }).join(', ')+'</td><td class="num">'+money(r.s.bill)+'</td>'+(gx?'<td class="num">'+(r.s.billGst>0.5?money(r.s.billGst):'—')+'</td>':'')+'<td class="num">'+money(r.s.recv)+'</td><td class="num">'+(r.s.pend>0.5?money(r.s.pend):r.s.adv>0.5?'adv. '+money(r.s.adv):'—')+'</td></tr>'; }).join('')||'<tr><td colspan="'+(gx?8:7)+'">No owners yet</td></tr>')
-   +'<tr class="tot"><td colspan="4" class="right">Total — '+L.length+' owner'+(L.length===1?'':'s')+'</td><td class="num">'+money(T.bill)+'</td>'+(gx?'<td class="num">'+money(T.gst)+'</td>':'')+'<td class="num">'+money(T.recv)+'</td><td class="num">'+money(T.pend)+'</td></tr></tbody></table>'; }
 function ownPaysRows(p){ var out=[]; ownAll(p).forEach(function(r){ r.s.pays.forEach(function(x){ out.push([x.x.on||'',r.g.name,r.g.phone||'',x.f.no,x.x.mode||'Cash',x.x.note||'',Math.round(n(x.x.amt))]); }); });
   return [['Date','Owner','Phone','Flat','Mode','Note','Amount']].concat(out.sort(function(a,b){ return a[0]<b[0]?-1:a[0]>b[0]?1:0; })); }
 /* ticked flats → who pays */
@@ -2869,11 +2841,9 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   if(a==='ownst'){ S.psub='owners'; ownRef(p); S.owk=t.dataset.k||''; render(); window.scrollTo(0,0); return; }
   if(a==='owf'){ S.owf=t.dataset.f||''; S.owlim=80; render(); return; }
   if(a==='owmore'){ S.owlim=(S.owlim||80)+200; render(); return; }
-  if(a==='opay'||a==='opaysave'||a==='osend'||a==='opdf'||a==='oxls'){ var g=ownFind(p,t.dataset.k||''); if(!g) return; if(a==='opay') ownPayPop(p,g); else if(a==='opaysave') ownPaySave(p,g); else if(a==='osend') ownSend(p,g);
-    else if(a==='opdf') printDoc(ownDocHtml(p,g)); else download(xlsName(p,g.name+' statement'),xlsx([['Statement',ownXlsRows(p,g)]])); return; }
-  if(a==='owpdf'){ printDoc(ownListDocHtml(p)); return; }
+  if(a==='opay'||a==='opaysave'||a==='osend'||a==='oxls'){ var g=ownFind(p,t.dataset.k||''); if(!g) return; if(a==='opay') ownPayPop(p,g); else if(a==='opaysave') ownPaySave(p,g); else if(a==='osend') ownSend(p,g);
+    else download(xlsName(p,g.name+' statement'),xlsx([['Statement',ownXlsRows(p,g)]])); return; }
   if(a==='owxls'){ download(xlsName(p,'Owners statement'),xlsx([['Owners',ownXls(p)],['Payments',ownPaysRows(p)]])); return; }
-  if(a==='bldpdf'){ printDoc(bldDocHtml(p)); return; }
   if(a==='bldxls'){ download(xlsName(p,'Builder statement'),xlsx([['Builder statement',bldXlsRows(p)]])); return; }
   if(a==='ownpendshare'){ pjShare(ownPendText(p)); return; }
   if(a==='ppayb'){ payerBulk('b'); return; }
@@ -2887,6 +2857,138 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
 /* an owner row → that owner's statement; '‹ All owners' → back to the list */
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-own]'); if(!t||!admin()||S.tab!=='project') return; var p=projById(S.pid); if(!p) return; ownRef(p); S.owk=t.dataset.own||''; render(); window.scrollTo(0,0); });
 document.addEventListener('input',function(e){ var t=e.target; if(!t||t.id!=='owq') return; S.owq=t.value; S.owlim=80; var p=projById(S.pid); if(!p) return; var all=projFlats(p.id), L=document.querySelector('.owl'); if(L) L.innerHTML=ownList(p,ownGroups(all.filter(function(f){ return !isBld(f); }),ownIdx(all))); });
+
+/* ============================================================
+   STATEMENTS AS PDF FILES — sent straight to the builder or a flat owner (share → WhatsApp, e-mail…) or saved.
+   A small PDF writer: A4, Helvetica (built into every PDF reader). These fonts have no rupee sign, so
+   amounts are written as "Rs.".
+   ============================================================ */
+var PDFWH=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,556,556,556,556,556,556,1000,556,556,556,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,556,1000,500,333,944,556,500,667,556,333,556,556,556,556,260,556,333,737,370,556,584,556,737,333,400,584,556,556,333,556,537,278,333,556,365,556,556,834,556,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500], PDFWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,556,556,556,556,556,556,1000,556,556,556,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,556,1000,556,333,944,556,500,667,556,333,556,556,556,556,280,556,333,737,370,556,584,556,737,333,400,584,556,556,333,611,556,278,333,556,365,556,556,834,556,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+var PDFX={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
+var PDFC={brand:[0.12,0.23,0.45],ink:[0.1,0.1,0.12],soft:[0.4,0.42,0.47],line:[0.82,0.84,0.88],zebra:[0.955,0.965,0.982],light:[0.935,0.95,0.985],warn:[0.74,0.22,0.06],good:[0.1,0.48,0.22],white:[1,1,1]};
+function pdfTx(s){ return String(s==null?'':s).replace(/₹\s?/g,'Rs. ').replace(/−/g,'-').replace(/[   \t]/g,' ').replace(/[\r\n]+/g,' '); }
+function pdfCodes(s){ var t=pdfTx(s), out=[]; for(var i=0;i<t.length;i++){ var ch=t.charAt(i), c=t.charCodeAt(i); out.push(c>=32&&c<127?c:PDFX[ch]||(c>=160&&c<256?c:63)); } return out; }
+function pdfW(s,sz,b){ var W=b?PDFWB:PDFWH; return pdfCodes(s).reduce(function(a,c){ return a+(W[c-32]||556); },0)*sz/1000; }
+function pdfEsc(s){ return pdfCodes(s).map(function(c){ return c===40||c===41||c===92?'\\'+String.fromCharCode(c):c>126?'\\'+('00'+c.toString(8)).slice(-3):String.fromCharCode(c); }).join(''); }
+function pdfFit(s,w,sz,b){ s=pdfTx(s); if(pdfW(s,sz,b)<=w) return s; while(s.length>1&&pdfW(s+'…',sz,b)>w) s=s.slice(0,-1); return s+'…'; }
+function pdfWrap(s,w,sz,b){ var lines=[], cur=''; pdfTx(s).split(/\s+/).forEach(function(wd){ if(!wd) return; var t=cur?cur+' '+wd:wd; if(pdfW(t,sz,b)<=w) cur=t; else { if(cur) lines.push(cur); cur=pdfW(wd,sz,b)<=w?wd:pdfFit(wd,w,sz,b); } }); if(cur) lines.push(cur); return lines; }
+/* a few pages of text, lines and boxes → a PDF file */
+function PdfDoc(){ var d={W:595.28,H:841.89,pages:[],c:null}, f2=function(v){ return String(Math.round(v*100)/100); }, rgb=function(c){ return f2(c[0])+' '+f2(c[1])+' '+f2(c[2]); };
+  d.page=function(){ d.c=[]; d.pages.push(d.c); };
+  d.text=function(x,y,s,o){ o=o||{}; var sz=o.size||9, b=!!o.bold, t=o.w?pdfFit(s,o.w,sz,b):pdfTx(s), w=pdfW(t,sz,b), xx=o.align==='right'?x-w:o.align==='center'?x-w/2:x; if(!t) return 0;
+    d.c.push('BT /'+(b?'F2':'F1')+' '+sz+' Tf '+rgb(o.color||PDFC.ink)+' rg 1 0 0 1 '+f2(xx)+' '+f2(d.H-y)+' Tm ('+pdfEsc(t)+') Tj ET'); return w; };
+  d.rect=function(x,y,w,h,fill,stroke,lw){ var r=f2(x)+' '+f2(d.H-y-h)+' '+f2(w)+' '+f2(h)+' re'; if(fill) d.c.push(rgb(fill)+' rg '+r+' f'); if(stroke) d.c.push(f2(lw||0.6)+' w '+rgb(stroke)+' RG '+r+' S'); };
+  d.line=function(x1,y1,x2,y2,c,lw){ d.c.push(f2(lw||0.6)+' w '+rgb(c||PDFC.line)+' RG '+f2(x1)+' '+f2(d.H-y1)+' m '+f2(x2)+' '+f2(d.H-y2)+' l S'); };
+  d.blob=function(title){ var objs=[], add=function(s){ objs.push(s); return objs.length; }, cat=add(''), pg=add(''), F1=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'), F2=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'), kids=[];
+    d.pages.forEach(function(c){ var body=c.join('\n'), cs=add('<< /Length '+body.length+' >>\nstream\n'+body+'\nendstream'); kids.push(add('<< /Type /Page /Parent '+pg+' 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 '+F1+' 0 R /F2 '+F2+' 0 R >> >> /Contents '+cs+' 0 R >>')); });
+    objs[cat-1]='<< /Type /Catalog /Pages '+pg+' 0 R >>'; objs[pg-1]='<< /Type /Pages /Kids ['+kids.map(function(k){ return k+' 0 R'; }).join(' ')+'] /Count '+kids.length+' >>';
+    var info=add('<< /Title ('+pdfEsc(String(title||'Statement').replace(/[\u2013\u2014]/g,'-'))+') /Author ('+pdfEsc((D.company||{}).name||'')+') /CreationDate (D:'+today().replace(/-/g,'')+') >>');
+    var out='%PDF-1.4\n', off=[]; objs.forEach(function(o,i){ off.push(out.length); out+=(i+1)+' 0 obj\n'+o+'\nendobj\n'; });
+    var xr=out.length; out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n'+off.map(function(o){ return ('000000000'+o).slice(-10)+' 00000 n \n'; }).join('')+'trailer\n<< /Size '+(objs.length+1)+' /Root '+cat+' 0 R /Info '+info+' 0 R >>\nstartxref\n'+xr+'\n%%EOF\n';
+    return new Blob([out],{type:'application/pdf'}); };
+  return d; }
+/* amounts: 13,76,663 · in words, the Indian way (lakh, crore) */
+function nIN(x){ return money(x).replace(/₹/g,'').replace(/−/g,'-'); }
+function rsIN(x){ return 'Rs. '+nIN(x); }
+function wordsIN(num){ num=Math.round(Math.abs(num)); if(!num) return 'Zero';
+  var a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'], t=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  var two=function(n){ return n<20?a[n]:t[Math.floor(n/10)]+(n%10?'-'+a[n%10]:''); }, three=function(n){ var h=Math.floor(n/100), r=n%100; return (h?a[h]+' Hundred'+(r?' ':''):'')+(r?two(r):''); };
+  var cr=Math.floor(num/1e7), lk=Math.floor(num/1e5)%100, th=Math.floor(num/1000)%100, rest=num%1000, out=[];
+  if(cr) out.push(wordsIN(cr)+' Crore'); if(lk) out.push(two(lk)+' Lakh'); if(th) out.push(two(th)+' Thousand'); if(rest) out.push(three(rest)); return out.join(' '); }
+function rupeesWords(x){ return 'Rupees '+wordsIN(x)+' Only'; }
+/* one statement: letterhead, who it is for, the project, summary boxes, tables (continued over pages), summary, signatures, page footers */
+function stmtPdfDoc(o){ var d=PdfDoc(), M=36, W=d.W, CW=W-2*M, BOT=d.H-48, c=D.company||{}, y=0;
+  var head=function(first){ d.page(); d.rect(0,0,W,6,PDFC.brand);
+    if(first){ var yy=42; d.text(M,yy,c.name||'',{size:17,bold:true,color:PDFC.brand,w:CW*0.58});
+      var L=String(c.address||'').split('\n').map(function(x){ return x.trim(); }).filter(Boolean), cl=[c.phone?'Phone: '+c.phone:'',c.email?'Email: '+c.email:''].filter(Boolean).join('   ');
+      if(cl) L.push(cl); if(c.gst) L.push('GSTIN: '+c.gst);
+      L.forEach(function(t){ yy+=12; d.text(M,yy,t,{size:8.6,color:PDFC.soft,w:CW*0.58}); });
+      d.text(W-M,42,o.title,{size:14,bold:true,align:'right',color:PDFC.ink}); d.text(W-M,58,'Date: '+dFull(today()),{size:9,align:'right',color:PDFC.soft}); if(o.ref) d.text(W-M,71,o.ref,{size:9,align:'right',color:PDFC.soft,w:CW*0.4});
+      y=Math.max(yy,74)+12; d.line(M,y,W-M,y,PDFC.brand,1.2); y+=14; }
+    else { d.text(M,30,c.name||'',{size:10,bold:true,color:PDFC.brand,w:CW*0.45}); d.text(W-M,30,o.title+(o.party?' — '+o.party:''),{size:9,align:'right',color:PDFC.soft,w:CW*0.5}); d.line(M,38,W-M,38,PDFC.line,0.8); y=54; } };
+  var need=function(h){ if(y+h>BOT){ head(false); return true; } return false; };
+  head(true);
+  var bw=(CW-12)/2, bh=function(b){ return 22+b.lines.length*13; }, hh=Math.max(bh(o.to),bh(o.proj));
+  [[o.to,M],[o.proj,M+bw+12]].forEach(function(z){ var b=z[0], x=z[1]; d.rect(x,y,bw,hh,PDFC.light); d.text(x+10,y+14,b.label.toUpperCase(),{size:7.4,bold:true,color:PDFC.soft}); b.lines.forEach(function(l,i){ d.text(x+10,y+29+i*13,l[0],{size:l[1]?10.5:8.8,bold:!!l[1],w:bw-20}); }); });
+  y+=hh+12;
+  var nb=o.boxes.length, cw=(CW-(nb-1)*8)/nb; o.boxes.forEach(function(b,i){ var x=M+i*(cw+8); d.rect(x,y,cw,42,null,PDFC.line,0.8); d.text(x+10,y+15,b[0],{size:8,color:PDFC.soft,w:cw-20}); d.text(x+10,y+33,b[1],{size:13,bold:true,color:b[2]||PDFC.ink,w:cw-20}); }); y+=42+18;
+  o.sections.forEach(function(sec){ need(64); d.text(M,y,sec.title,{size:10.5,bold:true,color:PDFC.brand}); y+=8;
+    var c0=sec.cols.map(function(k){ return k.h==='#'&&sec.rows.length>99?{h:k.h,w:k.w+(sec.rows.length>999?16:9),a:k.a}:k; }), tw=c0.reduce(function(a,k){ return a+k.w; },0), cols=c0.map(function(k){ return {h:k.h,w:k.w*CW/tw,a:k.a}; });
+    var cell=function(k,x,v,yy,o2){ d.text(k.a==='r'?x+k.w-6:x+6,yy,v==null?'':String(v),Object.assign({size:8.6,align:k.a==='r'?'right':'left',w:k.w-10},o2||{})); };
+    var hdr=function(){ d.rect(M,y,CW,18,PDFC.brand); var x=M; cols.forEach(function(k){ cell(k,x,k.h,y+12.2,{size:8.1,bold:true,color:PDFC.white}); x+=k.w; }); y+=18; };
+    hdr();
+    if(!sec.rows.length){ d.text(M+6,y+12,sec.empty||'None',{size:8.6,color:PDFC.soft}); y+=18; }
+    sec.rows.forEach(function(r,ri){ if(need(ri===sec.rows.length-1&&sec.total?37:17)) hdr(); if(ri%2) d.rect(M,y,CW,17,PDFC.zebra); var x=M; cols.forEach(function(k,ci){ cell(k,x,r[ci],y+11.6); x+=k.w; }); y+=17; });
+    if(sec.total){ if(need(20)) hdr(); d.line(M,y,M+CW,y,PDFC.ink,0.8); var x=M; cols.forEach(function(k,ci){ cell(k,x,sec.total[ci],y+12.6,{bold:true,size:8.8}); x+=k.w; }); y+=19; d.line(M,y,M+CW,y,PDFC.line,0.6); }
+    y+=16; });
+  /* the summary on the right; the amount in words, payment details and a note beside it */
+  var sw=262, sx=W-M-sw, lw=CW-sw-20, left=[], bank=String(c.bank||'').split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+  if(o.words){ left.push([o.wordsLabel||'Amount in words',9,true,PDFC.brand,13]); pdfWrap(o.words,lw,8.8,false).forEach(function(l){ left.push([l,8.8,false,PDFC.ink,12]); }); }
+  if(bank.length){ if(left.length) left[left.length-1][4]+=6; left.push(['Payment details',9,true,PDFC.brand,13]); bank.forEach(function(l){ pdfWrap(l,lw,8.6,false).forEach(function(x){ left.push([x,8.6,false,PDFC.ink,12]); }); }); }
+  if(o.note){ if(left.length) left[left.length-1][4]+=6; pdfWrap(o.note,lw,8,false).forEach(function(l){ left.push([l,8,false,PDFC.soft,11]); }); }
+  var hL=left.reduce(function(a,l){ return a+l[4]; },0), hR=o.sum.reduce(function(a,r,i){ return a+(i===o.sum.length-1?22:17); },0);
+  need(Math.max(hL,hR)+10); var y0=y, yl=y0+10;
+  left.forEach(function(l){ d.text(M,yl,l[0],{size:l[1],bold:l[2],color:l[3],w:lw}); yl+=l[4]; });
+  o.sum.forEach(function(r,i){ var last=i===o.sum.length-1, h=last?22:17; if(last) d.rect(sx,y,sw,h,PDFC.light,PDFC.brand,0.8);
+    d.text(sx+8,y+(last?14.6:11.8),r[0],{size:last?10:9,bold:!!r[2],color:last?PDFC.brand:PDFC.ink,w:sw-120}); d.text(sx+sw-8,y+(last?14.6:11.8),r[1],{size:last?11:9,bold:!!r[2],align:'right',color:r[3]||(last?PDFC.brand:PDFC.ink)});
+    y+=h; if(!last) d.line(sx,y,sx+sw,y,PDFC.line,0.4); });
+  y=Math.max(y,yl)+14;
+  need(62); y+=4;
+  if(o.leftSign){ d.text(M,y+10,o.leftSign,{size:9.5,bold:true,w:200}); d.line(M,y+42,M+170,y+42,PDFC.soft,0.6); d.text(M,y+53,'Confirmed by',{size:8.2,color:PDFC.soft}); }
+  if(c.name) d.text(W-M,y+10,'For '+c.name,{size:9.5,bold:true,align:'right',w:240}); d.line(W-M-170,y+42,W-M,y+42,PDFC.soft,0.6); d.text(W-M,y+53,'Authorised signatory',{size:8.2,align:'right',color:PDFC.soft});
+  var N=d.pages.length; d.pages.forEach(function(pc,i){ d.c=pc; d.line(M,d.H-36,W-M,d.H-36,PDFC.line,0.6);
+    d.text(M,d.H-24,['This is a computer-generated statement',[c.name,c.phone].filter(Boolean).join(' · ')].filter(Boolean).join(' — '),{size:7.4,color:PDFC.soft,w:CW-90}); d.text(W-M,d.H-24,'Page '+(i+1)+' of '+N,{size:7.4,align:'right',color:PDFC.soft}); });
+  return d; }
+/* ---- the builder's statement ---- */
+function bldPdf(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), gx=done.some(function(f){ return gstOf(f)>0; }), k=0, j=0, m=0;
+  var cols=[{h:'#',w:24},{h:'Flat',w:58},{h:'Type',w:88},{h:'Delivered on',w:76},{h:'Windows',w:52,a:'r'}].concat(gx?[{h:'Taxable value',w:80,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:84,a:'r'}]);
+  var rows=done.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',dFull(f.deliveredOn),qty(f)].concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); });
+  var secs=[{title:'Work done — delivered flats ('+done.length+')',cols:cols,rows:rows,empty:'No flat delivered yet',total:['','Total','','',done.reduce(function(a,f){ return a+qty(f); },0)].concat(gx?[nIN(b.doneSub),nIN(b.doneGst)]:[]).concat([nIN(b.doneVal)])}];
+  if(B.bills.length) secs.push({title:'Extra bills',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Description',w:300},{h:'Amount (Rs.)',w:90,a:'r'}],rows:B.bills.slice().sort(bldByOn).map(function(x){ return [++j,dFull(x.on),x.note||'',nIN(x.amt)]; }),total:['','','Total extra bills',nIN(b.extra)]});
+  secs.push({title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Mode',w:64},{h:'Reference / note',w:236},{h:'Amount (Rs.)',w:90,a:'r'}],rows:B.pays.slice().sort(bldByOn).map(function(x){ return [++m,dFull(x.on),x.mode||'Cash',x.note||'',nIN(x.amt)]; }),empty:'No payment received yet',total:['','','','Total received',nIN(b.recv)]});
+  var adv=b.pend<-0.5, sum=(gx?[['Work done — taxable value',rsIN(b.doneSub)],['GST',rsIN(b.doneGst)],['Work done incl. GST',rsIN(b.doneVal),1]]:[['Work done',rsIN(b.doneVal),1]]).concat(b.extra?[['Extra bills',rsIN(b.extra)]]:[])
+    .concat([['Total due',rsIN(b.due),1],['Less: received',rsIN(b.recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(Math.abs(b.pend)),1,adv?PDFC.good:PDFC.warn]]);
+  return stmtPdfDoc({title:'BUILDER STATEMENT',party:p.builder||'Builder',ref:p.name,
+    to:{label:'Statement for',lines:[[p.builder||'Builder',1]].concat(p.bphone?[['Phone: '+p.bphone]]:[]).concat([['Flats delivered: '+done.length]])},
+    proj:{label:'Project',lines:[[p.name,1]].concat(String(p.site||'').split('\n').filter(Boolean).slice(0,3).map(function(l){ return [l]; }))},
+    boxes:[['Total due','Rs. '+nIN(b.due)],['Received','Rs. '+nIN(b.recv),PDFC.good],[adv?'Advance with us':'Balance due','Rs. '+nIN(Math.abs(b.pend)),adv?PDFC.good:PDFC.warn]],
+    sections:secs,sum:sum,words:b.pend>0.5?rupeesWords(b.pend):'',wordsLabel:'Balance due in words',leftSign:p.builder||'The builder',
+    note:'Only delivered flats are billed in this statement. Please check and confirm; tell us within 7 days if anything does not match.'}).blob('Builder statement — '+p.name); }
+/* ---- one flat owner's statement (all his flats together) ---- */
+function ownPdf(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), gx=cf.some(function(f){ return gstOf(f)>0; }), k=0, m=0, adv=s.adv>0.5;
+  var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:96},{h:'Status',w:92}].concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
+  var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
+    {title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Flat',w:60},{h:'Mode',w:62},{h:'Reference / note',w:180},{h:'Amount (Rs.)',w:90,a:'r'}],rows:s.pays.map(function(r){ return [++m,dFull(r.x.on),r.f.no,r.x.mode||'Cash',r.x.note||'',nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(s.recv)]}];
+  var sum=(gx?[['Bill — taxable value',rsIN(s.billSub)],['GST',rsIN(s.billGst)]]:[]).concat([['Total bill',rsIN(s.bill),1],['Less: received',rsIN(s.recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(adv?s.adv:s.pend),1,adv?PDFC.good:PDFC.warn]]);
+  return stmtPdfDoc({title:'STATEMENT OF ACCOUNT',party:g.name,ref:p.name,
+    to:{label:'Statement for',lines:[[g.name,1]].concat(g.phone?[['Phone: '+g.phone]]:[]).concat([['Flat'+(cf.length===1?'':'s')+': '+(cf.map(function(f){ return f.no; }).join(', ')||'—')]])},
+    proj:{label:'Project',lines:[[p.name,1]].concat(String(p.site||'').split('\n').filter(Boolean).slice(0,3).map(function(l){ return [l]; }))},
+    boxes:[['Total bill','Rs. '+nIN(s.bill)],['Received','Rs. '+nIN(s.recv),PDFC.good],[adv?'Advance with us':'Balance due','Rs. '+nIN(adv?s.adv:s.pend),adv?PDFC.good:PDFC.warn]],
+    sections:secs,sum:sum,words:s.pend>0.5?rupeesWords(s.pend):'',wordsLabel:'Balance due in words',leftSign:g.name,
+    note:'Please check and confirm; tell us within 7 days if anything does not match.'}).blob('Statement — '+g.name); }
+/* ---- all owners of a project (for the shop) ---- */
+function ownListPdf(p){ var L=ownAll(p), T={bill:0,gst:0,recv:0,pend:0}, gx=L.some(function(r){ return r.s.billGst>0.5; }), k=0;
+  L.forEach(function(r){ T.bill+=r.s.bill; T.gst+=r.s.billGst; T.recv+=r.s.recv; T.pend+=r.s.pend; });
+  var cols=[{h:'#',w:24},{h:'Owner',w:110},{h:'Phone',w:78},{h:'Flats',w:92},{h:'Bill',w:70,a:'r'}].concat(gx?[{h:'GST',w:58,a:'r'}]:[]).concat([{h:'Received',w:70,a:'r'},{h:'Pending',w:70,a:'r'}]);
+  var rows=L.map(function(r){ return [++k,r.g.name,r.g.phone||'',r.g.flats.map(function(f){ return f.no; }).join(', '),nIN(r.s.bill)].concat(gx?[r.s.billGst>0.5?nIN(r.s.billGst):'-']:[]).concat([nIN(r.s.recv),r.s.pend>0.5?nIN(r.s.pend):r.s.adv>0.5?'adv. '+nIN(r.s.adv):'-']); });
+  return stmtPdfDoc({title:'OWNERS’ STATEMENT',party:p.name,ref:p.name,
+    to:{label:'Project',lines:[[p.name,1]].concat(String(p.site||'').split('\n').filter(Boolean).slice(0,2).map(function(l){ return [l]; }))},
+    proj:{label:'Owners',lines:[[L.length+' owner'+(L.length===1?'':'s')+' · '+L.reduce(function(a,r){ return a+r.g.flats.length; },0)+' flats',1]]},
+    boxes:[['Total bill','Rs. '+nIN(T.bill)],['Received','Rs. '+nIN(T.recv),PDFC.good],['Pending','Rs. '+nIN(T.pend),PDFC.warn]],
+    sections:[{title:'Owners',cols:cols,rows:rows,empty:'No owners yet',total:['','Total','','',nIN(T.bill)].concat(gx?[nIN(T.gst)]:[]).concat([nIN(T.recv),nIN(T.pend)])}],
+    sum:[['Total bill',rsIN(T.bill)],['Received',rsIN(T.recv)],['PENDING',rsIN(T.pend),1,PDFC.warn]]}).blob('Owners statement — '+p.name); }
+/* ---- send it (share → WhatsApp / e-mail…) or save it ---- */
+function pdfName(what,p){ return (what+' - '+p.name+' - '+dFull(today())).replace(/[^\w\- ,.]+/g,'').replace(/\s+/g,' ').trim()+'.pdf'; }
+function pdfSend(blob,fname,text,phone){ var file=null; try{ file=new File([blob],fname,{type:'application/pdf'}); }catch(e){}
+  if(file&&navigator.canShare&&navigator.share&&navigator.canShare({files:[file]})){ navigator.share({files:[file],title:fname.replace(/\.pdf$/,''),text:text}).then(function(){ toast('✓ Sent'); },function(e){ if(e&&e.name==='AbortError') return; download(fname,blob); toast('PDF saved — attach it in WhatsApp'); }); return; }
+  download(fname,blob); var dg=String(phone||'').replace(/\D/g,'').slice(-10); toast('PDF saved — attach it in WhatsApp');
+  if(dg.length===10) setTimeout(function(){ window.open('https://wa.me/91'+dg+'?text='+encodeURIComponent(text),'_blank'); },400); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!t||!admin()) return; var a=t.dataset.act, p=t.dataset.pid?projById(t.dataset.pid):(S.tab==='project'?projById(S.pid):null); if(!p) return;
+  if(a==='bldsendpdf'){ var b=pjStmt(p).b; pdfSend(bldPdf(p),pdfName('Builder statement - '+(p.builder||'Builder'),p),'Statement for '+(p.builder||'the builder')+' — '+p.name+' (as on '+dShort(today())+'). '+(b.pend<-0.5?'Advance with us ':'Balance due ')+money(Math.abs(b.pend))+'.',p.bphone); return; }
+  if(a==='bldpdfdl'){ download(pdfName('Builder statement - '+(p.builder||'Builder'),p),bldPdf(p)); return; }
+  if(a==='owpdfdl'){ download(pdfName('Owners statement',p),ownListPdf(p)); return; }
+  if(a==='osendpdf'||a==='opdfdl'){ var g=ownFind(p,t.dataset.k||''); if(!g) return; var s=ownSum(g.flats), nm=pdfName('Statement - '+g.name,p);
+    if(a==='opdfdl') download(nm,ownPdf(p,g)); else pdfSend(ownPdf(p,g),nm,'Statement for '+g.name+' — '+p.name+' (as on '+dShort(today())+'). '+(s.adv>0.5?'Advance with us '+money(s.adv):'Balance due '+money(s.pend))+'.',g.phone); return; } });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -3168,8 +3270,8 @@ function viewReports(){
 function viewSettings(){
   var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Sell '+s+'"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH','sashW','sashH','sashG'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
-  return '<div class="card"><h2>Company (shown on quotes)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
-   +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % for builder flats (other orders and owner flats: no GST unless you add it on the order)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
+  return '<div class="card"><h2>Company (shown on quotes and statements)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
+   +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><div class="grid2"><label class="f"><span>Email</span><input type="email" data-c="email" value="'+esc(D.company.email||'')+'"></label></div><label class="f"><span>Bank / UPI details for payment (printed on statements)</span><textarea data-c="bank" placeholder="Bank name · A/c no. · IFSC · UPI ID">'+esc(D.company.bank||'')+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % for builder flats (other orders and owner flats: no GST unless you add it on the order)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs.</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
