@@ -438,6 +438,137 @@ body.dzon{overflow:hidden}
 .fgh small{color:var(--soft)}
 @media print{html,body{background:#fff!important}.doc h3{margin:14px 0 2px;font-size:13px;color:#000}}
 select.gsel{display:inline-block;width:auto!important;min-width:0;min-height:30px;padding:2px 6px;margin-left:6px;font:inherit;font-weight:600;vertical-align:middle}
+
+/* ===================== phone polish ===================== */
+/* boxes written without a type look like all the others */
+input:not([type]){width:100%;min-height:42px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;outline:none}
+@media (pointer:coarse){ input:not([type]){font-size:16px} }
+/* the flats-list ".c-ty" style must not grey / shrink the Type drop-down of a window */
+table.items td.c-ty{color:var(--ink);font-size:inherit}
+/* two / three boxes side by side never push each other out */
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))} .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+input[type=date]{min-width:0}
+.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:700px){ .kpis{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.kpis[style*="repeat(3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.kpi{min-width:0}
+.pjmoney b{white-space:nowrap;overflow:hidden;overflow-wrap:normal}
+.pjst b{white-space:nowrap;overflow:hidden}
+
+@media(max-width:700px){
+  /* top bar */
+  .top{align-items:center;margin-bottom:12px}
+  .top h1{font-size:22px;letter-spacing:.01em;line-height:1.12}
+  .top .who{flex-wrap:nowrap;align-items:center;row-gap:0}
+  /* home: production plan fits the phone */
+  .h-wk table.hwkt{font-size:13px}
+  .h-wk table.hwkt .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:0;line-height:1.3;font-size:13.5px}
+  .h-wk table.hwkt td{padding-right:8px} .h-wk table.hwkt td:nth-child(n+2){white-space:nowrap}
+  .kpi{padding:11px 12px}
+}
+
+/* ---- windows / doors: one numbered card each (phones: one column; tablets up to 1099 px: two) ---- */
+@media(max-width:1099px){
+  .card.icard{background:none;border:0;box-shadow:none;padding:0;border-radius:0}
+  .card.icard>.tscroll{margin:0;padding:0;overflow:visible}
+  table.items.iw,table.items.idr,table.items.iw tbody,table.items.idr tbody,table.items.iw tfoot,table.items.idr tfoot{display:block}
+  table.items.iw tbody,table.items.idr tbody{counter-reset:itm}
+  table.items.iw tbody tr,table.items.idr tbody tr{counter-increment:itm;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px 6px;align-items:end;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 10px 4px;margin:0 0 10px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+  table.items.iw tbody tr{grid-template-areas:"pk pk loc loc loc loc loc loc loc loc loc loc" "ty ty ty ty ty br br br br se se se" "w w w w h h h h qt qt qt qt" "gl gl gl gl gl me me me me me me me" "sq sq sq sq amt amt amt amt amt amt dl dl"}
+  table.items.idr tbody tr{grid-template-areas:"pk pk loc loc loc loc loc loc loc loc loc loc" "ty ty ty ty br br br br pr pr pr pr" "w w w w h h h h qt qt qt qt" "amt amt amt amt amt amt amt amt amt amt dl dl"}
+  table.items.iw tbody td,table.items.idr tbody td{display:block;border:0;padding:0;min-width:0}
+  table.items.iw tbody td.empty,table.items.idr tbody td.empty{grid-column:1/-1;padding:14px 0 18px}
+  table.items.iw tbody td[data-l]::before,table.items.idr tbody td[data-l]::before{font-size:11.5px;line-height:1.3;color:var(--soft);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  table.items.iw tbody td.c1::before{content:"Window " counter(itm);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:.01em}
+  table.items.idr tbody td.c1::before{content:"Door " counter(itm);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:.01em}
+  table.items.iw td input,table.items.iw td select,table.items.idr td input,table.items.idr td select{width:100%;min-width:0;min-height:38px;border-radius:9px}
+  table.items.iw td select,table.items.idr td select{padding:4px 20px 4px 7px;background-position:right 6px center}
+  table.items.iw td input.n,table.items.iw td input.q,table.items.idr td input.n,table.items.idr td input.q{padding:4px 9px}
+  /* the drawing on the left of the Location box */
+  table.items.iw tbody td.pk,table.items.idr tbody td.pk{grid-area:pk;width:auto;justify-self:start;align-self:end}
+  table.items.iw .pick,table.items.idr .pick{width:46px;height:46px;border-radius:10px;background:#f2f5f9;border:1px solid var(--line)}
+  table.items.iw .pick svg,table.items.idr .pick svg{width:38px;height:38px}
+  /* last line of the card: sq ft · amount · delete */
+  table.items.iw tbody td.sq,table.items.iw tbody td.amt,table.items.iw tbody td.dl,table.items.idr tbody td.amt,table.items.idr tbody td.dl{align-self:stretch;justify-self:stretch;width:auto;display:flex;align-items:center;margin-top:3px;padding:3px 0 0;min-height:38px}
+  /* one line across the whole card above that last line (whatever is in it) */
+  table.items.iw tbody tr::after,table.items.idr tbody tr::after{content:"";grid-column:1/-1;grid-row:-2/-1;align-self:start;border-top:1px solid var(--line)}
+  table.items.iw tbody tr:has(td.empty)::after,table.items.idr tbody tr:has(td.empty)::after{display:none}
+  table.items.iw tbody td.sq::before,table.items.iw tbody td.amt::before,table.items.idr tbody td.amt::before{display:none}
+  table.items.iw tbody td.sq{font-size:13.5px;color:var(--soft);font-weight:400}
+  table.items.iw tbody td.amt,table.items.idr tbody td.amt{justify-content:flex-end;font-weight:700;font-size:15.5px;color:var(--ink)}
+  table.items.iw tbody td.dl,table.items.idr tbody td.dl{justify-content:flex-end}
+  table.items.iw .del,table.items.idr .del{width:36px;height:34px;padding:0;font-size:22px;border-radius:8px}
+  table.items.iw .del:active,table.items.idr .del:active{background:#fdecec;color:var(--warn)}
+  /* totals under the list */
+  table.items.iw tfoot,table.items.idr tfoot{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2px 14px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+  table.items.iw tfoot tr,table.items.idr tfoot tr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+  table.items.iw tfoot tr:last-child,table.items.idr tfoot tr:last-child{border-bottom:0}
+  table.items.iw tfoot td,table.items.idr tfoot td{border:0;padding:0;font-weight:600}
+  table.items.iw tfoot td:empty,table.items.idr tfoot td:empty{display:none}
+  table.items.iw tfoot td.right,table.items.idr tfoot td.right{flex:1 1 auto;text-align:left;font-weight:500;color:var(--soft);white-space:nowrap}
+  table.items.iw tfoot td.num,table.items.idr tfoot td.num{flex:none;text-align:right}
+  table.items.iw tfoot tr:last-child td,table.items.idr tfoot tr:last-child td{font-size:17px;font-weight:700;color:var(--ink)}
+  table.items.iw tfoot td input.n,table.items.idr tfoot td input.n{width:120px;min-height:38px;text-align:right}
+  .card.icard .tbar{margin-top:12px}
+}
+@media(min-width:701px) and (max-width:1099px){
+  table.items.iw tbody,table.items.idr tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  table.items.iw tbody tr,table.items.idr tbody tr{margin:0}
+  table.items.iw tfoot,table.items.idr tfoot{max-width:440px;margin:14px 0 0 auto}
+}
+/* apartment flats list: the 7-column row needs ~980 px — below that, the stacked phone row */
+@media(min-width:761px) and (max-width:980px){ .fth{display:none} .ftm{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"no ty st" "ow ow ow" "bill rec due";gap:4px 10px;padding:10px 2px 10px 12px}
+  .ftm .c-no{grid-area:no} .ftm .c-ty{grid-area:ty} .ftm .c-st{grid-area:st;justify-self:end} .ftm .c-ow{grid-area:ow} .ftm .c-ow small{display:inline;margin-left:6px}
+  .ftm .c-bill{grid-area:bill;text-align:left} .ftm .c-rec{grid-area:rec;text-align:center} .ftm .c-due{grid-area:due} .ftm .c-bill::before,.ftm .c-rec::before,.ftm .c-due::before{content:attr(data-l);display:block;font-size:11px;color:var(--faint)} }
+/* wide tablets / small laptops (two lines per window): more room for the location and the drop-downs */
+@media(min-width:1100px) and (max-width:1279px){
+  table.items.iw tbody tr{grid-template-columns:38px minmax(0,1.15fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) minmax(0,.6fr)}
+}
+
+@media(max-width:700px){
+  .olist .o .right{white-space:nowrap}
+  /* plan: a long order name wraps instead of running over the priority */
+  table.rt td.rg .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:0;line-height:1.3}
+  /* floor: sizes as a list — no. · drawing · location / type · W × H / qty */
+  table.sizes,table.sizes tbody{display:block} table.sizes thead{display:none}
+  table.sizes tbody tr{display:grid;grid-template-columns:20px 44px minmax(0,1fr) auto;grid-template-areas:"no sk loc wh" "no sk ty qt";gap:2px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  table.sizes tbody tr:last-child{border-bottom:0}
+  table.sizes tbody td{display:block;border:0;padding:0;min-width:0}
+  table.sizes tbody td:nth-child(1){grid-area:no;color:var(--soft);font-weight:600}
+  table.sizes tbody td:nth-child(2){grid-area:sk} table.sizes tbody td:nth-child(3){grid-area:loc}
+  table.sizes tbody td:nth-child(4){grid-area:ty;font-size:13px;line-height:1.35;color:var(--soft)}
+  table.sizes tbody td:nth-child(5){grid-area:wh;font-weight:700;text-align:right}
+  table.sizes tbody td:nth-child(6){grid-area:qt;text-align:right;color:var(--soft);font-size:13px}
+  table.sizes tbody td:nth-child(6)::before{content:"Qty "}
+  /* settings: profile codes — the profile on top, its three codes side by side */
+  table.pcodes,table.pcodes thead,table.pcodes tbody{display:block}
+  table.pcodes thead tr,table.pcodes tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;align-items:end;padding:8px 0;border-bottom:1px solid var(--line)}
+  table.pcodes thead th:first-child{display:none}
+  table.pcodes th,table.pcodes td{border:0;padding:0}
+  table.pcodes tbody td:first-child{grid-column:1/-1;font-weight:600;font-size:13.5px}
+  table.pcodes tbody td[colspan]{grid-column:1/-1}
+  /* settings: cutting deductions — room for three figures (the table slides sideways) */
+  input[data-cut]{min-width:58px}
+  /* settings: hardware rules — the item across the card, then qty + basis; × at the top right */
+  table.items.hwt tbody tr{position:relative;grid-template-columns:58px minmax(0,1fr);grid-template-areas:"it it" "qt bs"}
+  table.items.hwt tbody td.c1{grid-area:it} table.items.hwt tbody td:nth-child(2){grid-area:qt} table.items.hwt tbody td.c2{grid-area:bs}
+  table.items.hwt tbody td.dl{position:absolute;top:6px;right:0;padding:0}
+  table.items.hwt .del{padding:2px 8px}
+  table.items.hwt td select[data-hk]{padding-left:9px;padding-right:26px;background-position:right 9px center}
+  /* settings: how we cut */
+  select[data-rule]{padding-left:8px;padding-right:23px;background-position:right 7px center}
+}
+/* home: the five order stages always fit across */
+.pipe{grid-template-columns:repeat(5,minmax(0,1fr))} .pipe button{min-width:0}
+@media(max-width:400px){ .pipe button{padding:10px 1px} .pipe button span{font-size:10px;letter-spacing:-.01em} }
+@media(max-width:350px){ table.bomt{font-size:12.5px} table.bomt th,table.bomt td{padding-right:4px} .pipe{gap:4px} .pipe button{padding:9px 1px} .pipe button span{font-size:9px;letter-spacing:-.01em} }
+@media(max-width:400px){
+  .top h1{font-size:19.5px}
+  .top .who{font-size:12.5px}
+  .top .who .wrole{display:none}
+  .btn.big{font-size:15px}
+}
 </style>
 </head>
 <body>
@@ -492,7 +623,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 17:35';
+var APPV='02 Nov 2026, 19:18';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -818,9 +949,17 @@ function render(){
   var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
   nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&(S.tab==='order'||S.tab==='project')))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
   var v={home:viewHome,orders:viewOrders,order:viewOrder,project:viewProject,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings}[S.tab]();
-  var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+(admin()?'Admin':prod()?'Production':'Sales')+' · <button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+netBarHtml()+v;
-  fixChips();
+  var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+'<span class="wrole">'+(admin()?'Admin':prod()?'Production':'Sales')+' · </span><button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+netBarHtml()+v;
+  fixChips(); fitNums();
 }
+function fitNums(){ try{ var rg=document.createRange();
+  /* exact widths (scrollWidth is rounded, so a number 0.4 px too wide would still get "…") */
+  var room=function(el){ var cs=getComputedStyle(el); return el.getBoundingClientRect().width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-1; }, need=function(el){ rg.selectNodeContents(el); return rg.getBoundingClientRect().width; };
+  document.querySelectorAll('.kpi b,.pjmoney b,.pjst b').forEach(function(el){ el.style.fontSize=''; var av=room(el); if(av<=0) return; var w=need(el); if(w<=av) return;
+    var fs=parseFloat(getComputedStyle(el).fontSize), min=Math.max(11,fs*0.58);
+    fs=Math.max(min,Math.floor(fs*av/w*2)/2); el.style.fontSize=fs+'px';
+    while(need(el)>av&&fs>min){ fs-=0.5; el.style.fontSize=fs+'px'; } }); }catch(e){} }
+window.addEventListener('resize',function(){ clearTimeout(fitNums.t); fitNums.t=setTimeout(fitNums,150); });
 
 function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){ var on=st.querySelector('button.on'); if(!on||st.scrollWidth<=st.clientWidth+2) return; var a=st.getBoundingClientRect(), b=on.getBoundingClientRect(); if(b.left<a.left||b.right>a.right) st.scrollLeft+=b.left-a.left-(a.width-b.width)/2; }); }
 
@@ -897,7 +1036,7 @@ function viewHome(){
   var pipe='<div class="card h-pi"><h2>Orders</h2><div class="pipe">'+STAGES.map(function(s,i){return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span></button>';}).join('')+'</div></div>';
   var q=queue();
   var work='<div class="card h-wk"><div class="row between"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
-   +(q.length?'<table><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
+   +(q.length?'<table class="hwkt"><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
   var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5&&!noAmt(o);}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
   var BH=bldHomeRows(), payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+BH+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):(BH?'':'<div class="empty">Nothing pending</div>'))+'</div></div>';
   return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
@@ -940,9 +1079,9 @@ function homeProd(){
   var q=queue();
   var left=q.reduce(function(a,o){return a+leftQty(o);},0), late=q.filter(function(o){return P[o.id].late;}).length;
   var kp='<div class="kpis"><div class="kpi"><span>To make</span><b>'+left+'</b><i>'+pl(q.length,'order')+'</i></div><div class="kpi"><span>On the floor</span><b>'+by[2].length+'</b><i>in production</i></div><div class="kpi good"><span>Ready to deliver</span><b>'+by[3].length+'</b></div><div class="kpi'+(late?' warn':'')+'"><span>Running late</span><b>'+late+'</b></div></div>';
-  var work='<div class="card"><div class="row between"><h2>Make next</h2><button class="btn ghost sm" data-go="planning">Day plan ›</button></div>'
+  var work='<div class="card olist"><div class="row between"><h2>Make next</h2><button class="btn ghost sm" data-go="planning">Day plan ›</button></div>'
    +(q.length?q.map(function(o){var p=P[o.id];return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'windows')+' left · '+madeCount(o)+'/'+o.items.length+' made</div></div><div class="right"><div class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</div><div class="faint">due '+dShort(o.due)+'</div></div></button>';}).join(''):'<div class="empty">Nothing to make — all caught up</div>')+'</div>';
-  var rd=by[3].length?'<div class="card"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
+  var rd=by[3].length?'<div class="card olist"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
   return installCard()+kp+work+rd;
 }
 function oRow(o){ var t=orderTotal(o), b=balance(o);
@@ -992,18 +1131,18 @@ function subItems0(o){
   var head,rows,cols;
   if(o.kind==='doors'){ cols=8;
     head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th class="num">W mm</th><th class="num">H mm</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Amount</th><th></th></tr>';
-    rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Bedroom"></td>'
+    rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Location, e.g. Bedroom"></td>'
      +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td>'
      +'<td class="c-pr" data-l="Price ₹"><input class="n" type="number" data-k="price" value="'+it.price+'"></td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
   } else { cols=11;
     head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th>Series</th><th class="num">W mm</th><th class="num">H mm</th><th>Glass</th><th>Mesh</th><th class="num">Qty</th><th class="num">Sq ft</th><th class="num">Amount</th><th></th></tr>';
-    rows=o.items.map(function(it,i){ var tr=it.type.indexOf('Track')>=0; return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Hall"></td>'
+    rows=o.items.map(function(it,i){ var tr=it.type.indexOf('Track')>=0; return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Location, e.g. Hall"></td>'
      +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
      +'<td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td><td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td>'
      +'<td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+(it.type==='Custom'?'<span class="faint">see drawing</span>':it.type==='Ventilator'?'<select data-k="fan">'+opts(FAN,it.fan||'No fan')+'</select>':'<select data-k="mesh"'+(tr?'':' disabled')+'>'+opts(MESH,it.mesh)+'</select>')+'</td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
   }
   var st=o.items.reduce(function(a,it){return a+itemPrice(o,it);},0);
-  return '<div class="card"><div class="tscroll"><table class="items '+(o.kind==='doors'?'idr':'iw')+'"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
+  return '<div class="card icard"><div class="tscroll"><table class="items '+(o.kind==='doors'?'idr':'iw')+'"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
    +'<tfoot><tr><td colspan="'+cols+'" class="right">Subtotal</td><td class="num" id="tsub">'+money(st)+'</td><td></td></tr>'
    +'<tr><td colspan="'+cols+'" class="right">Discount ₹</td><td class="num"><input class="n" type="number" id="disc" value="'+(o.discount||'')+'"></td><td></td></tr>'
    +'<tr><td colspan="'+cols+'" class="right">'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</td><td class="num" id="tgst">'+money(gstAmt(o))+'</td><td></td></tr>'
@@ -1013,7 +1152,7 @@ function subItems0(o){
    +(S.di!=null&&o.items[S.di]?drawPanel(o,S.di):'')+drawPad(o);
 }
 function subSizes(o){
-  return '<div class="card"><table><thead><tr><th>#</th><th></th><th>Location</th><th>Type</th><th class="num">W × H mm</th><th class="num">Qty</th></tr></thead><tbody>'+o.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+sketch(o,it,36)+'</td><td><b>'+esc(it.loc||'—')+'</b></td><td>'+esc(it.type)+(it.series?' · '+it.series:'')+(o.kind!=='doors'?'<br><span class="faint">'+esc(it.glass)+(it.type.indexOf('Track')>=0?' · '+esc(it.mesh):'')+(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'?' · '+esc(it.fan).toLowerCase()+' '+(it.fanW||300)+' mm':'')+'</span>':'')+'</td><td class="num">'+it.w+' × '+it.h+'</td><td class="num">'+it.qty+'</td></tr>';}).join('')+'</tbody></table></div>';
+  return '<div class="card"><table class="sizes"><thead><tr><th>#</th><th></th><th>Location</th><th>Type</th><th class="num">W × H mm</th><th class="num">Qty</th></tr></thead><tbody>'+o.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+sketch(o,it,36)+'</td><td><b>'+esc(it.loc||'—')+'</b></td><td>'+esc(it.type)+(it.series?' · '+it.series:'')+(o.kind!=='doors'?'<br><span class="faint">'+esc(it.glass)+(it.type.indexOf('Track')>=0?' · '+esc(it.mesh):'')+(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'?' · '+esc(it.fan).toLowerCase()+' '+(it.fanW||300)+' mm':'')+'</span>':'')+'</td><td class="num">'+it.w+' × '+it.h+'</td><td class="num">'+it.qty+'</td></tr>';}).join('')+'</tbody></table></div>';
 }
 /* big editable drawing */
 function bigSketch(o,it){ if(o.kind!=='doors') return '<div class="skwrap" data-act="dzopen" title="Tap to edit the drawing">'+winSVG(o,it,{no:o.items.indexOf(it)+1})+'<span class="sktap">✏️ Tap to edit</span></div>'; var W=n(it.w)||1,H=n(it.h)||1, box=330, s=box/Math.max(W,H), w=W*s, h=H*s, m=46, st='fill:none;stroke:#1e293b;stroke-width:2', g='', c=null;
@@ -2639,7 +2778,7 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
 function isBld(f){ return !!f&&!!f.proj&&f.payer==='b'; }
 function noAmt(o){ return !!o&&!!o.proj&&!admin(); }
 function noAmtItems(o,h){ if(!noAmt(o)) return h;
-  return h.replace('<div class="card"><div class="tscroll"><table class="items','<div class="card noamt"><div class="tscroll"><table class="items')
+  return h.replace('<div class="card icard"><div class="tscroll"><table class="items','<div class="card icard noamt"><div class="tscroll"><table class="items')
     .replace('<th class="num">Amount</th>','<th class="num amth">Amount</th>').replace('<th class="num">Price</th>','<th class="num prth">Price</th>').replace(' Price = sq ft × rate.',''); }
 function moneyOrders(){ return admin()?allOrders():D.orders.slice(); }
 function payerSel(id,v,label){ return '<label class="f"><span>'+(label||'Who pays')+'</span><select id="'+id+'"><option value="">👤 Flat owner</option><option value="b"'+(v==='b'?' selected':'')+'>🏗 Builder</option></select></label>'; }
@@ -3022,12 +3161,12 @@ function parseHd(k){ var m=k.match(/^c(\d+)_(\d+)$/); if(m) return {ax:'c',row:+
 function subCustomer(o){
   return '<div class="card"><label class="f"><span>Customer name</span><input type="text" data-o="customer" value="'+esc(o.customer)+'"></label><label class="f"><span>Phone</span><input type="tel" data-o="phone" value="'+esc(o.phone)+'"></label>'
    +'<div class="f geoaddr"><div class="row between" style="margin-bottom:4px;gap:8px"><span>Site address</span><button class="btn sm" data-act="geoaddr" title="Fill the address and PIN from where this phone is now">📍 Use my location</button></div><textarea data-o="address">'+esc(o.address)+'</textarea>'+(o.pin||o.geoSrc==='osm'?'<div class="faint" style="font-size:12px;margin-top:3px">'+(o.pin?'PIN <b>'+esc(o.pin)+'</b>':'')+(o.pin&&o.geoSrc==='osm'?' · ':'')+(o.geoSrc==='osm'?'address © OpenStreetMap contributors':'')+'</div>':'')+'</div>'
-   +'<div class="grid2"><label class="f"><span>Order type</span><select data-o="kind"'+(o.items.length?' disabled':'')+'><option value="windows"'+(o.kind==='windows'?' selected':'')+'>uPVC windows</option><option value="doors"'+(o.kind==='doors'?' selected':'')+'>PVC / WPC doors</option></select></label>'
+   +'<div class="grid2"><label class="f"><span>Order type</span><select data-o="kind"'+(o.items.length?' disabled':'')+'><option value="windows"'+(o.kind==='windows'?' selected':'')+'>Windows</option><option value="doors"'+(o.kind==='doors'?' selected':'')+'>Doors</option></select></label>'
    +'<label class="f"><span>Delivery date</span><input type="date" data-o="due" value="'+esc(o.due||'')+'"></label></div>'
    +'<div class="grid2"><label class="f"><span>Priority</span><select data-o="plevel">'+opts(PLEV,plev(o))+'</select></label><label class="f"><span>🔔 Remind me on</span><input type="date" data-o="remind" value="'+esc(o.remind||'')+'"></label></div>'
    +(o.remind?'<label class="f"><span>Reminder note</span><input type="text" data-o="remindNote" value="'+esc(o.remindNote||'')+'" placeholder="Call customer about quote / collect balance…"></label>':'')
    +'<label class="f"><span>Notes (site, floor, colour…)</span><textarea data-o="notes">'+esc(o.notes||'')+'</textarea></label>'
-   +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link, or press Locate"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
+   +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
    +'<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Site photos</span><div class="photos">'+(o.photos||[]).map(function(ph,i){return '<div class="ph"><img src="'+esc(phSrc(ph))+'" data-phk="'+esc(ph.path||'')+'" data-view="'+i+'" alt="">'+(ph.path&&PHQ.indexOf(ph.path)>=0?'<span class="phup" data-phq="'+esc(ph.path)+'" title="Waiting to upload">⏳</span>':'')+(canDel()?'<button class="phx" data-phdel="'+i+'">×</button>':'')+'<input type="text" data-phcap="'+i+'" value="'+esc(ph.cap||'')+'" placeholder="caption"></div>';}).join('')
    +'<label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>Add photo</span></label></div><div class="faint">Camera or gallery. Photos are shrunk to save space'+(phCloud()?' and kept online — they open on every phone.':'.')+'</div></div>'
    +'<div class="faint" style="margin-top:12px">Created '+dShort(o.created)+(o.confirmedOn?' · confirmed '+dShort(o.confirmedOn):'')+(o.deliveredOn?' · delivered '+dShort(o.deliveredOn):'')+'</div>'
@@ -3053,7 +3192,7 @@ function subCutting(o,forPrint){
   if(!o.items.length) return '<div class="card empty">Add items first</div>';
   var M=material(o);
   var bom='<div class="card pg"><div class="row between"><h2>Material to order (BOM)</h2>'+(forPrint?'':'<span class="row"><button class="btn sm" data-act="xlsx">⬇ Excel</button><button class="btn sm primary" data-act="printcut">🖨 Print / Save PDF</button></span>')+'</div>'
-   +'<table><thead><tr><th>Code</th><th>Profile</th><th class="num">Pieces</th><th class="num">Metres</th><th class="num">Bars</th>'+(admin()&&!forPrint?'<th class="num">In stock</th>':'')+'</tr></thead><tbody>'
+   +'<table class="bomt"><thead><tr><th>Code</th><th>Profile</th><th class="num">Pieces</th><th class="num">Metres</th><th class="num">Bars</th>'+(admin()&&!forPrint?'<th class="num">In stock</th>':'')+'</tr></thead><tbody>'
    +M.bom.map(function(r){ var st=D.inv['P:'+r.code], short=st&&!o.consumed&&st.qty<r.bars; return '<tr><td><b>'+esc(r.code)+'</b></td><td>'+esc(r.prof)+(r.offUsed.length?'<div class="faint">+ '+r.offUsed.length+' offcut'+(r.offUsed.length>1?'s':'')+' from rack</div>':'')+'</td><td class="num">'+r.pieces+'</td><td class="num">'+fmt(r.m)+'</td><td class="num"><b>'+r.bars+'</b></td>'+(admin()&&!forPrint?'<td class="num '+(short?'warnt':'')+'">'+(st?st.qty+(short?' ⚠':''):'—')+'</td>':'')+'</tr>';}).join('')
    +'<tr><td colspan="4" class="right">Total bars ('+D.stock+' mm)</td><td class="num"><b>'+M.bom.reduce(function(a,r){return a+r.bars;},0)+'</b></td>'+(admin()&&!forPrint?'<td class="faint">'+(o.consumed?'taken from stock':'')+'</td>':'')+'</tr></tbody></table>'
    +(Object.keys(M.gBy).length?'<table style="margin-top:10px"><thead><tr><th>Glass</th><th class="num">Panes</th><th class="num">Sq ft</th></tr></thead><tbody>'+Object.keys(M.gBy).map(function(k){return '<tr><td>'+esc(k)+'</td><td class="num">'+M.gBy[k].cnt+'</td><td class="num">'+fmt(M.gBy[k].sqft)+'</td></tr>';}).join('')+'</tbody></table>':'')
@@ -3275,11 +3414,11 @@ function viewSettings(){
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs.</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
-   +'<div class="card"><h2>'+esc(B.name)+' — profile codes</h2><p class="faint">Supplier\'s code for each profile. Shown on the BOM and cutting list.</p><div class="tscroll"><table><thead><tr><th>Profile</th>'+SERIES.map(function(x){return '<th>'+x+' series</th>';}).join('')+'</tr></thead><tbody>'
+   +'<div class="card"><h2>'+esc(B.name)+' — profile codes</h2><p class="faint">Supplier\'s code for each profile. Shown on the BOM and cutting list.</p><div class="tscroll"><table class="pcodes"><thead><tr><th>Profile</th>'+SERIES.map(function(x){return '<th>'+x+' series</th>';}).join('')+'</tr></thead><tbody>'
    +PROFS.map(function(p){return '<tr><td>'+p[1]+'</td>'+SERIES.map(function(x){return '<td><input type="text" style="min-height:36px;padding:4px 8px" data-prof="'+x+'|'+p[0]+'" value="'+esc(B.prof[x][p[0]])+'"></td>';}).join('')+'</tr>';}).join('')
    +'<tr><td>Door frame PVC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|PVC" value="'+esc(B.prof.door.PVC)+'"></td></tr><tr><td>Door frame WPC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|WPC" value="'+esc(B.prof.door.WPC)+'"></td></tr></tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — cutting deductions, mm</h2><p class="faint">Shutter W = (frame W − Shutter W ded. + overlap × (shutters − 1)) ÷ shutters. Shutter H = frame H − Shutter H ded. Glass / mesh = shutter size minus their W / H deduction. Openable sash = frame size − Sash W / H (French: two sashes); its glass = sash − Sash glass.</p><div class="tscroll"><table><thead><tr><th>Series</th><th class="num">Shutter W</th><th class="num">Shutter H</th><th class="num">Overlap</th><th class="num">Glass W</th><th class="num">Glass H</th><th class="num">Mesh W</th><th class="num">Mesh H</th><th class="num">Sash W</th><th class="num">Sash H</th><th class="num">Sash glass</th></tr></thead><tbody>'+cutRows+'</tbody></table></div></div>'
-   +'<div class="card"><h2>Hardware per window</h2><p class="faint">Rules for screws, rollers, locks and consumables. Qty × basis is worked out for every order on the BOM.</p><div class="tscroll"><table class="items"><thead><tr><th>Item</th><th class="num">Qty</th><th>Basis</th><th></th></tr></thead><tbody>'
+   +'<div class="card"><h2>Hardware per window</h2><p class="faint">Rules for screws, rollers, locks and consumables. Qty × basis is worked out for every order on the BOM.</p><div class="tscroll"><table class="items hwt"><thead><tr><th>Item</th><th class="num">Qty</th><th>Basis</th><th></th></tr></thead><tbody>'
    +(D.hw||[]).map(function(r,i){return '<tr data-hi="'+i+'"><td class="c1" data-l="Item"><input type="text" data-hk="name" value="'+esc(r.name)+'"></td><td data-l="Qty"><input class="n" type="number" step="0.5" data-hk="qty" value="'+r.qty+'"></td><td class="c2" data-l="Basis"><select data-hk="basis">'+Object.keys(BASIS).map(function(k){return '<option value="'+k+'"'+(r.basis===k?' selected':'')+'>'+BASIS[k]+'</option>';}).join('')+'</select></td><td class="dl"><button class="del" data-hdel="'+i+'">×</button></td></tr>';}).join('')
    +'</tbody></table></div><div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="hwadd">+ Add item</button></div></div>'
    +'<div class="card"><h2>How we cut</h2><p class="faint">Profiles cut 2 bars at a time are nested in pairs — both bars get the same cut pattern.</p><table><thead><tr><th>Profile</th><th>Bars at a time</th><th>Cut</th></tr></thead><tbody>'
