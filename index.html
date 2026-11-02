@@ -437,6 +437,7 @@ body.dzon{overflow:hidden}
 .fgh{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#f3f6fa;border-top:1px solid var(--line);font-size:14px}
 .fgh small{color:var(--soft)}
 @media print{html,body{background:#fff!important}.doc h3{margin:14px 0 2px;font-size:13px;color:#000}}
+select.gsel{display:inline-block;width:auto!important;min-width:0;min-height:30px;padding:2px 6px;margin-left:6px;font:inherit;font-weight:600;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -491,7 +492,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 01:20';
+var APPV='02 Nov 2026, 07:29';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -632,7 +633,7 @@ function itemCost(o,it){ if(o.kind==='doors') return (lkDoor(o,it.brand,it.type)
   if(it.type==='Custom') return cellsOf(it).reduce(function(a,cl){return a+Math.round(sqft(cl.w,cl.h)*(lkVal(o,it.brand,'cost',cellType(cl.t),it.series)||0));},0)*n(it.qty);
   return Math.round(sqft(it.w,it.h)*(lkVal(o,it.brand,'cost',it.type,it.series)||0))*n(it.qty); }
 function subTotal(o){ return o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)-n(o.discount); }
-function gstOf(o){ return o&&o.gstPct!=null&&o.gstPct!==''?n(o.gstPct):n(D.gstPct); }
+function gstOf(o){ return o&&o.gstPct!=null&&o.gstPct!==''?n(o.gstPct):gstDef(o); }
 function gstAmt(o){ return Math.round(subTotal(o)*gstOf(o)/100); }
 function orderTotal(o){ return subTotal(o)+gstAmt(o); }
 function orderCost(o){ return o.items.reduce(function(a,it){return a+itemCost(o,it);},0); }
@@ -910,6 +911,28 @@ function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; 
    +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
      +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
   return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
+/* ============================================================
+   GST — every order and apartment flat has a GST %: the shop's usual % (Settings), or the apartment project's %,
+   or its own (e.g. 0 when the customer does not want GST). A confirmed job keeps the % it was confirmed with.
+   ============================================================ */
+var GSTR=[0,5,12,18,28];
+function pjGst(p){ return p&&p.gstPct!=null&&p.gstPct!==''?n(p.gstPct):n(D.gstPct); }
+function gstDef(o){ var p=o&&o.proj&&typeof projById==='function'?projById(o.proj):null; return p?pjGst(p):n(D.gstPct); }
+function gstOpts(v){ v=n(v); var L=GSTR.slice(); if(L.indexOf(v)<0) L.push(v); L.sort(function(a,b){ return a-b; }); return L.map(function(x){ return '<option value="'+x+'"'+(x===v?' selected':'')+'>'+(x?x+'%':'0% — no GST')+'</option>'; }).join(''); }
+function gstSel(id,v,label){ return '<label class="f"><span>'+(label||'GST')+'</span><select id="'+id+'">'+gstOpts(v)+'</select></label>'; }
+function gstSet(o,v){ o.gstPct=n(v); if(o.rlock) delete o.rlock.gst; }
+function gstLine(o){ return gstOf(o)?'incl. '+gstOf(o)+'% GST':'no GST'; }
+/* a project's GST %: new and unconfirmed flats follow it; confirmed flats are asked about */
+function gstProj(p,v){ v=n(v); if(v!==pjGst(p)) p.gstPct=v;
+  var lk=projFlats(p.id).filter(function(f){ return f.rlock&&f.rlock.gst&&n(f.gstPct)!==v; });
+  if(lk.length&&confirm(lk.length+' confirmed flat'+(lk.length>1?'s have':' has')+' GST at the old rate. Change '+(lk.length>1?'them':'it')+' to '+v+'% too?\n(Flats where you chose the GST yourself stay as they are.)')) lk.forEach(function(f){ f.gstPct=v; }); }
+function gstBulkPop(){ var ids=pjSelIds(); if(!ids.length) return; var f0=flatById(ids[0]);
+  pjPop('GST for '+ids.length+' flat'+(ids.length>1?'s':''),gstSel('bg_gst',gstOf(f0),'GST %')+'<p class="faint" style="margin:6px 0 0">For example 0% for owners who do not want GST.</p>','<button class="btn primary" data-act="pgstset">Apply</button><button class="btn" data-pjx="1">Cancel</button>'); }
+document.addEventListener('change',function(e){ var t=e.target; if(!t||t.id!=='ogst') return; var o=order(); if(!o||o.tpl||(o.proj&&!admin())) return;
+  gstSet(o,t.value); save(); render(); toast(n(t.value)?'GST '+n(t.value)+'% on this '+(o.proj?'flat':'order'):'No GST on this '+(o.proj?'flat':'order')); });
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!t||!admin()) return; var a=t.dataset.act;
+  if(a==='pgst'){ gstBulkPop(); return; }
+  if(a==='pgstset'){ var v=n(pjV('bg_gst')), fl=pjSelIds().map(flatById).filter(function(f){ return f&&!f.del; }); fl.forEach(function(f){ gstSet(f,v); }); pjPopX(); save(); render(); toast('GST '+v+'% for '+fl.length+' flat'+(fl.length===1?'':'s')); return; } });
 function homeProd(){
   var open=openOrders(), P=plan(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});});
   var q=queue();
@@ -942,7 +965,7 @@ function viewOrder0(){
     var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
     return hd+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
-   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div>')
+   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
    +(!noAmt(o)&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
    +'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
@@ -981,7 +1004,7 @@ function subItems0(o){
   return '<div class="card"><div class="tscroll"><table class="items '+(o.kind==='doors'?'idr':'iw')+'"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
    +'<tfoot><tr><td colspan="'+cols+'" class="right">Subtotal</td><td class="num" id="tsub">'+money(st)+'</td><td></td></tr>'
    +'<tr><td colspan="'+cols+'" class="right">Discount ₹</td><td class="num"><input class="n" type="number" id="disc" value="'+(o.discount||'')+'"></td><td></td></tr>'
-   +(gstOf(o)?'<tr><td colspan="'+cols+'" class="right">GST '+gstOf(o)+'%</td><td class="num" id="tgst">'+money(gstAmt(o))+'</td><td></td></tr>':'')
+   +'<tr><td colspan="'+cols+'" class="right">'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</td><td class="num" id="tgst">'+money(gstAmt(o))+'</td><td></td></tr>'
    +'<tr><td colspan="'+cols+'" class="right">Total</td><td class="num" id="ttot">'+money(orderTotal(o))+'</td><td></td></tr></tfoot></table></div>'
    +'<div class="row tbar" style="margin-top:10px"><button class="btn primary" data-act="add">+ Add '+(o.kind==='doors'?'door':'window')+'</button><button class="btn" data-act="dup">Copy last</button>'+undoBtns()
    +(o.stage>=2?'<span class="faint">In production — change sizes carefully.</span>':'<span class="faint">Tap a window picture to open its drawing. Price = sq ft × rate.</span>')+'</div></div>'
@@ -1756,7 +1779,7 @@ var STOPT=[[0,'Not confirmed yet','owner has not said yes'],[1,'Confirmed','owne
 function pendRows(fl){ return fl.filter(function(f){ return f.stage>0&&balance(f)>0.5; }).sort(function(a,b){ return (balance(b)-balance(a))||flatSort(a,b); }); }
 function pjSelBar(){ var ids=pjSelIds(); if(!ids.length) return ''; var fl=ids.map(flatById), k=fl.length, cf=fl.filter(function(f){return f.stage>=1;}).length, done=fl.filter(function(f){return f.stage>=3;}).length, pr=pendRows(fl), pa=pr.reduce(function(a,f){return a+balance(f);},0);
   return '<div class="pjbar"><div class="pjbt"><b>'+k+' flat'+(k>1?'s':'')+' selected</b><span>'+cf+' confirmed · '+done+' production done'+(admin()?' · <b class="'+(pa>0.5?'warnt':'goodt')+'">'+money(pa)+' pending</b>'+(pr.length?' ('+pr.length+' flat'+(pr.length>1?'s':'')+')':''):'')+'</span></div>'
-   +'<div class="pjbb">'+(prod()?'<button class="btn sm primary" data-act="pjdone">✔ Production done</button>':'<button class="btn sm primary" data-act="pjstat">✔ Set status</button>'+(admin()?'<button class="btn sm" data-act="pjpend">₹ Pending details</button><button class="btn sm" data-act="ppayb">🏗 Builder pays</button><button class="btn sm" data-act="ppayo">👤 Owner pays</button>':'')+'<button class="btn sm" data-act="pjxlsel">⬇ Excel</button>')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div></div>'; }
+   +'<div class="pjbb">'+(prod()?'<button class="btn sm primary" data-act="pjdone">✔ Production done</button>':'<button class="btn sm primary" data-act="pjstat">✔ Set status</button>'+(admin()?'<button class="btn sm" data-act="pjpend">₹ Pending details</button><button class="btn sm" data-act="ppayb">🏗 Builder pays</button><button class="btn sm" data-act="ppayo">👤 Owner pays</button><button class="btn sm" data-act="pgst">GST %</button>':'')+'<button class="btn sm" data-act="pjxlsel">⬇ Excel</button>')+'<button class="btn sm ghost" data-act="pselnone" aria-label="Clear selection">✕</button></div></div>'; }
 function statPop(ids){ var fl=ids.map(flatById), opts=prod()?STOPT.filter(function(x){return x[0]===2||x[0]===3;}):STOPT;
   pjPop('Set status — '+ids.length+' flat'+(ids.length>1?'s':''),'<div class="stlist">'+opts.map(function(x){ var now=fl.filter(function(f){return Math.min(4,f.stage)===x[0];}).length; return '<label class="chk stopt"><input type="radio" name="pjst" value="'+x[0]+'"'+(x[0]===(prod()?3:1)?' checked':'')+'><span><b>'+x[1]+'</b>'+(x[2]?' <small class="faint">— '+x[2]+'</small>':'')+(now?' <small class="faint">· '+now+' now</small>':'')+'</span></label>'; }).join('')+'</div><p class="faint" style="margin:6px 0 0">Material is taken from stock once per flat, when it goes into production.</p>',
     '<button class="btn primary" data-act="pjstatset">Apply to '+ids.length+' flat'+(ids.length>1?'s':'')+'</button>'); }
@@ -1878,13 +1901,13 @@ function batchView(o){ var r=batchById(o.bat.id), b=r.b, p=r.p, fl=batchFlats(b)
 function projPop(p){ var nw=!p; p=p||{}; S.pjgeo=null;
   var body=pjFld('pj_name','Project name',p.name,'text',' placeholder="Golden Arena"')
    +'<div class="f geoaddr"><div class="row between" style="margin-bottom:4px;gap:8px"><span>Site address (with PIN)</span><button class="btn sm" data-act="pjgeo" title="Fill the site address and PIN from where this phone is now">📍 Use my location</button></div><textarea id="pj_site" rows="2" placeholder="Hennur Main Road, Bengaluru 560043">'+esc(p.site||'')+'</textarea></div>'
-   +'<div class="grid2">'+pjFld('pj_builder','Builder',p.builder)+pjFld('pj_bphone','Builder phone',p.bphone,'tel')+(admin()?payerSel('pj_pay',p.payer||'','Who pays for new flats'):'')+'</div><label class="f"><span>Notes</span><textarea id="pj_notes" rows="2">'+esc(p.notes||'')+'</textarea></label>';
+   +'<div class="grid2">'+pjFld('pj_builder','Builder',p.builder)+pjFld('pj_bphone','Builder phone',p.bphone,'tel')+(admin()?payerSel('pj_pay',p.payer||'','Who pays for new flats')+gstSel('pj_gst',nw?n(D.gstPct):pjGst(p),'GST % for flats'):'')+'</div><label class="f"><span>Notes</span><textarea id="pj_notes" rows="2">'+esc(p.notes||'')+'</textarea></label>';
   var foot='<button class="btn primary" data-act="pjsave"'+(nw?'':' data-pid="'+p.id+'"')+'>'+(nw?'Create project':'Save')+'</button><span class="grow"></span>'+(!nw&&admin()?'<button class="btn" data-act="pjarch" data-pid="'+p.id+'">'+(p.archived?'Bring back':'Archive')+'</button><button class="btn danger" data-act="pjdel" data-pid="'+p.id+'">🗑 Delete project</button>':'');
   pjPop(nw?'New apartment project':'Edit project',body,foot); }
 function flatPop(f){ var p=projById(f.proj), types=p?p.types||[]:[], meas=f.measured||f.stage>0;
   var body='<div class="grid2">'+pjFld('fe_no','Flat number',f.no)+pjFld('fe_t','Tower / block',f.tower,'text',' maxlength="6"')+pjFld('fe_fl','Floor',f.floor,'number')
    +'<label class="f"><span>Flat type</span><select id="fe_ty"><option value="">— none —</option>'+types.map(function(t){return '<option value="'+t.id+'"'+(f.ftype===t.id?' selected':'')+'>'+esc(t.name)+' ('+qty(t)+' windows)</option>';}).join('')+'</select></label>'
-   +pjFld('fe_c','Owner name',f.customer)+pjFld('fe_ph','Owner phone',f.phone,'tel')+(admin()?payerSel('fe_pay',f.payer||''):'')+'</div>'
+   +pjFld('fe_c','Owner name',f.customer)+pjFld('fe_ph','Owner phone',f.phone,'tel')+(admin()?payerSel('fe_pay',f.payer||'')+gstSel('fe_gst',gstOf(f),'GST'):'')+'</div>'
    +'<label class="chk"><input type="checkbox" id="fe_cp"'+(meas?'':' checked')+'><span>If the flat type changes, copy its windows into this flat'+(meas?' <small class="warnt">(measured — its own sizes would be replaced)</small>':'')+'</span></label>';
   var foot='<button class="btn primary" data-act="fesave" data-fid="'+f.id+'">Save</button>'+(S.tab==='order'&&S.oid===f.id?'':'<button class="btn" data-open="'+f.id+'" data-pjx="1">Open flat</button>')+'<span class="grow"></span>'+(admin()?'<button class="btn danger" data-act="fedel" data-fid="'+f.id+'">🗑 Delete flat</button>':'');
   pjPop('Edit flat '+esc(f.no),body,foot); }
@@ -1947,7 +1970,7 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='pjedit'&&p&&!prod()){ projPop(p); return; }
   if(a==='pjsave'){ var nm=pjV('pj_name'); if(!nm){ toast('Enter the project name'); return; } var pp=d.pid?projById(d.pid):null, nw=!pp; if(nw&&!admin()) return;
     if(nw){ pp={id:uid(),name:nm,created:today(),types:[],batches:[]}; D.projects=D.projects||[]; D.projects.push(pp); pjFresh(); }
-    var oa=pjAddr('\u0001',pp); pp.name=nm; pp.site=pjV('pj_site'); if(S.pjgeo){ pp.geo=S.pjgeo.geo; pp.maplink=S.pjgeo.maplink; if(S.pjgeo.pin) pp.pin=S.pjgeo.pin; S.pjgeo=null; } pp.builder=pjV('pj_builder'); pp.bphone=pjV('pj_bphone'); pp.notes=(($('#pj_notes')||{}).value||''); if(admin()&&$('#pj_pay')){ if(pjV('pj_pay')==='b') pp.payer='b'; else delete pp.payer; }
+    var oa=pjAddr('\u0001',pp); pp.name=nm; pp.site=pjV('pj_site'); if(S.pjgeo){ pp.geo=S.pjgeo.geo; pp.maplink=S.pjgeo.maplink; if(S.pjgeo.pin) pp.pin=S.pjgeo.pin; S.pjgeo=null; } pp.builder=pjV('pj_builder'); pp.bphone=pjV('pj_bphone'); pp.notes=(($('#pj_notes')||{}).value||''); if(admin()&&$('#pj_pay')){ if(pjV('pj_pay')==='b') pp.payer='b'; else delete pp.payer; } if(admin()&&$('#pj_gst')) gstProj(pp,pjV('pj_gst'));
     if(!nw) projFlats(pp.id).forEach(function(f){ if(!f.address||f.address===oa.replace('\u0001',f.no)) f.address=pjAddr(f.no,pp); });
     pjPopX(); save(); if(nw){ S.tab='project'; S.pid=pp.id; S.psub='types'; S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; render(); window.scrollTo(0,0); toast('Project made — now add its flat types'); } else { render(); toast('Project saved'); } return; }
   if(a==='pjgeo'){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); var gb=t; geoBusy(gb,true);
@@ -1993,7 +2016,7 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
     var oldAddr=p4?pjAddr(f4.no,p4):'', tyId=pjV('fe_ty'), ty4=tyId?typeById(tyId):null;
     f4.no=no; f4.tower=pjV('fe_t').toUpperCase(); f4.floor=Math.round(n(pjV('fe_fl'))); var mu=no.match(/(\d{1,2})$/); if(mu) f4.unit=+mu[1];
     if(tyId!==(f4.ftype||'')){ f4.ftype=tyId; if(ty4&&($('#fe_cp')||{}).checked) copyItems(f4,ty4); }
-    f4.customer=pjV('fe_c'); f4.phone=pjV('fe_ph'); var pyN=''; if(admin()&&$('#fe_pay')&&!setPayer(f4,pjV('fe_pay'))) pyN=' — it has owner payments, so its owner still pays'; if(p4&&(!f4.address||f4.address===oldAddr)) f4.address=pjAddr(f4.no,p4);
+    f4.customer=pjV('fe_c'); f4.phone=pjV('fe_ph'); var pyN=''; if(admin()&&$('#fe_pay')&&!setPayer(f4,pjV('fe_pay'))) pyN=' — it has owner payments, so its owner still pays'; if(admin()&&$('#fe_gst')&&n(pjV('fe_gst'))!==gstOf(f4)) gstSet(f4,pjV('fe_gst')); if(p4&&(!f4.address||f4.address===oldAddr)) f4.address=pjAddr(f4.no,p4);
     pjPopX(); save(); render(); toast('Flat '+f4.no+' saved'+pyN); return; }
   if(a==='fedel'){ var f5=flatById(d.fid); if(f5&&!f5.del) pjDelete(f5); return; }
   if(a==='btaddshow'){ var rb=batchById(d.bid); if(rb&&!prod()) batchAddPop(rb); return; }
@@ -2074,7 +2097,7 @@ function lkDoor(o,brand,t){ var L=o&&o.rlock, e, v; if(L&&D.lockc&&o.id&&D.lockc
 function lockRates(o,force){ if(!o||o.tpl||o.del||(o.rlock&&!force)) return false; var b={};
   (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), e=b[nm]||(b[nm]={rate:{}}); if(o.kind==='doors') return;
     (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (e.rate[t]=e.rate[t]||{})[it.series]=((B.rate||{})[t]||{})[it.series]; }); });
-  var L={on:today(),b:b}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=n(D.gstPct); L.gst=1; } o.rlock=L;
+  var L={on:today(),b:b}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=gstDef(o); L.gst=1; } o.rlock=L;
   if(isAdm()&&o.id){ D.lockc=D.lockc||{}; D.lockc[o.id]={on:L.on,b:lockSnap(o)}; } return true; }
 function unlockRates(o){ if(!o||!o.rlock) return; if(o.rlock.gst) delete o.gstPct; delete o.rlock; if(D.lockc&&o.id&&isAdm()) delete D.lockc[o.id]; }
 function lockLine(o){ if(!o||o.tpl||!o.rlock) return ''; return '<div class="lockl">🔒 Prices locked at the rates of <b>'+dShort(o.rlock.on)+'</b> — later rate changes don\'t change this bill.'+(admin()?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':'')+'</div>'; }
@@ -2789,35 +2812,36 @@ function sumTbl(rows){ return '<table style="width:auto;min-width:55%;margin-lef
 function pjSite(p){ return p.site?', '+esc(p.site).replace(/\n/g,', '):''; }
 function xlsName(p,what){ return ((p.name||'project')+' - '+what).replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim()+'.xlsx'; }
 function bldDone(p){ return pjStmt(p).b.list.filter(function(f){ return f.stage>=4; }).sort(flatSort); }
-function bldDocHtml(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), k=0;
+function gstCells(f,gx){ return gx?'<td class="num">'+money(subTotal(f))+'</td><td class="num">'+(gstOf(f)?gstOf(f)+'% · '+money(gstAmt(f)):'—')+'</td>':''; }
+function bldDocHtml(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), k=0, gx=done.some(function(f){ return gstOf(f)>0; });
   return docTop('BUILDER STATEMENT','<b>To:</b> '+esc(p.builder||'Builder')+(p.bphone?' · '+esc(p.bphone):'')+'<br><b>Project:</b> '+esc(p.name)+pjSite(p))
-   +'<h3>Work done — delivered flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Delivered on</th><th class="num">Windows</th><th class="num">Amount</th></tr></thead><tbody>'
-   +(done.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+dFull(f.deliveredOn)+'</td><td class="num">'+qty(f)+'</td><td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="6">No flat delivered yet</td></tr>')
-   +'<tr class="tot"><td colspan="5" class="right">Work done — '+done.length+' flat'+(done.length===1?'':'s')+'</td><td class="num">'+money(b.doneVal)+'</td></tr></tbody></table>'
+   +'<h3>Work done — delivered flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Delivered on</th><th class="num">Windows</th>'+(gx?'<th class="num">Before GST</th><th class="num">GST</th>':'')+'<th class="num">Amount</th></tr></thead><tbody>'
+   +(done.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+dFull(f.deliveredOn)+'</td><td class="num">'+qty(f)+'</td>'+gstCells(f,gx)+'<td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="'+(gx?8:6)+'">No flat delivered yet</td></tr>')
+   +'<tr class="tot"><td colspan="'+(gx?7:5)+'" class="right">Work done — '+done.length+' flat'+(done.length===1?'':'s')+'</td><td class="num">'+money(b.doneVal)+'</td></tr></tbody></table>'
    +(B.bills.length?'<h3>Extra bills</h3><table><thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'+B.bills.slice().sort(bldByOn).map(function(x){ return '<tr><td>'+dFull(x.on)+'</td><td>'+esc(x.note||'')+'</td><td class="num">'+money(x.amt)+'</td></tr>'; }).join('')+'</tbody></table>':'')
    +'<h3>Payments received</h3><table><thead><tr><th>Date</th><th>Mode</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'+(B.pays.slice().sort(bldByOn).map(function(x){ return '<tr><td>'+dFull(x.on)+'</td><td>'+esc(x.mode||'Cash')+'</td><td>'+esc(x.note||'')+'</td><td class="num">'+money(x.amt)+'</td></tr>'; }).join('')||'<tr><td colspan="4">No payment yet</td></tr>')+'</tbody></table>'
    +sumTbl([['Work done',money(b.doneVal)]].concat(b.extra?[['Extra bills',money(b.extra)]]:[]).concat([['<b>Total due</b>','<b>'+money(b.due)+'</b>'],['Received',money(b.recv)],[b.pend<-0.5?'ADVANCE WITH US':'BALANCE PENDING',money(Math.abs(b.pend)),1]]))
    +'<div class="sign"><span>For '+esc(p.builder||'the builder')+'</span><span>For '+esc(D.company.name||'')+'</span></div>'; }
 function bldXlsRows(p){ var b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), R=Math.round;
-  return [['Builder statement — '+p.name,'As on '+today()],['Builder',p.builder||''],[],['Delivered flats (work done)'],['Flat','Tower','Floor','Type','Delivered on','Windows','Amount']]
-    .concat(done.map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.deliveredOn||'',qty(f),R(orderTotal(f))]; }))
-    .concat([['','','','','','Work done',R(b.doneVal)],[]])
+  return [['Builder statement — '+p.name,'As on '+today()],['Builder',p.builder||''],[],['Delivered flats (work done)'],['Flat','Tower','Floor','Type','Delivered on','Windows','Before GST','GST %','GST','Amount']]
+    .concat(done.map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.deliveredOn||'',qty(f),R(subTotal(f)),gstOf(f),R(gstAmt(f)),R(orderTotal(f))]; }))
+    .concat([['','','','','','','','','Work done',R(b.doneVal)],[]])
     .concat(B.bills.length?[['Extra bills'],['Date','Note','Amount']].concat(B.bills.slice().sort(bldByOn).map(function(x){ return [x.on||'',x.note||'',R(n(x.amt))]; })).concat([[]]):[])
     .concat([['Payments received'],['Date','Mode','Note','Amount']]).concat(B.pays.slice().sort(bldByOn).map(function(x){ return [x.on||'',x.mode||'Cash',x.note||'',R(n(x.amt))]; }))
     .concat([[],['Work done',R(b.doneVal)],['Extra bills',R(b.extra)],['Total due',R(b.due)],['Received',R(b.recv)],[b.pend<-0.5?'Advance with us':'Balance pending',R(Math.abs(b.pend))]]); }
-function ownDocHtml(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), k=0, j=0;
+function ownDocHtml(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), k=0, j=0, gx=cf.some(function(f){ return gstOf(f)>0; });
   return docTop('STATEMENT OF ACCOUNT','<b>To:</b> '+esc(g.name)+(g.phone?' · '+esc(g.phone):'')+'<br><b>Project:</b> '+esc(p.name)+pjSite(p)+'<br><b>Flat'+(cf.length===1?'':'s')+':</b> '+(cf.map(function(f){ return esc(f.no); }).join(', ')||'—'))
-   +'<h3>Flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Status</th><th class="num">Amount</th></tr></thead><tbody>'
-   +(cf.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+flatStatus(f)+'</td><td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="5">No confirmed flat yet</td></tr>')
-   +'<tr class="tot"><td colspan="4" class="right">Total bill</td><td class="num">'+money(s.bill)+'</td></tr></tbody></table>'
+   +'<h3>Flats</h3><table><thead><tr><th>#</th><th>Flat</th><th>Type</th><th>Status</th>'+(gx?'<th class="num">Before GST</th><th class="num">GST</th>':'')+'<th class="num">Amount</th></tr></thead><tbody>'
+   +(cf.map(function(f){ var ty=typeById(f.ftype); return '<tr><td>'+(++k)+'</td><td>'+esc(f.no)+'</td><td>'+esc(ty?ty.name:'')+'</td><td>'+flatStatus(f)+'</td>'+gstCells(f,gx)+'<td class="num">'+money(orderTotal(f))+'</td></tr>'; }).join('')||'<tr><td colspan="'+(gx?7:5)+'">No confirmed flat yet</td></tr>')
+   +'<tr class="tot"><td colspan="'+(gx?6:4)+'" class="right">Total bill</td><td class="num">'+money(s.bill)+'</td></tr></tbody></table>'
    +'<h3>Payments</h3><table><thead><tr><th>#</th><th>Date</th><th>Flat</th><th>Mode</th><th>Note</th><th class="num">Amount</th></tr></thead><tbody>'
    +(s.pays.map(function(r){ return '<tr><td>'+(++j)+'</td><td>'+dFull(r.x.on)+'</td><td>'+esc(r.f.no)+'</td><td>'+esc(r.x.mode||'Cash')+'</td><td>'+esc(r.x.note||'')+'</td><td class="num">'+money(r.x.amt)+'</td></tr>'; }).join('')||'<tr><td colspan="6">No payment yet</td></tr>')
    +'<tr class="tot"><td colspan="5" class="right">Total received</td><td class="num">'+money(s.recv)+'</td></tr></tbody></table>'
    +sumTbl([['Total bill',money(s.bill)],['Received',money(s.recv)],[s.adv>0.5?'ADVANCE WITH US':'BALANCE TO PAY',money(s.adv>0.5?s.adv:s.pend),1]])
    +'<div class="sign"><span>'+esc(g.name)+'</span><span>For '+esc(D.company.name||'')+'</span></div>'; }
 function ownXlsRows(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), R=Math.round;
-  return [['Statement — '+g.name,'As on '+today()],['Phone',g.phone||''],['Project',p.name],[],['Flats'],['Flat','Type','Status','Amount']]
-    .concat(cf.map(function(f){ var ty=typeById(f.ftype); return [f.no,ty?ty.name:'',flatStatus(f),R(orderTotal(f))]; })).concat([['','','Total bill',R(s.bill)],[],['Payments'],['Date','Flat','Mode','Note','Amount']])
+  return [['Statement — '+g.name,'As on '+today()],['Phone',g.phone||''],['Project',p.name],[],['Flats'],['Flat','Type','Status','Before GST','GST %','GST','Amount']]
+    .concat(cf.map(function(f){ var ty=typeById(f.ftype); return [f.no,ty?ty.name:'',flatStatus(f),R(subTotal(f)),gstOf(f),R(gstAmt(f)),R(orderTotal(f))]; })).concat([['','','','','','Total bill',R(s.bill)],[],['Payments'],['Date','Flat','Mode','Note','Amount']])
     .concat(s.pays.map(function(r){ return [r.x.on||'',r.f.no,r.x.mode||'Cash',r.x.note||'',R(n(r.x.amt))]; })).concat([['','','','Total received',R(s.recv)],[],[s.adv>0.5?'Advance with us':'Balance to pay',R(s.adv>0.5?s.adv:s.pend)]]); }
 function ownAll(p){ var all=projFlats(p.id), OI=ownIdx(all); return ownGroups(all.filter(function(f){ return !isBld(f); }),OI).map(function(g){ return {g:g,s:ownSum(g.flats)}; }); }
 function ownListDocHtml(p){ var L=ownAll(p), T={bill:0,recv:0,pend:0}, k=0;
@@ -3142,7 +3166,7 @@ function viewSettings(){
   var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Sell '+s+'"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH','sashW','sashH','sashG'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
   return '<div class="card"><h2>Company (shown on quotes)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
-   +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % on quotes (0 = none)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
+   +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % — usual for orders and apartment projects (0 = no GST)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs.</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
