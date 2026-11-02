@@ -467,80 +467,14 @@ input[type=date]{min-width:0}
   .kpi{padding:11px 12px}
 }
 
-/* ---- windows / doors: one numbered card each (phones: one column; tablets up to 1099 px: two) ---- */
-@media(max-width:1099px){
-  .card.icard{background:none;border:0;box-shadow:none;padding:0;border-radius:0}
-  .card.icard>.tscroll{margin:0;padding:0;overflow:visible}
-  table.items.iw,table.items.idr,table.items.iw tbody,table.items.idr tbody,table.items.iw tfoot,table.items.idr tfoot{display:block}
-  table.items.iw tbody,table.items.idr tbody{counter-reset:itm}
-  table.items.iw tbody tr,table.items.idr tbody tr{counter-increment:itm;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px 6px;align-items:end;
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 10px 4px;margin:0 0 10px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
-  table.items.iw tbody tr{grid-template-areas:"pk pk loc loc loc loc loc loc loc loc loc loc" "ty ty ty ty ty br br br br se se se" "w w w w h h h h qt qt qt qt" "gl gl gl gl gl me me me me me me me" "sq sq sq sq amt amt amt amt amt amt dl dl"}
-  table.items.idr tbody tr{grid-template-areas:"pk pk loc loc loc loc loc loc loc loc loc loc" "ty ty ty ty br br br br pr pr pr pr" "w w w w h h h h qt qt qt qt" "amt amt amt amt amt amt amt amt amt amt dl dl"}
-  table.items.iw tbody td,table.items.idr tbody td{display:block;border:0;padding:0;min-width:0}
-  table.items.iw tbody td.empty,table.items.idr tbody td.empty{grid-column:1/-1;padding:14px 0 18px}
-  table.items.iw tbody td[data-l]::before,table.items.idr tbody td[data-l]::before{font-size:11.5px;line-height:1.3;color:var(--soft);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  table.items.iw tbody td.c1::before{content:"Window " counter(itm);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:.01em}
-  table.items.idr tbody td.c1::before{content:"Door " counter(itm);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:.01em}
-  table.items.iw td input,table.items.iw td select,table.items.idr td input,table.items.idr td select{width:100%;min-width:0;min-height:38px;border-radius:9px}
-  table.items.iw td select,table.items.idr td select{padding:4px 20px 4px 7px;background-position:right 6px center}
-  table.items.iw td input.n,table.items.iw td input.q,table.items.idr td input.n,table.items.idr td input.q{padding:4px 9px}
-  /* the drawing on the left of the Location box */
-  table.items.iw tbody td.pk,table.items.idr tbody td.pk{grid-area:pk;width:auto;justify-self:start;align-self:end}
-  table.items.iw .pick,table.items.idr .pick{width:46px;height:46px;border-radius:10px;background:#f2f5f9;border:1px solid var(--line)}
-  table.items.iw .pick svg,table.items.idr .pick svg{width:38px;height:38px}
-  /* last line of the card: sq ft · amount · delete */
-  table.items.iw tbody td.sq,table.items.iw tbody td.amt,table.items.iw tbody td.dl,table.items.idr tbody td.amt,table.items.idr tbody td.dl{align-self:stretch;justify-self:stretch;width:auto;display:flex;align-items:center;margin-top:3px;padding:3px 0 0;min-height:38px}
-  /* one line across the whole card above that last line (whatever is in it) */
-  table.items.iw tbody tr::after,table.items.idr tbody tr::after{content:"";grid-column:1/-1;grid-row:-2/-1;align-self:start;border-top:1px solid var(--line)}
-  table.items.iw tbody tr:has(td.empty)::after,table.items.idr tbody tr:has(td.empty)::after{display:none}
-  table.items.iw tbody td.sq::before,table.items.iw tbody td.amt::before,table.items.idr tbody td.amt::before{display:none}
-  table.items.iw tbody td.sq{font-size:13.5px;color:var(--soft);font-weight:400}
-  table.items.iw tbody td.amt,table.items.idr tbody td.amt{justify-content:flex-end;font-weight:700;font-size:15.5px;color:var(--ink)}
-  table.items.iw tbody td.dl,table.items.idr tbody td.dl{justify-content:flex-end}
-  table.items.iw .del,table.items.idr .del{width:36px;height:34px;padding:0;font-size:22px;border-radius:8px}
-  table.items.iw .del:active,table.items.idr .del:active{background:#fdecec;color:var(--warn)}
-  /* totals under the list */
-  table.items.iw tfoot,table.items.idr tfoot{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2px 14px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
-  table.items.iw tfoot tr,table.items.idr tfoot tr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
-  table.items.iw tfoot tr:last-child,table.items.idr tfoot tr:last-child{border-bottom:0}
-  table.items.iw tfoot td,table.items.idr tfoot td{border:0;padding:0;font-weight:600}
-  table.items.iw tfoot td:empty,table.items.idr tfoot td:empty{display:none}
-  table.items.iw tfoot td.right,table.items.idr tfoot td.right{flex:1 1 auto;text-align:left;font-weight:500;color:var(--soft);white-space:nowrap}
-  table.items.iw tfoot td.num,table.items.idr tfoot td.num{flex:none;text-align:right}
-  table.items.iw tfoot tr:last-child td,table.items.idr tfoot tr:last-child td{font-size:17px;font-weight:700;color:var(--ink)}
-  table.items.iw tfoot td input.n,table.items.idr tfoot td input.n{width:120px;min-height:38px;text-align:right}
-  .card.icard .tbar{margin-top:12px}
-}
-@media(min-width:701px) and (max-width:1099px){
-  table.items.iw tbody,table.items.idr tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
-  table.items.iw tbody tr,table.items.idr tbody tr{margin:0}
-  table.items.iw tfoot,table.items.idr tfoot{max-width:440px;margin:14px 0 0 auto}
-}
 /* apartment flats list: the 7-column row needs ~980 px — below that, the stacked phone row */
 @media(min-width:761px) and (max-width:980px){ .fth{display:none} .ftm{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"no ty st" "ow ow ow" "bill rec due";gap:4px 10px;padding:10px 2px 10px 12px}
   .ftm .c-no{grid-area:no} .ftm .c-ty{grid-area:ty} .ftm .c-st{grid-area:st;justify-self:end} .ftm .c-ow{grid-area:ow} .ftm .c-ow small{display:inline;margin-left:6px}
   .ftm .c-bill{grid-area:bill;text-align:left} .ftm .c-rec{grid-area:rec;text-align:center} .ftm .c-due{grid-area:due} .ftm .c-bill::before,.ftm .c-rec::before,.ftm .c-due::before{content:attr(data-l);display:block;font-size:11px;color:var(--faint)} }
-/* wide tablets / small laptops (two lines per window): more room for the location and the drop-downs */
-@media(min-width:1100px) and (max-width:1279px){
-  table.items.iw tbody tr{grid-template-columns:38px minmax(0,1.15fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.45fr) minmax(0,.6fr)}
-}
-
 @media(max-width:700px){
   .olist .o .right{white-space:nowrap}
   /* plan: a long order name wraps instead of running over the priority */
   table.rt td.rg .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:0;line-height:1.3}
-  /* floor: sizes as a list — no. · drawing · location / type · W × H / qty */
-  table.sizes,table.sizes tbody{display:block} table.sizes thead{display:none}
-  table.sizes tbody tr{display:grid;grid-template-columns:20px 44px minmax(0,1fr) auto;grid-template-areas:"no sk loc wh" "no sk ty qt";gap:2px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-  table.sizes tbody tr:last-child{border-bottom:0}
-  table.sizes tbody td{display:block;border:0;padding:0;min-width:0}
-  table.sizes tbody td:nth-child(1){grid-area:no;color:var(--soft);font-weight:600}
-  table.sizes tbody td:nth-child(2){grid-area:sk} table.sizes tbody td:nth-child(3){grid-area:loc}
-  table.sizes tbody td:nth-child(4){grid-area:ty;font-size:13px;line-height:1.35;color:var(--soft)}
-  table.sizes tbody td:nth-child(5){grid-area:wh;font-weight:700;text-align:right}
-  table.sizes tbody td:nth-child(6){grid-area:qt;text-align:right;color:var(--soft);font-size:13px}
-  table.sizes tbody td:nth-child(6)::before{content:"Qty "}
   /* settings: profile codes — the profile on top, its three codes side by side */
   table.pcodes,table.pcodes thead,table.pcodes tbody{display:block}
   table.pcodes thead tr,table.pcodes tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;align-items:end;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -569,6 +503,86 @@ input[type=date]{min-width:0}
   .top .who .wrole{display:none}
   .btn.big{font-size:15px}
 }
+
+/* ===================== window / door sizes: Excel-style sheet ===================== */
+.card.icard{padding:12px}
+.sheetw{overflow:auto;max-height:72vh;border:1px solid #d3d9e1;border-radius:8px;background:#fff;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+table.sheet{table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0;font-size:14px;line-height:1.25}
+@media (pointer:coarse){ table.sheet{font-size:16px} }
+/* column widths (touch: 16 px text) */
+table.sheet th.rn{width:34px} table.sheet th.pk{width:44px} table.sheet th.c1{width:150px} table.sheet th.c-ty{width:112px}
+table.sheet th.c-w,table.sheet th.c-h{width:82px} table.sheet th.c-qt{width:58px} table.sheet th.c-br{width:106px} table.sheet th.c-se{width:68px}
+table.sheet th.c-gl{width:132px} table.sheet th.c-me{width:162px} table.sheet th.sq{width:78px} table.sheet th.amt{width:96px} table.sheet th.c-pr{width:92px} table.sheet th.dl{width:38px}
+table.sheet.sd th.c-ty{width:88px} table.sheet.sd th.c-br{width:118px}
+@media (pointer:fine){ table.sheet th.c1{width:128px} table.sheet th.c-ty{width:96px} table.sheet th.c-w,table.sheet th.c-h{width:80px} table.sheet th.c-qt{width:52px} table.sheet th.c-br{width:92px} table.sheet th.c-se{width:62px} table.sheet th.c-gl{width:108px} table.sheet th.c-me{width:140px} table.sheet th.sq{width:72px} table.sheet th.amt{width:88px} }
+/* header row: grey, stays on top */
+table.sheet th{position:sticky;top:0;z-index:3;background:#f1f3f6;color:#475467;font-size:12px;font-weight:650;text-align:left;padding:8px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;border-right:1px solid #dde2e8;border-bottom:1px solid #cdd4dd}
+table.sheet th.num{text-align:right}
+/* cells with grid lines */
+table.sheet td{padding:0;height:40px;background:#fff;border:0;border-right:1px solid #e4e8ed;border-bottom:1px solid #e4e8ed;vertical-align:middle;white-space:nowrap;overflow:hidden}
+table.sheet tr>*:last-child{border-right:0}
+table.sheet td.num,table.sheet td.rn,table.sheet.sro td{padding:0 8px}
+table.sheet td.num{text-align:right;font-variant-numeric:tabular-nums}
+table.sheet td.sq{color:var(--soft)} table.sheet td.amt{font-weight:650}
+table.sheet tbody tr:hover>td{background:#fafbfd}
+table.sheet tbody tr.on>td{background:#eaf2ff}
+/* row numbers + drawing stay on the left when sliding sideways (and the location on bigger screens) */
+table.sheet .rn{position:sticky;left:0;z-index:2;text-align:center;color:#667085;font-size:12px;font-weight:600;background:#f6f7f9}
+table.sheet th.rn{z-index:4}
+table.sheet tbody tr:hover>td.rn,table.sheet tbody tr.on>td.rn{background:#eef1f5}
+table.sheet .pk{position:sticky;left:34px;z-index:2;text-align:center;padding:0;box-shadow:inset -1px 0 0 #e4e8ed}
+table.sheet th.pk{z-index:4}
+table.sheet td.pk{background:#fff}
+@media(min-width:701px){ table.sheet .c1{position:sticky;left:78px;z-index:2;box-shadow:inset -2px 0 0 #d3d9e1} table.sheet th.c1{z-index:4} }
+table.sheet .pick{width:34px;height:34px;border-radius:6px;background:transparent;display:inline-flex;align-items:center;justify-content:center}
+table.sheet .pick:hover{background:#eef3fd}
+table.sheet td.pk .sk,table.sheet td.pk svg{display:inline-block;vertical-align:middle}
+/* the boxes fill their cell, no frame — the blue frame shows the cell you are in */
+table.sheet td input,table.sheet td select{display:block;width:100%;min-width:0;height:40px;min-height:40px;margin:0;border:0;border-radius:0;background-color:transparent;padding:0 8px;font:inherit;color:var(--ink);box-shadow:none}
+table.sheet td select{padding-right:22px;background-position:right 7px center;cursor:pointer}
+table.sheet td input.n,table.sheet td input.q{text-align:right}
+table.sheet td input:focus,table.sheet td select:focus{outline:2px solid var(--accent);outline-offset:-2px;background-color:#fff;box-shadow:none;border:0;position:relative;z-index:1}
+table.sheet td input::placeholder{color:#b4bcc7}
+table.sheet td .na{display:block;padding:0 8px;color:var(--faint)}
+table.sheet td.dl{text-align:center}
+table.sheet .del{width:34px;height:34px;padding:0;font-size:20px;border-radius:6px}
+table.sheet .del:hover{background:#fdecec}
+table.sheet td.empty{padding:22px 12px;text-align:center;color:var(--faint);white-space:normal}
+/* number input arrows hidden (they look like a spreadsheet cell) */
+table.sheet input[type=number]{-moz-appearance:textfield;appearance:textfield}
+table.sheet input[type=number]::-webkit-inner-spin-button,table.sheet input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* total line: bold, stays at the bottom of the sheet */
+table.sheet tfoot td{position:sticky;bottom:0;z-index:2;background:#f1f3f6;font-weight:700;border-top:2px solid #cdd4dd;border-bottom:0;height:38px;padding:0 8px}
+table.sheet tfoot td.rn,table.sheet tfoot td.pk{z-index:3}
+@media(min-width:701px){ table.sheet tfoot td.c1{z-index:3} }
+/* read-only sheet (factory): sizes in bold */
+table.sheet.sro td{height:44px} table.sheet.sro td.pk{padding:0}
+/* under the sheet: buttons on the left, the money on the right */
+.ifoot{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-start;justify-content:space-between}
+.ifoot .tbar{flex:1 1 320px;min-width:0}
+.isum{flex:0 1 340px;margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:2px 12px;background:#fbfcfd}
+.isr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.isr:last-child{border-bottom:0}
+.isr>span{color:var(--soft);white-space:nowrap}
+.isr>b{font-weight:650;white-space:nowrap}
+.isr input.n{width:120px;min-height:36px;padding:4px 10px;text-align:right}
+.isr select.gsel{padding:2px 26px 2px 8px;background-position:right 8px center}
+.isr.tot>span{color:var(--ink);font-weight:700;font-size:16px} .isr.tot>b{font-size:17px;font-weight:750}
+.noamt .isum{display:none!important}
+@media(max-width:1099px){ .ifoot .tbar{flex-basis:100%} .isum{margin-left:auto} }
+@media(max-width:700px){
+  .card.icard{padding:10px}
+  .sheetw{max-height:66vh}
+  .isum{flex:1 1 100%}
+}
+
+/* new-version pop-up: on top of everything until the update is installed */
+.updpop{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.5)}
+.updcard{width:100%;max-width:380px;background:#fff;border-radius:18px;padding:24px 20px 14px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.updcard .updic{font-size:36px;line-height:1;margin-bottom:10px}
+.updcard h2{font-size:20px;margin:0 0 6px}
+.updcard p{margin:0 0 18px;color:var(--soft);font-size:14.5px;line-height:1.45}
+.updcard .btn.ghost{margin-top:8px;color:var(--soft)}
 </style>
 </head>
 <body>
@@ -623,7 +637,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='02 Nov 2026, 19:18';
+var APPV='02 Nov 2026, 19:36';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1127,33 +1141,81 @@ function nextBtn(o){
 }
 
 function subItems(o){ return (noAmt(o)?'':lockLine(o))+noAmtItems(o,subItems0(o)); }
+/* ============================================================
+   Window / door sizes as an Excel-style sheet (asked: "windows sizes should be just like excel sheet").
+   One row per window, one column per field, grid lines, row numbers, header that stays on top,
+   the row number + drawing (and on bigger screens the location) stay on the left when sliding sideways.
+   Enter / ↓ = same column, next row; ↑ = row above; tapping a box selects what is in it (type to replace).
+   ============================================================ */
+function shN(k,v,cls){ return '<input class="'+(cls||'n')+'" type="number" inputmode="'+(k==='qty'?'numeric':'decimal')+'" data-k="'+k+'" value="'+(v==null?'':v)+'">'; }
+function shMesh(it){ var tr=it.type.indexOf('Track')>=0;
+  if(it.type==='Custom') return '<span class="na">see drawing</span>';
+  if(it.type==='Ventilator') return '<select data-k="fan">'+opts(FAN,it.fan||'No fan')+'</select>';
+  return tr?'<select data-k="mesh">'+opts(MESH,it.mesh)+'</select>':'<span class="na">—</span>'; }
 function subItems0(o){
-  var head,rows,cols;
-  if(o.kind==='doors'){ cols=8;
-    head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th class="num">W mm</th><th class="num">H mm</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Amount</th><th></th></tr>';
-    rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Location, e.g. Bedroom"></td>'
-     +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td>'
-     +'<td class="c-pr" data-l="Price ₹"><input class="n" type="number" data-k="price" value="'+it.price+'"></td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
-  } else { cols=11;
-    head='<tr><th></th><th>Location</th><th>Type</th><th>Brand</th><th>Series</th><th class="num">W mm</th><th class="num">H mm</th><th>Glass</th><th>Mesh</th><th class="num">Qty</th><th class="num">Sq ft</th><th class="num">Amount</th><th></th></tr>';
-    rows=o.items.map(function(it,i){ var tr=it.type.indexOf('Track')>=0; return '<tr data-i="'+i+'"'+(S.di===i?' style="background:#eef3fd"':'')+'><td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing">'+sketch(o,it,30)+'</button></td><td class="c1" data-l="Location"><input class="loc" data-k="loc" value="'+esc(it.loc)+'" placeholder="Location, e.g. Hall"></td>'
-     +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td><td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
-     +'<td class="c-w" data-l="Width mm"><input class="n" type="number" data-k="w" value="'+it.w+'"></td><td class="c-h" data-l="Height mm"><input class="n" type="number" data-k="h" value="'+it.h+'"></td><td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td>'
-     +'<td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+(it.type==='Custom'?'<span class="faint">see drawing</span>':it.type==='Ventilator'?'<select data-k="fan">'+opts(FAN,it.fan||'No fan')+'</select>':'<select data-k="mesh"'+(tr?'':' disabled')+'>'+opts(MESH,it.mesh)+'</select>')+'</td><td class="c-qt" data-l="Qty"><input class="q" type="number" data-k="qty" value="'+it.qty+'"></td><td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+  var dr=o.kind==='doors', na=noAmt(o), rows, head, tq=0, ts=0, st=0;
+  o.items.forEach(function(it){ tq+=n(it.qty); if(!dr) ts+=sqft(it.w,it.h)*n(it.qty); st+=itemPrice(o,it); });
+  var pk=function(it,i){ return '<td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing" aria-label="Open drawing">'+sketch(o,it,26)+'</button></td>'; };
+  var loc=function(it){ return '<td class="c1" data-l="Location"><input class="loc" type="text" data-k="loc" value="'+esc(it.loc)+'" placeholder="'+(dr?'Bedroom':'Hall')+'"></td>'; };
+  if(dr){
+    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="num c-pr prth">Price ₹</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
+    rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' class="on"':'')+'><td class="rn">'+(i+1)+'</td>'+pk(it,i)+loc(it)
+      +'<td class="c-w" data-l="Width mm">'+shN('w',it.w)+'</td><td class="c-h" data-l="Height mm">'+shN('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
+      +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td>'
+      +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td>'
+      +'<td class="c-pr" data-l="Price ₹">'+shN('price',it.price)+'</td>'
+      +'<td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+  } else {
+    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="c-se">Series</th><th class="c-gl">Glass</th><th class="c-me">Mesh / Fan</th><th class="num sq">Sq ft</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
+    rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' class="on"':'')+'><td class="rn">'+(i+1)+'</td>'+pk(it,i)+loc(it)
+      +'<td class="c-w" data-l="Width mm">'+shN('w',it.w)+'</td><td class="c-h" data-l="Height mm">'+shN('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
+      +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td>'
+      +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
+      +'<td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td><td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+shMesh(it)+'</td>'
+      +'<td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
   }
-  var st=o.items.reduce(function(a,it){return a+itemPrice(o,it);},0);
-  return '<div class="card icard"><div class="tscroll"><table class="items '+(o.kind==='doors'?'idr':'iw')+'"><thead>'+head+'</thead><tbody>'+(rows||'<tr><td colspan="11" class="empty">Add the first '+(o.kind==='doors'?'door':'window')+'</td></tr>')+'</tbody>'
-   +'<tfoot><tr><td colspan="'+cols+'" class="right">Subtotal</td><td class="num" id="tsub">'+money(st)+'</td><td></td></tr>'
-   +'<tr><td colspan="'+cols+'" class="right">Discount ₹</td><td class="num"><input class="n" type="number" id="disc" value="'+(o.discount||'')+'"></td><td></td></tr>'
-   +'<tr><td colspan="'+cols+'" class="right">'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</td><td class="num" id="tgst">'+money(gstAmt(o))+'</td><td></td></tr>'
-   +'<tr><td colspan="'+cols+'" class="right">Total</td><td class="num" id="ttot">'+money(orderTotal(o))+'</td><td></td></tr></tfoot></table></div>'
-   +'<div class="row tbar" style="margin-top:10px"><button class="btn primary" data-act="add">+ Add '+(o.kind==='doors'?'door':'window')+'</button><button class="btn" data-act="dup">Copy last</button>'+undoBtns()
-   +(o.stage>=2?'<span class="faint">In production — change sizes carefully.</span>':'<span class="faint">Tap a window picture to open its drawing. Price = sq ft × rate.</span>')+'</div></div>'
+  var nc=dr?11:14;
+  var foot='<tr class="stot"><td class="rn"></td><td class="pk"></td><td class="c1">Total</td><td class="c-w"></td><td class="c-h"></td><td class="num c-qt" id="tqty">'+fmt(tq)+'</td><td class="c-ty"></td>'
+    +(dr?'<td class="c-br"></td><td class="c-pr"></td>':'<td class="c-br"></td><td class="c-se"></td><td class="c-gl"></td><td class="c-me"></td><td class="num sq" id="tsqf">'+fmt(ts)+' ft²</td>')
+    +'<td class="num amt" id="tsub2">'+money(st)+'</td><td class="dl"></td></tr>';
+  var sum='<div class="isum"><div class="isr"><span>Subtotal</span><b id="tsub">'+money(st)+'</b></div>'
+    +'<div class="isr"><span>Discount ₹</span><input class="n" type="number" inputmode="decimal" id="disc" value="'+(o.discount||'')+'"></div>'
+    +'<div class="isr"><span>'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</span><b id="tgst">'+money(gstAmt(o))+'</b></div>'
+    +'<div class="isr tot"><span>Total</span><b id="ttot">'+money(orderTotal(o))+'</b></div></div>';
+  return '<div class="card icard'+(na?' noamt':'')+'"><div class="sheetw"><table class="sheet '+(dr?'sd':'sw')+'"><thead>'+head+'</thead><tbody>'
+     +(rows||'<tr><td colspan="'+nc+'" class="empty">Add the first '+(dr?'door':'window')+'</td></tr>')+'</tbody>'+(o.items.length?'<tfoot>'+foot+'</tfoot>':'')+'</table></div>'
+   +'<div class="ifoot"><div class="row tbar" style="margin-top:10px"><button class="btn primary" data-act="add">+ Add '+(dr?'door':'window')+'</button><button class="btn" data-act="dup">Copy last</button>'+undoBtns()
+   +(o.stage>=2?'<span class="faint">In production — change sizes carefully.</span>':'<span class="faint">Tap a drawing to open it.'+(na?'':' Price = sq ft × rate.')+'</span>')+'</div>'+sum+'</div></div>'
    +(S.di!=null&&o.items[S.di]?drawPanel(o,S.di):'')+drawPad(o);
 }
-function subSizes(o){
-  return '<div class="card"><table class="sizes"><thead><tr><th>#</th><th></th><th>Location</th><th>Type</th><th class="num">W × H mm</th><th class="num">Qty</th></tr></thead><tbody>'+o.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+sketch(o,it,36)+'</td><td><b>'+esc(it.loc||'—')+'</b></td><td>'+esc(it.type)+(it.series?' · '+it.series:'')+(o.kind!=='doors'?'<br><span class="faint">'+esc(it.glass)+(it.type.indexOf('Track')>=0?' · '+esc(it.mesh):'')+(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'?' · '+esc(it.fan).toLowerCase()+' '+(it.fanW||300)+' mm':'')+'</span>':'')+'</td><td class="num">'+it.w+' × '+it.h+'</td><td class="num">'+it.qty+'</td></tr>';}).join('')+'</tbody></table></div>';
-}
+/* the total line of the sheet follows every change */
+function sheetTotals(o){ var q=$('#tqty'), s=$('#tsqf'), a=$('#tsub2'); if(!q&&!s&&!a) return; var tq=0, ts=0, st=0;
+  o.items.forEach(function(it){ tq+=n(it.qty); if(o.kind!=='doors') ts+=sqft(it.w,it.h)*n(it.qty); st+=itemPrice(o,it); });
+  if(q) q.textContent=fmt(tq); if(s) s.textContent=fmt(ts)+' ft²'; if(a) a.textContent=money(st); }
+/* the factory's sizes: the same sheet, read only */
+function sizeMesh(it){ if(it.type==='Ventilator') return it.fan&&it.fan!=='No fan'?esc(it.fan)+' '+(it.fanW||300)+' mm':'No fan'; return it.type.indexOf('Track')>=0?esc(it.mesh||''):'—'; }
+function subSizes(o){ var dr=o.kind==='doors', tq=0;
+  var rows=o.items.map(function(it,i){ tq+=n(it.qty); return '<tr><td class="rn">'+(i+1)+'</td><td class="pk">'+sketch(o,it,26)+'</td><td class="c1"><b>'+esc(it.loc||'—')+'</b></td>'
+     +'<td class="num c-w"><b>'+it.w+'</b></td><td class="num c-h"><b>'+it.h+'</b></td><td class="num c-qt"><b>'+it.qty+'</b></td><td class="c-ty">'+esc(it.type)+'</td>'
+     +(dr?'<td class="c-br">'+esc(it.brand||'')+'</td>':'<td class="c-se">'+esc(it.series||'')+'</td><td class="c-gl">'+esc(it.glass||'')+'</td><td class="c-me">'+sizeMesh(it)+'</td>')+'</tr>'; }).join('');
+  return '<div class="card icard"><div class="sheetw"><table class="sheet sro '+(dr?'sd':'sw')+'"><thead><tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th>'
+     +(dr?'<th class="c-br">Brand</th>':'<th class="c-se">Series</th><th class="c-gl">Glass</th><th class="c-me">Mesh / Fan</th>')+'</tr></thead><tbody>'
+     +(rows||'<tr><td colspan="'+(dr?8:10)+'" class="empty">No '+(dr?'doors':'windows')+' yet</td></tr>')+'</tbody>'
+     +(o.items.length?'<tfoot><tr class="stot"><td class="rn"></td><td class="pk"></td><td class="c1">Total</td><td class="c-w"></td><td class="c-h"></td><td class="num c-qt">'+fmt(tq)+'</td><td class="c-ty"></td>'+(dr?'<td class="c-br"></td>':'<td class="c-se"></td><td class="c-gl"></td><td class="c-me"></td>')+'</tr></tfoot>':'')
+     +'</table></div></div>'; }
+/* keys like Excel: Enter / ↓ next row, Shift+Enter / ↑ row above — same column */
+document.addEventListener('keydown',function(e){ var t=e.target; if(!t||!t.closest||t.tagName==='SELECT'||!t.closest('table.sheet')) return;
+  var k=e.key, dir=k==='Enter'?(e.shiftKey?-1:1):k==='ArrowDown'?1:k==='ArrowUp'?-1:0; if(!dir) return;
+  var td=t.closest('td'), tr=td&&td.parentElement; if(!tr||tr.getAttribute('data-i')==null) return;
+  var ci=[].indexOf.call(tr.children,td), nx=dir>0?tr.nextElementSibling:tr.previousElementSibling;
+  while(nx&&nx.getAttribute('data-i')==null) nx=dir>0?nx.nextElementSibling:nx.previousElementSibling;
+  e.preventDefault(); if(!nx){ if(k==='Enter') t.blur(); return; }
+  var f=nx.children[ci]&&nx.children[ci].querySelector('input,select'); if(f) f.focus(); });
+/* tapping a box selects what is in it, so typing replaces it (like a cell in Excel) */
+document.addEventListener('focusin',function(e){ var t=e.target; if(t&&t.tagName==='INPUT'&&t.closest&&t.closest('table.sheet')) setTimeout(function(){ try{ if(document.activeElement===t) t.select(); }catch(x){} },0); });
+/* the mouse wheel never changes a size by accident */
+document.addEventListener('wheel',function(e){ var t=document.activeElement; if(t&&t.type==='number'&&t===e.target&&t.closest&&t.closest('table.sheet')) t.blur(); },{passive:true});
+
 /* big editable drawing */
 function bigSketch(o,it){ if(o.kind!=='doors') return '<div class="skwrap" data-act="dzopen" title="Tap to edit the drawing">'+winSVG(o,it,{no:o.items.indexOf(it)+1})+'<span class="sktap">✏️ Tap to edit</span></div>'; var W=n(it.w)||1,H=n(it.h)||1, box=330, s=box/Math.max(W,H), w=W*s, h=H*s, m=46, st='fill:none;stroke:#1e293b;stroke-width:2', g='', c=null;
   var Wt=m+w+m, Ht=m+h+m; function dim(x1,y1,x2,y2,txt,vert){ var mx=(x1+x2)/2,my=(y1+y2)/2; return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#64748b" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="'+mx+'" y="'+my+'" font-size="12" font-weight="600" fill="#1e293b" text-anchor="middle"'+(vert?' transform="rotate(-90 '+mx+' '+my+')" dy="-4"':' dy="-4"')+'>'+txt+'</text>'; }
@@ -2778,7 +2840,7 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
 function isBld(f){ return !!f&&!!f.proj&&f.payer==='b'; }
 function noAmt(o){ return !!o&&!!o.proj&&!admin(); }
 function noAmtItems(o,h){ if(!noAmt(o)) return h;
-  return h.replace('<div class="card icard"><div class="tscroll"><table class="items','<div class="card icard noamt"><div class="tscroll"><table class="items')
+  return h.replace('<div class="card"><div class="tscroll"><table class="items','<div class="card noamt"><div class="tscroll"><table class="items')
     .replace('<th class="num">Amount</th>','<th class="num amth">Amount</th>').replace('<th class="num">Price</th>','<th class="num prth">Price</th>').replace(' Price = sq ft × rate.',''); }
 function moneyOrders(){ return admin()?allOrders():D.orders.slice(); }
 function payerSel(id,v,label){ return '<label class="f"><span>'+(label||'Who pays')+'</span><select id="'+id+'"><option value="">👤 Flat owner</option><option value="b"'+(v==='b'?' selected':'')+'>🏗 Builder</option></select></label>'; }
@@ -3567,7 +3629,7 @@ document.addEventListener('click',function(e){
   if(a==='logout'){ logoutAsk(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
-  if(a==='add'&&o){ snap(o); o.items.push(newItem(o)); if(S.di!=null) S.di=o.items.length-1; save(); render(); setTimeout(function(){var r=document.querySelectorAll('table.items tbody tr'); var inp=r[r.length-1]&&r[r.length-1].querySelector('input'); if(inp) inp.focus();},0); }
+  if(a==='add'&&o){ snap(o); o.items.push(newItem(o)); if(S.di!=null) S.di=o.items.length-1; save(); render(); setTimeout(function(){var r=document.querySelectorAll('table.sheet tbody tr[data-i]'); var inp=r[r.length-1]&&r[r.length-1].querySelector('input'); if(inp) inp.focus();},0); }
   if(a==='dup'&&o){ snap(o); var l=S.di!=null&&o.items[S.di]?o.items[S.di]:o.items[o.items.length-1]; if(l){ var cpy=JSON.parse(JSON.stringify(l)); cpy.loc=''; cpy.made=false; o.items.push(cpy); if(S.di!=null) S.di=o.items.length-1; save(); render(); } }
   if(a==='next'&&o){ if(prod()&&o.stage!==1&&o.stage!==2) return; if(o.stage===0&&!o.items.length){toast('Add items first');return;}
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
@@ -3689,7 +3751,7 @@ document.addEventListener('change',function(e){ var t=e.target;
   if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}, cur=privOf(D); D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); privKeepIfEmpty(cur); keepNumbers(sq0); save(); toast('Backup restored'+(PRIVKEPT?' — it had no accounts or staff, today\'s are kept':'')); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
   if(t.tagName==='SELECT') onInput(e); });
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
-function refreshTotals(o){ var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
+function refreshTotals(o){ sheetTotals(o); var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
 
 if(localStorage.getItem('sbrole')==='admin') localStorage.setItem('pinok','1');
 if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); if(r!=='admin') privStaffNow(); render(); if(r==='admin') cloudPull(true); } }).catch(function(){}); }
@@ -3706,18 +3768,23 @@ function installCard(){ if(isStandalone||localStorage.getItem('noInstall')) retu
 var UPD=null, UPDLATER=false, LASTCHK=0;
 if(/[?&]u=\d+/.test(location.search)&&history.replaceState){ history.replaceState(null,'',location.pathname); }
 function checkUpdate(manual){ if(!BAKED.url||APPV==='dev'||!/^https?:$/.test(location.protocol)||navigator.onLine===false){ if(manual) toast(APPV==='dev'?'Updates come from your website version':'You are offline'); return; }
-  if(!manual&&Date.now()-LASTCHK<10*60*1000) return; LASTCHK=Date.now();
+  if(!manual&&Date.now()-LASTCHK<10*60*1000){ if(UPD) showUpdate(); return; } LASTCHK=Date.now();
   fetch('index.html?check=1',{cache:'no-cache'}).then(function(r){ return r.ok?r.text():''; }).then(function(t){ var m=t.match(/var APPV='([^']+)'/);
-    if(m&&m[1]!==APPV){ UPD=m[1]; if(manual) UPDLATER=false; showUpdate(); } else if(manual) toast('You have the latest version ✓'); }).catch(function(){ if(manual) toast('Could not check — try again'); }); }
-function showUpdate(){ if(UPDLATER||document.getElementById('updbar')) return; var b=document.createElement('div'); b.id='updbar'; b.className='updbar';
-  b.innerHTML='<span class="grow">🔄 <b>New version of the app is ready</b></span><button class="btn sm primary" data-u="go">Update now</button><button class="btn sm" data-u="later">Later</button>';
-  b.addEventListener('click',function(e){ var x=e.target.closest('[data-u]'); if(!x) return; if(x.dataset.u==='later'){ UPDLATER=true; b.remove(); return; } x.textContent='Updating…'; x.disabled=true; doUpdate(); });
+    if(m&&m[1]!==APPV){ UPD=m[1]; if(manual) UPDLATER=0; showUpdate(); } else if(manual) toast('You have the latest version ✓'); }).catch(function(){ if(manual) toast('Could not check — try again'); }); }
+var UPDSNOOZE=3*60*1000;
+function showUpdate(){ if(!UPD||(UPDLATER&&Date.now()<UPDLATER)||document.getElementById('updbar')) return;
+  var b=document.createElement('div'); b.id='updbar'; b.className='updpop'; b.setAttribute('role','dialog'); b.setAttribute('aria-modal','true');
+  b.innerHTML='<div class="updcard"><div class="updic">🔄</div><h2>New version available</h2><p>Please update now — it takes a few seconds and your work is kept.</p>'
+   +'<button class="btn primary big" data-u="go">Update now</button><button class="btn ghost sm" data-u="later">Remind me in 3 minutes</button></div>';
+  b.addEventListener('click',function(e){ var x=e.target.closest('[data-u]'); if(!x) return;
+    if(x.dataset.u==='later'){ UPDLATER=Date.now()+UPDSNOOZE; b.remove(); clearTimeout(showUpdate.t); showUpdate.t=setTimeout(showUpdate,UPDSNOOZE+500); return; }
+    x.textContent='Updating…'; x.disabled=true; doUpdate(); });
   document.body.appendChild(b); }
 function doUpdate(){ var done=false, go=function(){ if(done) return; done=true; location.replace(location.pathname.replace(/index\.html$/,'')+'?u='+Date.now()); };
   setTimeout(go,4000);   // never hang
   var push=PUSHING||Promise.resolve(); if(saveT){ clearTimeout(saveT); saveT=null; push=cloudPush(); }
   push.catch(function(){}).then(function(){ return navigator.serviceWorker&&navigator.serviceWorker.getRegistration?navigator.serviceWorker.getRegistration().then(function(r){ return r&&r.update(); }):null; }).catch(function(){}).then(go,go); }
-if(BAKED.url){ setTimeout(checkUpdate,3000); setInterval(function(){ if(document.visibilityState==='visible') checkUpdate(); },30*60*1000); }
+if(BAKED.url){ setTimeout(checkUpdate,3000); setInterval(function(){ if(document.visibilityState==='visible') checkUpdate(); },10*60*1000); }
 if(BAKED.url&&'serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&window.top===window){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 document.addEventListener('visibilitychange',function(){ if(document.visibilityState!=='visible') return; if(S.role&&sbOn()&&SESS&&!saveT&&!PUSHING) cloudPull(); checkUpdate(); });
 window.addEventListener('online',function(){ setSync('Back online'); if(S.role&&sbOn()&&SESS){ cloudPush(); } render(); });
