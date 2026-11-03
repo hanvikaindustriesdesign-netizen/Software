@@ -691,7 +691,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 13:37';
+var APPV='03 Nov 2026, 14:12';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -719,8 +719,31 @@ function sbSave(sess){ SESS=sess; localStorage.setItem('sbsess',JSON.stringify(s
 function sbUrl(p){ return D.sb.url.replace(/\/$/,'')+p; }
 function sbHeaders(extra){ var h={apikey:D.sb.key,'Content-Type':'application/json'}; if(SESS&&SESS.access_token) h.Authorization='Bearer '+SESS.access_token; for(var k in (extra||{})) h[k]=extra[k]; return h; }
 function sbLogin(email,pass){ return fetch(sbUrl('/auth/v1/token?grant_type=password'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error_description||j.msg||j.error||'Login failed'); j.exp=Date.now()+(j.expires_in||3600)*1000; j.email=(j.user||{}).email||email; sbSave(j); return j; }); }); }
-function sbRefresh(){ if(!SESS||!SESS.refresh_token) return Promise.reject(new Error('Not signed in')); if(Date.now()<SESS.exp-120000) return Promise.resolve(SESS);
-  return fetch(sbUrl('/auth/v1/token?grant_type=refresh_token'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:SESS.refresh_token})}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error('Session expired'); j.exp=Date.now()+(j.expires_in||3600)*1000; j.email=(j.user||{}).email||SESS.email; sbSave(j); return j; }); }); }
+/* sign-in refresh: one at a time (also across windows of this browser, via navigator.locks); a newer sign-in that another
+   window saved is used instead of asking again (asking with an old one can make the server cancel the sign-in);
+   a sign-in the server no longer accepts → "Please sign in again" (the work stays on this phone) */
+var SBREFP=null;
+function sbStored(){ try{ return JSON.parse(localStorage.getItem('sbsess')||'null'); }catch(e){ return null; } }
+function sbFresh(x){ return !!(x&&x.access_token&&x.exp&&Date.now()<x.exp-120000); }
+function sbSame(x){ return !!(x&&SESS&&x.refresh_token&&String(x.email||'').toLowerCase()===String(SESS.email||'').toLowerCase()); }
+function sbAdopt(){ var st=sbStored(); if(sbSame(st)&&st.refresh_token!==SESS.refresh_token&&(st.exp||0)>(SESS.exp||0)) SESS=st; return SESS; }
+function sbRefresh(){ if(!SESS||!SESS.refresh_token) return Promise.reject(new Error('Not signed in')); sbAdopt(); if(sbFresh(SESS)) return Promise.resolve(SESS);
+  if(SBREFP) return SBREFP;
+  var run=function(){ if(!SESS||!SESS.refresh_token) throw new Error('Not signed in'); sbAdopt(); if(sbFresh(SESS)) return SESS; return sbRefreshNet(SESS,1); }, p;
+  try{ p=(navigator.locks&&navigator.locks.request)?navigator.locks.request('hanvika-signin',run):Promise.resolve().then(run); }catch(e){ p=Promise.resolve().then(run); }
+  SBREFP=Promise.resolve(p).then(function(j){ SBREFP=null; return j; },function(e){ SBREFP=null; throw e; }); return SBREFP; }
+function sbRefreshNet(old,tries){ var rt=old.refresh_token;
+  return fetch(sbUrl('/auth/v1/token?grant_type=refresh_token'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){
+      if(r.ok&&j&&j.access_token){ j.exp=Date.now()+(j.expires_in||3600)*1000; j.email=(j.user||{}).email||old.email; if(SESS&&SESS.refresh_token===rt) sbSave(j); return j; }
+      var why=String((j&&(j.error_code||j.error))||'')+' '+String((j&&(j.msg||j.error_description||j.message))||'');
+      if((r.status===400||r.status===401||r.status===403)&&/refresh|token|grant|session|user/i.test(why)){
+        var st=sbStored(); if(tries>0&&sbSame(st)&&st.refresh_token!==rt){ SESS=st; return sbFresh(st)?st:sbRefreshNet(st,tries-1); }
+        if(SESS&&SESS.refresh_token===rt) sbDead(); var e=new Error('Session expired'); e.dead=true; throw e; }
+      throw new Error('sign-in server '+r.status); }); }); }
+function sbDead(){ sbLogout(); S.sdead=true; try{ localStorage.setItem('sbdead','1'); }catch(e){} netBar(); toast('⚠ Please sign in again — your work is kept on this phone and is sent after you sign in'); }
+/* another window of this browser signed in again / refreshed: use its sign-in */
+window.addEventListener('storage',function(e){ if(e.key!=='sbsess'||!e.newValue||!SESS) return; try{ var st=JSON.parse(e.newValue); if(sbSame(st)&&(st.exp||0)>=(SESS.exp||0)) SESS=st; }catch(x){} });
 function sbLogout(){ SESS=null; localStorage.removeItem('sbsess'); }
 var LASTSEEN=localStorage.getItem('sbseen')||'';
 function sqlPol(name,tbl,cmd,using,check){ var t=tbl.split('.'); return "do $$ begin if not exists (select 1 from pg_policies where schemaname = '"+t[0]+"' and tablename = '"+t[1]+"' and policyname = '"+name+"') then create policy \""+name+"\" on "+tbl+" for "+cmd+" to authenticated"+(using?" using ("+using+")":"")+(check?" with check ("+check+")":"")+"; end if; end $$;"; }
@@ -1048,7 +1071,7 @@ function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){
    ============================================================ */
 function pinOK(){ try{ return localStorage.getItem('pinok')==='1'||localStorage.getItem('sbrole')==='admin'; }catch(e){ return false; } }
 function wrongCopy(){ return !BAKED.url&&/^https?:$/.test(location.protocol)&&window.top===window&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!/claude|anthropic/.test(location.hostname); }
-function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px"></div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
+function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px">'+esc(S.lnote||'')+'</div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
   return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
@@ -1892,9 +1915,9 @@ function RowStore(c){
     var update=function(id){ sent[id]=body(id);
       return fetch(sbUrl('/rest/v1/'+c.table+'?id=eq.'+encodeURIComponent(id)+'&updated_at=eq.'+encodeURIComponent(R.seen[id])),{method:'PATCH',headers:sbHeaders({Prefer:'return=representation'}),body:'{'+cols(id)+'"data":'+sent[id]+'}'})
         .then(function(r){ return r.json().then(function(rows){ if(!r.ok) throw new Error(c.name+' save '+r.status); if(rows&&rows.length){ var bk=rows[0], mine=null; try{ mine=JSON.parse(sent[id]); }catch(e){} if(S.role!=='admin'&&bk.data&&mine&&!sameJ(bk.data,mine)) kept.push(bk); else done(id,bk.updated_at); } else conflicts.push(id); }); }); };
-    var chain=Promise.resolve(); for(var i=0;i<fresh.length;i+=100){ (function(ch){ chain=chain.then(function(){ return insert(ch); }); })(fresh.slice(i,i+100)); }
+    var inserts=function(){ var chain=Promise.resolve(); for(var i=0;i<fresh.length;i+=100){ (function(ch){ chain=chain.then(function(){ return insert(ch); }); })(fresh.slice(i,i+100)); } return chain; };
     var q=old.slice(), worker=function(){ var id=q.shift(); return id?update(id).then(worker):Promise.resolve(); };
-    R.busy=sbRefresh().then(function(){ return chain; }).then(function(){ return Promise.all([worker(),worker(),worker(),worker()]); })
+    R.busy=sbRefresh().then(function(){ return inserts(); }).then(function(){ return Promise.all([worker(),worker(),worker(),worker()]); })
       .then(function(){ if(!kept.length) return; apply(kept,false); var nm=kept.map(function(x){ return c.label(x.data||{})||x.id; });
         toast('⚠ '+c.word+' '+nm.slice(0,3).join(', ')+(nm.length>3?' +'+(nm.length-3)+' more':'')+': only the admin can delete, or remove payments and photos — kept as it was.'); renderSoon(); })
       .then(function(){ if(!conflicts.length) return; return fetch(sbUrl('/rest/v1/'+c.table+'?select=id,data,updated_at&id=in.('+conflicts.map(encodeURIComponent).join(',')+')'),{headers:sbHeaders()}).then(function(r){ if(!r.ok) throw new Error(c.name+' load '+r.status); return r.json(); }).then(function(rows){ var back={};
@@ -2645,6 +2668,7 @@ function netBad(e){ if(navigator.onLine===false) return; var m=(e&&e.message)||'
 function unsentN(){ var n=0; ROWSTORES.forEach(function(R){ if(R.loaded) n+=R.unsent(); }); try{ if(localStorage.getItem('wdirty')) n++; if(localStorage.getItem('wpdirty')) n++; }catch(e){} return n; }
 function hhmm(t){ var d=new Date(t); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+(ymd(d)!==today()?', '+dShort(ymd(d)):''); }
 function netBarHtml(){ var h='', off=navigator.onLine===false, n=unsentN(), np=PHQ.length;
+  if(S.role&&sbOn()&&!SESS&&(S.sdead||localStorage.getItem('sbdead')==='1')) h='<div class="netbar bad">⚠ <b>Please sign in again</b> — your work is kept on this phone and is sent after you sign in. <button class="btn sm" data-cs="relogin">Sign in</button></div>';
   if(S.role&&sbOn()&&SESS){
     if(admin()&&(ROWSTORES.some(function(R){ return R.missing; })||Object.keys(BACK).some(function(k){ return BACK[k].missing; }))) h='<div class="netbar bad">⚠ <b>The online database needs an update</b> for this version. Settings → Online sync → copy the setup SQL and run it in Supabase (SQL editor). Nothing is lost meanwhile.</div>';
     else if(!off&&NET.bad>=2) h='<div class="netbar bad">⚠ <b>Can\'t reach the online database</b> since '+hhmm(NET.since)+'. Your work is safe on this phone and is sent when it\'s back. <button class="btn sm" data-cs="nethelp">What to do</button></div>';
@@ -2685,7 +2709,7 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   if(t.hasAttribute('data-csrst')){ snapRestore(t.getAttribute('data-id'),t.getAttribute('data-csrst'),t); return; }
   var a=t.getAttribute('data-cs');
   if(a==='snaps') snapList(); else if(a==='snapshide'){ S.snaps=null; render(); } else if(a==='phzip') phZip(t,+t.getAttribute('data-part')||0); else if(a==='logxls') logXls(t);
-  else if(a==='nethelp') netHelp(); else if(a==='sendnow'){ backOk('phup'); cloudPush(); phKick(); toast('Sending…'); } });
+  else if(a==='nethelp') netHelp(); else if(a==='relogin'){ S.lnote='Please sign in again — your work is kept on this phone and is sent after you sign in.'; S.role=''; render(); } else if(a==='sendnow'){ backOk('phup'); cloudPush(); phKick(); toast('Sending…'); } });
 
 /* ============================================================
    ADMIN-ONLY DATA — accounts, staff, salaries, attendance, PINs and cost prices live in a separate
@@ -4520,7 +4544,7 @@ document.addEventListener('click',function(e){
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
-  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; localStorage.setItem('sbrole',role); if(role!=='admin') privStaffNow(); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
+  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; S.sdead=false; S.lnote=''; localStorage.removeItem('sbdead'); localStorage.setItem('sbrole',role); if(role!=='admin') privStaffNow(); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
   if(a==='logout'){ logoutAsk(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
