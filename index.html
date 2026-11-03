@@ -769,7 +769,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 21:04';
+var APPV='03 Nov 2026, 22:26';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1141,6 +1141,9 @@ function order(){ if(!S.oid) return null; for(var i=0;i<D.orders.length;i++) if(
 function roleFor(email){ var u=(D.users||[]).filter(function(x){return (x.email||'').toLowerCase()===(email||'').toLowerCase();})[0]; return u?u.role:((D.users||[]).length?'sales':'admin'); }
 function admin(){ return S.role==='admin'; }
 function canDel(){ return admin(); }
+/* windows and doors: Admin and Sales delete them (↶ Undo brings one back) */
+function canDelItem(){ return admin()||S.role==='sales'; }
+function itemDelBtn(i){ return canDelItem()?'<button class="del" data-del="'+i+'" aria-label="Delete" title="Delete">×</button>':''; }
 function delBtn(attr,val){ return canDel()?'<button class="del" '+attr+'="'+val+'">×</button>':''; }
 function prod(){ return S.role==='production'; }
 
@@ -1363,7 +1366,7 @@ function subItems0(o){
       +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td>'
       +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td>'
       +'<td class="c-pr" data-l="Price ₹">'+shN('price',it.price)+'</td>'
-      +'<td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+      +'<td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+itemDelBtn(i)+'</td></tr>'; }).join('');
   } else {
     head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="c-se">Series</th><th class="c-gl">Glass</th><th class="c-me">Mesh / Fan</th><th class="num sq">Sq ft</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
     rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' class="on"':'')+'><td class="rn">'+(i+1)+'</td>'+pk(it,i)+loc(it)
@@ -1371,7 +1374,7 @@ function subItems0(o){
       +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td>'
       +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
       +'<td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td><td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+shMesh(it)+'</td>'
-      +'<td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+delBtn('data-del',i)+'</td></tr>'; }).join('');
+      +'<td class="num sq" data-l="Sq ft">'+fmt(sqft(it.w,it.h)*n(it.qty))+' ft²</td><td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+itemDelBtn(i)+'</td></tr>'; }).join('');
   }
   var nc=dr?11:14;
   var foot='<tr class="stot"><td class="rn"></td><td class="pk"></td><td class="c1">Total</td><td class="c-w"></td><td class="c-h"></td><td class="num c-qt" id="tqty">'+fmt(tq)+'</td><td class="c-ty"></td>'
@@ -2764,7 +2767,7 @@ function mainKept(sv,sentJ){ if(admin()||!sv||!sv.data) return false;
   pushMain.tries=0; mainMergeRow(sv,MAINJ,sentJ,typingNow());
   if(MAINJ===MAINSENT){ if(!PUSHAGAIN) localStorage.removeItem('wdirty'); } else { try{ localStorage.setItem('wdirty','1'); }catch(e){} }
   setSync('Saved online'); toast('Only the admin can change settings, rates, accounts and staff — kept as they were.'); return true; }
-function rolesLine(){ return '<div class="faint" style="margin-top:8px;line-height:1.5"><b>Admin:</b> everything. <b>Sales:</b> orders, flats, quotes, payments. <b>Production:</b> floor work and stages. Accounts, staff, salaries, PINs and cost prices never reach staff phones. Only the admin can delete anything, remove payments or photos, or change settings, rates, accounts and staff — the online database itself keeps this rule.</div>'; }
+function rolesLine(){ return '<div class="faint" style="margin-top:8px;line-height:1.5"><b>Admin:</b> everything. <b>Sales:</b> orders, flats, quotes, payments — and adding, changing or deleting windows and doors. <b>Production:</b> floor work and stages. Accounts, staff, salaries, PINs and cost prices never reach staff phones. Only the admin can delete orders and flats, remove payments or photos, or change settings, rates, accounts and staff — the online database itself keeps this rule.</div>'; }
 
 /* ---------- 4. warnings ---------- */
 var NET={bad:0,since:0,msg:''}, UNS={since:+(localStorage.getItem('wunsince')||0)};
@@ -4780,7 +4783,7 @@ function drawPanel(o,di){
   if(!ro&&it.type!=='Custom'){ pick='<div style="margin-top:8px"><div class="faint" style="margin-bottom:4px">Window type — tap to choose</div><div class="row">'+WTYPES.filter(function(x){return x!=='Custom';}).concat(['Vent + fan']).map(function(tp){ var on=tp==='Vent + fan'?(it.type==='Ventilator'&&it.fan&&it.fan!=='No fan'):(it.type===tp&&!(tp==='Ventilator'&&it.fan&&it.fan!=='No fan')); return '<button class="btn sm'+(on?' primary':'')+'" data-wt="'+tp+'">'+tp+'</button>'; }).join('')+'</div></div>'; }
   return '<div class="card" id="dpanel"><div class="row between"><h2>'+(di+1)+'. '+esc(it.loc||(ro?'Door':'Window'))+'</h2><span class="faint">'+(di+1)+' of '+o.items.length+'</span></div>'+tools
    +'<div class="draw-grid"><div><div id="bigsk">'+bigSketch(o,it)+'</div>'+(ro?'':'<button class="btn primary big dzbtn" data-act="dzopen">✏️ Edit drawing</button>')+pick+'</div><div>'+form+'</div></div>'
-   +'<div class="row between" style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px"><span class="row"><button class="btn sm" data-act="dup">Copy this</button>'+(canDel()?'<button class="btn sm danger" data-del="'+di+'">Delete</button>':'')+'</span><span class="row"><button class="btn primary" data-act="add">+ Add another '+(ro?'door':'window')+'</button><button class="btn good" data-act="dclose">✓ Done</button></span></div></div>';
+   +'<div class="row between" style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px"><span class="row"><button class="btn sm" data-act="dup">Copy this</button>'+(canDelItem()?'<button class="btn sm danger" data-del="'+di+'">Delete</button>':'')+'</span><span class="row"><button class="btn primary" data-act="add">+ Add another '+(ro?'door':'window')+'</button><button class="btn good" data-act="dclose">✓ Done</button></span></div></div>';
 }
 function drawPad(o){ if(S.di!=null) return ''; var ro=o.kind==='doors', types=ro?DTYPES:WTYPES.filter(function(t){return t!=='Custom';}).concat(['Vent + fan']);
   return '<div class="card"><h2>Add a '+(ro?'door':'window')+' — tap a picture</h2><div class="qadd">'+types.map(function(t){ var fk=ro?{type:t,w:900,h:2100}:qaItem(t); return '<button class="qa" data-qa="'+t+'">'+sketch(o,fk,58)+'<span>'+t+'</span></button>'; }).join('')
@@ -5175,7 +5178,7 @@ document.addEventListener('click',function(e){
     save(); render(); return; }
   var ce=e.target.closest('[data-cell]'); if(ce&&o&&S.di!=null&&!DRAGGED&&(S.pmode||'draw')==='draw'){ snap(o); var itC=o.items[S.di]; ensureCustom(itC); var Lc=layoutOf(itC), rc=ce.dataset.cell.split('|'), cur=(Lc.cells[+rc[0]]||[])[+rc[1]]||'Fixed'; Lc.cells[+rc[0]]=Lc.cells[+rc[0]]||[]; Lc.cells[+rc[0]][+rc[1]]=CELLT[(CELLT.indexOf(cur)+1)%CELLT.length]; save(); render(); return; }
   var ed=e.target.closest('[data-edit]'); if(ed&&o&&S.di!=null){ var itE=o.items[S.di], key=ed.dataset.edit, v=prompt(key==='w'?'Width mm':'Height mm',itE[key]); if(v!=null&&n(v)>0){ itE[key]=Math.round(n(v)); save(); render(); } return; }
-  if(d.del!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } snap(o); o.items.splice(+d.del,1); if(S.di!=null&&S.di>=o.items.length) S.di=o.items.length?o.items.length-1:null; save(); render(); return; }
+  if(d.del!==undefined&&o){ if(!canDelItem()){ toast('Only Admin and Sales can delete windows and doors'); return; } snap(o); o.items.splice(+d.del,1); if(S.di!=null&&S.di>=o.items.length) S.di=o.items.length?o.items.length-1:null; save(); render(); return; }
   if(d.pdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } o.payments.splice(+d.pdel,1); save(); render(); return; }
   if(d.edel!==undefined){ if(!canDel()){ toast('Only Admin can delete'); return; } D.expenses.splice(+d.edel,1); save(); render(); return; }
   if(d.phdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } if(!confirm('Delete this photo?')) return; phForget(o.photos.splice(+d.phdel,1)[0]); save(); render(); return; }
