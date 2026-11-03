@@ -637,6 +637,30 @@ table.mpt td:first-child{min-width:118px}
 
 /* Ledger heads (and users) on a small phone: name on its own line, group under it */
 @media (max-width:380px){ table.items.i3 tbody tr{grid-template-columns:minmax(0,1fr) 30px} table.items.i3 tbody td.c1,table.items.i3 tbody td:nth-child(2){grid-column:1} table.items.i3 tbody td.dl{grid-column:2;grid-row:1 / span 2} }
+
+/* linked payments */
+.lph{margin:12px 0 6px}
+.lpl{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.lprow{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.lprow:last-child{border-bottom:0}
+.lprow.on{background:#f3f8ff}
+.lprow label{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0;margin:0;cursor:pointer}
+.lprow label input{width:20px;height:20px;min-height:0;flex:none;margin:0}
+.lprow label span{min-width:0}
+.lprow label b{display:block;font-size:15px}
+.lprow label small{display:block;color:var(--soft);font-size:12.5px}
+.lprow input[type=number]{width:112px;flex:none;text-align:right;margin:0}
+.lpsum{margin-top:8px;font-size:14px}
+.lpover{margin-top:6px;padding:8px 10px;border-radius:10px;background:#fff4e5;color:#7a4a00;font-size:13px}
+.lpinfo{display:block;font-size:12px;color:var(--soft);margin-top:2px}
+.lpe{min-height:30px;padding:0 8px}
+.lpg{display:block;width:100%;text-align:left;padding:10px 2px;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer}
+.lpg:last-child{border-bottom:0}
+.lpg1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lpg2{display:block;font-size:13px;color:var(--soft);margin-top:3px}
+.lpf{white-space:nowrap}
+.lped{color:var(--accent);white-space:nowrap;margin-left:4px}
+.olh{font-size:12.5px;font-weight:650;color:var(--soft);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px;border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -691,7 +715,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 14:12';
+var APPV='03 Nov 2026, 14:48';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1194,10 +1218,10 @@ function oRow(o){ var t=orderTotal(o), b=balance(o);
    +plBadge(o)+' <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span><div class="amt right">'+money(t)+(o.stage>0?(b>0.5?'<small>'+(paid(o)>0.5?'bal ':'pending ')+money(b)+'</small>':'<small style="color:var(--good)">paid</small>'):'')+'</div></button>'; }
 
 function viewOrders(){
-  var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
+  var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(S.filter==='own') return false; if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
     return !q||(o.customer+' '+o.phone+' '+o.no+' '+o.address).toLowerCase().indexOf(q)>=0; }).sort(function(a,b){return b.no-a.no;});
-  var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}),[['pay','₹ Pending'],['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
-  return projCard()+'<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+(list.length?list.map(oRow).join(''):'<div class="empty">No orders here</div>')+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
+  var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}),[['pay','₹ Pending']],lpOwnChip()?[['own','👤 Flat owners']]:[],[['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
+  return projCard()+'<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+lpOrdersList(list,q)+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
 }
 
 function viewOrder0(){
@@ -2112,13 +2136,13 @@ function pjPays(p,fl){ var all=pjPayRows(fl), q=(S.pyq||'').trim().toLowerCase()
    +(noAdv.length?'<div class="pjnote">⚠ '+noAdv.length+' confirmed flat'+(noAdv.length>1?'s have':' has')+' no advance yet: '+noAdv.slice(0,8).map(function(f){return '<button class="btn sm" data-fpay="'+f.id+'">'+esc(f.no)+'</button>';}).join(' ')+(noAdv.length>8?' …':'')+'</div>':'')
    +'<input type="text" id="pyq" placeholder="Search flat no, owner, note" value="'+esc(S.pyq||'')+'" style="width:100%;margin-bottom:8px">'
    +'<div class="pyt"><div class="pyh"><span>Date</span><span>Flat</span><span>Owner</span><span>Note</span><span>Mode</span><span class="r">Amount</span></div>'
-   +(rows.slice(0,lim).map(function(r){ return '<button class="pyr" data-fpay="'+r.f.id+'"><span class="c-dt">'+dShort(r.x.on)+'</span><b class="c-fn">'+esc(r.f.no)+'</b><span class="c-ow">'+esc(r.f.customer||'—')+'</span><span class="c-nt">'+esc(r.x.note||'')+'</span><span class="c-md">'+esc(r.x.mode||'Cash')+'</span><b class="c-am goodt">'+money(r.x.amt)+'</b></button>'; }).join('')||'<div class="empty">'+(all.length?'No payments match':'No advance received yet — open a flat → Payments to add one')+'</div>')
+   +(rows.slice(0,lim).map(function(r){ return '<button class="pyr" data-fpay="'+r.f.id+'"><span class="c-dt">'+dShort(r.x.on)+'</span><b class="c-fn">'+esc(r.f.no)+'</b><span class="c-ow">'+esc(r.f.customer||'—')+'</span><span class="c-nt">'+esc(lpNoteT(r.x))+'</span><span class="c-md">'+esc(r.x.mode||'Cash')+'</span><b class="c-am goodt">'+money(r.x.amt)+'</b></button>'; }).join('')||'<div class="empty">'+(all.length?'No payments match':'No advance received yet — open a flat → Payments to add one')+'</div>')
    +(rows.length>lim?'<button class="btn" data-act="pymore" style="margin-top:8px">Show more ('+(rows.length-lim)+' more)</button>':'')+'</div></div>'; }
 function pjXls(p,ids,name){ var fl=(ids?ids.map(flatById).filter(function(f){return f&&!f.del;}):projFlats(p.id)).sort(flatSort), fn=(p.name||'project').replace(/[^\w\- ]+/g,'').trim()+' - '+(name||'flats')+'.xlsx';
   if(!admin()){ download(fn,xlsx([['Flats',[['Flat','Tower','Floor','Type','Owner','Phone','Paid by','Status','Measured on','Windows']].concat(fl.map(function(f){ var ty=typeById(f.ftype); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',isBld(f)?'Builder':'Owner',flatStatus(f),f.measuredOn||'',qty(f)]; }))]])); return; }
   var pr=pjPayRows(fl), pe=pendRows(fl);
   var A=[['Flat','Tower','Floor','Type','Owner','Phone','Paid by','Status','Measured on','Windows','Bill','Received','Due','Last payment','Mode']].concat(fl.map(function(f){ var lp=lastPay(f), ty=typeById(f.ftype), bf=isBld(f); return [f.no,f.tower||'',f.floor!=null?f.floor:'',ty?ty.name:'',f.customer||'',f.phone||'',bf?'Builder':'Owner',flatStatus(f),f.measuredOn||'',qty(f),Math.round(orderTotal(f)),bf?'':Math.round(paid(f)),bf?'':(f.stage>0||paid(f)>0.5?Math.round(Math.max(0,balance(f))):''),lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
-  var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',r.x.note||'',r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
+  var B=[['Date','Flat','Owner','Phone','Note','Mode','Amount']].concat(pr.map(function(r){ return [r.x.on||'',r.f.no,r.f.customer||'',r.f.phone||'',lpNoteT(r.x),r.x.mode||'Cash',Math.round(n(r.x.amt))]; }));
   var C=[['Flat','Owner','Phone','Status','Bill','Received','Pending','Last payment','Mode']].concat(pe.map(function(f){ var lp=lastPay(f); return [f.no,f.customer||'',f.phone||'',flatStatus(f),Math.round(orderTotal(f)),Math.round(paid(f)),Math.round(balance(f)),lp?lp.on:'',lp?(lp.mode||'Cash'):'']; }));
   var sh=[['Flats',A],['Pending',C],['Payments',B]];
   if(!ids){ sh.unshift(['Owners',ownXls(p)]);
@@ -3042,12 +3066,9 @@ function ownStmtView(p,g,OI,all){ var s=ownSum(g.flats), bf=all.filter(function(
    +'<div class="row" style="margin-top:8px"><button class="btn" data-act="opdfdl" data-k="'+esc(g.k)+'">⬇ PDF</button><button class="btn" data-act="oxls" data-k="'+esc(g.k)+'">⬇ Excel</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">💬 As text</button></div></div>'
    +'<div class="card"><h2>Flats</h2><table class="bldt"><thead><tr><th>Flat</th><th>Status</th><th class="num">Bill</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody>'+g.flats.map(function(f){ var t=orderTotal(f), pd=paid(f);
       return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></td><td class="num">'+(f.stage>=1?money(t):'<span class="faint">'+money(t)+'</span>')+'</td><td class="num">'+(pd>0.5?money(pd):'—')+'</td><td class="num">'+(f.stage>=1?(t-pd>0.5?'<b class="warnt">'+money(t-pd)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</td></tr>'; }).join('')+'</tbody></table></div>'
-   +'<div class="card"><h2>Payments</h2>'+(s.pays.length?'<table class="bldt"><tbody>'+s.pays.map(function(r){ return '<tr><td>'+dShort(r.x.on)+'</td><td style="white-space:nowrap">'+esc(r.f.no)+'</td><td>'+esc(r.x.mode||'Cash')+(r.x.note?' · '+esc(r.x.note):'')+'</td><td class="num"><b class="goodt">'+money(r.x.amt)+'</b></td></tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment yet</div>')+'</div>'; }
+   +'<div class="card"><div class="row between"><h2>Payments</h2>'+(s.pays.length?'<span class="faint">tap a payment to change its flats</span>':'')+'</div>'+lpGroupsHtml(g.flats)+'</div>'; }
 function ownFind(p,k){ var all=projFlats(p.id), OI=ownIdx(all); return ownGroups(all.filter(function(f){ return !isBld(f); }),OI).filter(function(g){ return g.k===k; })[0]; }
-function ownPayPop(p,g){ var due=function(f){ return f.stage>=1?Math.max(0,orderTotal(f)-paid(f)):0; }, first=g.flats.filter(function(f){ return due(f)>0.5; })[0]||g.flats[0];
-  pjPop('Payment from '+esc(g.name),'<div class="grid2"><label class="f"><span>For flat</span><select id="op_f">'+g.flats.map(function(f){ return '<option value="'+f.id+'"'+(f===first?' selected':'')+'>'+esc(f.no)+(due(f)>0.5?' — due '+money(due(f)):'')+'</option>'; }).join('')+(g.flats.length>1?'<option value="*">All his flats (fills each flat\'s due)</option>':'')+'</select></label>'
-    +pjFld('op_on','Date',today(),'date')+pjFld('op_amt','Amount ₹','','number',' inputmode="decimal"')+'<label class="f"><span>Mode</span><select id="op_md">'+MODES.map(function(m){ return '<option>'+m+'</option>'; }).join('')+'</select></label></div>'+pjFld('op_note','Note','','text',' placeholder="e.g. Advance / Cheque 123456"')+'<div id="op_err" class="warnt" style="font-size:13px"></div>',
-    '<button class="btn primary" data-act="opaysave" data-k="'+esc(g.k)+'">Save payment</button><button class="btn" data-pjx="1">Cancel</button>'); }
+function ownPayPop(p,g){ lpOpen(g.flats,g.name,'own',null); }
 function ownPaySave(p,g){ var amt=Math.round(n(pjV('op_amt'))*100)/100, er=document.getElementById('op_err'), to=pjV('op_f'), on=pjV('op_on')||today(), md=pjV('op_md')||'Cash', nt=pjV('op_note');
   if(!(amt>0)){ if(er) er.textContent='Enter the amount'; return; }
   var parts=[]; if(to==='*'){ var left=amt, due=function(f){ return f.stage>=1?Math.max(0,orderTotal(f)-paid(f)):0; };
@@ -3059,7 +3080,7 @@ function ownPaySave(p,g){ var amt=Math.round(n(pjV('op_amt'))*100)/100, er=docum
 function ownText(p,g){ var s=ownSum(g.flats);
   return (D.company.name||'')+'\n'+p.name+' — statement for '+g.name+'\nAs on '+dShort(today())+'\n\nFlats:\n'
     +g.flats.map(function(f){ var ty=typeById(f.ftype); return f.no+(ty?' ('+ty.name+')':'')+' — '+flatStatus(f)+' — '+money(orderTotal(f))+(f.stage>=1?'':' (not confirmed yet)'); }).join('\n')
-    +'\nTotal bill: '+money(s.bill)+(s.billGst>0.5?' (before GST '+money(s.billSub)+' + GST '+money(s.billGst)+')':'')+'\n\nPayments:\n'+(s.pays.length?s.pays.map(function(r){ return dShort(r.x.on)+' — '+r.f.no+' — '+(r.x.mode||'Cash')+(r.x.note?' — '+r.x.note:'')+' — '+money(r.x.amt); }).join('\n'):'None yet')
+    +'\nTotal bill: '+money(s.bill)+(s.billGst>0.5?' (before GST '+money(s.billSub)+' + GST '+money(s.billGst)+')':'')+'\n\nPayments:\n'+(s.pays.length?s.pays.map(function(r){ return dShort(r.x.on)+' — '+r.f.no+' — '+(r.x.mode||'Cash')+(lpNoteT(r.x)?' — '+lpNoteT(r.x):'')+' — '+money(r.x.amt); }).join('\n'):'None yet')
     +'\nTotal received: '+money(s.recv)+'\n\n'+(s.pend>0.5?'Balance to pay: '+money(s.pend):s.adv>0.5?'Advance with us: '+money(s.adv):'Nothing pending — thank you!')+(D.company.phone?'\n\n'+D.company.name+' · '+D.company.phone:''); }
 function ownPendText(p){ var all=projFlats(p.id), OI=ownIdx(all), G=ownGroups(all.filter(function(f){ return !isBld(f); }),OI).map(function(g){ return {g:g,s:ownSum(g.flats)}; }).filter(function(r){ return r.s.pend>0.5; }).sort(function(a,b){ return b.s.pend-a.s.pend; }), tot=G.reduce(function(a,r){ return a+r.s.pend; },0);
   return p.name+' — owners\' payments pending ('+dShort(today())+')\n'+G.map(function(r){ return r.g.name+(r.g.phone?' '+r.g.phone:'')+' ('+r.g.flats.map(function(f){return f.no;}).join(', ')+') — '+money(r.s.pend); }).join('\n')+'\nTotal pending: '+money(tot)+' from '+G.length+' owner'+(G.length===1?'':'s'); }
@@ -3116,9 +3137,9 @@ function bldXlsRows(p){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDo
 function ownXlsRows(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), R=Math.round;
   return [['Statement — '+g.name,'As on '+today()],['Phone',g.phone||''],['Project',p.name],[],['Flats'],['Flat','Type','Status','Before GST','GST %','GST','Amount']]
     .concat(cf.map(function(f){ var ty=typeById(f.ftype); return [f.no,ty?ty.name:'',flatStatus(f),R(subTotal(f)),gstOf(f),R(gstAmt(f)),R(orderTotal(f))]; })).concat([['','','Total bill',R(s.billSub),'',R(s.billGst),R(s.bill)],[],['Payments'],['Date','Flat','Mode','Note','Amount']])
-    .concat(s.pays.map(function(r){ return [r.x.on||'',r.f.no,r.x.mode||'Cash',r.x.note||'',R(n(r.x.amt))]; })).concat([['','','','Total received',R(s.recv)],[],[s.adv>0.5?'Advance with us':'Balance to pay',R(s.adv>0.5?s.adv:s.pend)]]); }
+    .concat(s.pays.map(function(r){ return [r.x.on||'',r.f.no,r.x.mode||'Cash',lpNoteT(r.x),R(n(r.x.amt))]; })).concat([['','','','Total received',R(s.recv)],[],[s.adv>0.5?'Advance with us':'Balance to pay',R(s.adv>0.5?s.adv:s.pend)]]); }
 function ownAll(p){ var all=projFlats(p.id), OI=ownIdx(all); return ownGroups(all.filter(function(f){ return !isBld(f); }),OI).map(function(g){ return {g:g,s:ownSum(g.flats)}; }); }
-function ownPaysRows(p){ var out=[]; ownAll(p).forEach(function(r){ r.s.pays.forEach(function(x){ out.push([x.x.on||'',r.g.name,r.g.phone||'',x.f.no,x.x.mode||'Cash',x.x.note||'',Math.round(n(x.x.amt))]); }); });
+function ownPaysRows(p){ var out=[]; ownAll(p).forEach(function(r){ r.s.pays.forEach(function(x){ out.push([x.x.on||'',r.g.name,r.g.phone||'',x.f.no,x.x.mode||'Cash',lpNoteT(x.x),Math.round(n(x.x.amt))]); }); });
   return [['Date','Owner','Phone','Flat','Mode','Note','Amount']].concat(out.sort(function(a,b){ return a[0]<b[0]?-1:a[0]>b[0]?1:0; })); }
 /* ticked flats → who pays */
 function payerBulk(v){ var fl=pjSelIds().map(flatById).filter(function(f){ return f&&!f.del; }), ch=fl.filter(function(f){ return isBld(f)!==(v==='b'); });
@@ -3253,7 +3274,7 @@ function bldPdf(p){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDone(p
 function ownPdf(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), gx=cf.some(function(f){ return gstOf(f)>0; }), k=0, m=0, adv=s.adv>0.5;
   var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:96},{h:'Status',w:92}].concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
   var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
-    {title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Flat',w:60},{h:'Mode',w:62},{h:'Reference / note',w:180},{h:'Amount (Rs.)',w:90,a:'r'}],rows:s.pays.map(function(r){ return [++m,dFull(r.x.on),r.f.no,r.x.mode||'Cash',r.x.note||'',nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(s.recv)]}];
+    {title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Flat',w:60},{h:'Mode',w:62},{h:'Reference / note',w:180},{h:'Amount (Rs.)',w:90,a:'r'}],rows:s.pays.map(function(r){ return [++m,dFull(r.x.on),r.f.no,r.x.mode||'Cash',lpNoteT(r.x,1),nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(s.recv)]}];
   var sum=(gx?[['Bill — taxable value',rsIN(s.billSub)],['GST',rsIN(s.billGst)]]:[]).concat([['Total bill',rsIN(s.bill),1],['Less: received',rsIN(s.recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(adv?s.adv:s.pend),1,adv?PDFC.good:PDFC.warn]]);
   return stmtPdfDoc({title:'STATEMENT OF ACCOUNT',party:g.name,ref:p.name,
     to:{label:'Statement for',lines:[[g.name,1]].concat(g.phone?[['Phone: '+g.phone]]:[]).concat([['Flat'+(cf.length===1?'':'s')+': '+(cf.map(function(f){ return f.no; }).join(', ')||'—')]])},
@@ -3675,7 +3696,7 @@ function txSales(X){ var r=[];
 function txRec(X){ var r=[], f=X.f;
   if(f!=='bld') (f===''?moneyOrders():allOrders()).forEach(function(o){
     if((f==='ord'&&o.proj)||(f==='flat'&&(!o.proj||isBld(o)))||(f==='mi'&&isBld(o))) return;
-    (o.payments||[]).forEach(function(p){ if(txInM(p.on,X)) r.push({on:p.on,t:txOName(o),mode:p.mode||'Cash',note:p.note||'',amt:n(p.amt),go:'o:'+o.id+':payments'}); }); });
+    (o.payments||[]).forEach(function(p){ if(txInM(p.on,X)) r.push({on:p.on,t:txOName(o),mode:p.mode||'Cash',note:lpNoteT(p),amt:n(p.amt),go:'o:'+o.id+':payments'}); }); });
   if(admin()&&f!=='ord'&&f!=='flat'){ var ids=f===''?Object.keys(D.bldr||{}):(D.projects||[]).map(function(p){ return p.id; });
     ids.forEach(function(id){ var p=projById(id), B=f===''?(D.bldr[id]||{}):bldOf(p); (B.pays||[]).forEach(function(x){ if(!txInM(x.on,X)) return;
       r.push({on:x.on,t:'Builder · '+txPName(p),mode:x.mode||'Cash',note:x.note||'',amt:n(x.amt),go:p?'p:'+p.id:''}); }); }); }
@@ -4104,6 +4125,154 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t||t.id!=='a
 setInterval(function(){ if(document.visibilityState==='visible') aliveCheck(); },60000);
 setTimeout(aliveCheck,8000);
 
+
+/* ============================================================
+   LINKED PAYMENTS (asked: "In apartment option to link payment with flat and customers in orders")
+   - one payment from a flat owner for several of his flats, or from a customer for several of his orders:
+     tick the flats / orders and the amount for each (the dues fill in); each flat / order keeps its own part,
+     the parts share one 'grp'
+   - tap a payment (owner statement, or ✎ on a flat / order) to change its flats / orders, amounts, date, mode,
+     or delete it (admin)
+   - flat owners are listed in the Orders tab too: chip "Flat owners", in search, and in ₹ Pending (admin)
+   ============================================================ */
+var LP=null;
+function lpR2(x){ return Math.round(n(x)*100)/100; }
+function lpNm(x){ return String(x||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function lpDg(x){ return String(x||'').replace(/\D/g,'').slice(-10); }
+function lpParts(grp){ var out=[]; if(!grp) return out; D.orders.concat(liveFlats()).forEach(function(o){ (o.payments||[]).forEach(function(x,i){ if(x&&x.grp===grp) out.push({o:o,x:x,i:i}); }); }); return out; }
+function lpShort(o){ return o.proj?String(o.no||''):'#'+o.no; }
+function lpTitle(o){ return o.proj?String(o.no||''):'#'+o.no+' · '+(o.kind==='doors'?'doors':'windows'); }
+/* his other flats (same owner, same project) / his other open orders (same name or phone) */
+function lpSibs(o){ if(!o) return [];
+  if(o.proj){ if(isBld(o)) return [o]; var all=projFlats(o.proj), OI=ownIdx(all), k=OI.key(o); if(!k) return [o]; return all.filter(function(f){ return !isBld(f)&&OI.key(f)===k; }).sort(flatSort); }
+  var nm=lpNm(o.customer), dg=lpDg(o.phone);
+  return D.orders.filter(function(x){ if(x.id===o.id) return true; if(x.archived||x.del||x.tpl) return false; return (nm&&lpNm(x.customer)===nm)||(dg.length===10&&lpDg(x.phone)===dg); }).sort(function(a,b){ return n(a.no)-n(b.no); }); }
+function lpWho(o){ if(o.proj){ var all=projFlats(o.proj), OI=ownIdx(all), k=OI.key(o); return k?OI.name(k):(o.customer||''); } return o.customer||''; }
+/* still to pay on a flat / order, leaving out the payment being changed */
+function lpDue(o,skip){ if(o.proj&&!(o.stage>=1)) return 0; var pd=0; (o.payments||[]).forEach(function(x,i){ if(!skip||!skip(o,x,i)) pd+=n(x.amt); }); return Math.max(0,lpR2(orderTotal(o)-pd)); }
+function lpCanAdd(o){ return !!o&&!prod()&&(admin()||!o.proj); }
+function lpMulti(x){ return !!(x&&x.grp)&&lpParts(x.grp).length>1; }
+function lpTot(P){ return lpR2(P.reduce(function(a,p){ return a+n(p.x.amt); },0)); }
+/* "🔗 part of ₹1,00,000 — also B-608, C-201" under a payment */
+function lpInfo(o,x){ if(!x||!x.grp) return ''; var P=lpParts(x.grp); if(P.length<2) return ''; var oth=P.filter(function(p){ return p.o!==o; }).map(function(p){ return lpShort(p.o); });
+  return '<span class="lpinfo">🔗 part of '+money(lpTot(P))+' — also '+esc(oth.slice(0,4).join(', '))+(oth.length>4?' +'+(oth.length-4):'')+'</span>'; }
+/* the note in statements, PDFs, Excel: "Cheque 123 · part of ₹1,00,000" */
+function lpNoteT(x,rs){ var nt=(x&&x.note)||''; if(!x||!x.grp) return nt; var P=lpParts(x.grp); if(P.length<2) return nt; var t=lpTot(P); return (nt?nt+' · ':'')+'part of '+(rs?rsIN(t):money(t)); }
+function lpEditBtn(o,x,i){ return admin()?'<button type="button" class="btn sm ghost lpe" data-lpe="'+esc(x&&x.grp?'g:'+x.grp:'i:'+o.id+':'+i)+'" aria-label="Change this payment" title="Change this payment">✎</button>':''; }
+function lpBtn(o){ if(!lpCanAdd(o)||o.tpl) return ''; var sb=lpSibs(o); if(sb.length<2) return ''; return '<button class="btn sm" data-act="lpnew">🔗 One payment for more '+(o.proj?'flats':'orders')+'</button>'; }
+
+/* ---------- the popup ---------- */
+function lpLinked(){ return lpR2(LP.rows.reduce(function(a,r){ return a+(r.tick?n(r.amt):0); },0)); }
+function lpTicked(){ return LP.rows.filter(function(r){ return r.tick&&r.amt>0.005; }); }
+function lpOpen(rows,name,kind,ed){ var skip=ed?ed.skip:null;
+  LP={kind:kind,name:name,ed:ed||null,fixed:!!ed,on:ed?ed.on:today(),mode:ed?ed.mode:'Cash',note:ed?ed.note:'',amt:ed?ed.amt:0,
+    rows:rows.map(function(o){ var have=ed?lpR2(ed.parts.filter(function(p){ return p.o===o; }).reduce(function(a,p){ return a+n(p.x.amt); },0)):0; return {o:o,due:lpDue(o,skip),tick:have>0.005,amt:have,x:false}; })};
+  lpPop(); }
+function lpDueTxt(r){ var o=r.o, t=orderTotal(o); if(o.proj&&!(o.stage>=1)) return 'not confirmed yet · '+money(t);
+  return r.due>0.5?'due '+money(r.due)+(Math.abs(r.due-t)>0.5?' of '+money(t):''):'<span class="goodt">paid</span> · '+money(t); }
+function lpPop(){ var L=LP, w=L.kind==='own'?'flat':'order';
+  pjPop((L.ed?'Change payment':'Payment')+(L.name?' from '+esc(L.name):''),
+    '<div class="grid2">'+pjFld('lp_on','Date',L.on,'date')+pjFld('lp_amt','Amount received ₹',L.amt>0?String(L.amt):'','number',' inputmode="decimal"')
+    +'<label class="f"><span>Mode</span><select id="lp_md">'+MODES.map(function(m){ return '<option'+(L.mode===m?' selected':'')+'>'+m+'</option>'; }).join('')+'</select></label>'+pjFld('lp_note','Note',L.note||'','text',' placeholder="e.g. Cheque 123456"')+'</div>'
+    +'<div class="row between lph"><b>For which '+w+'s?</b><button type="button" class="btn sm ghost" data-act="lpfill">Fill dues in order</button></div>'
+    +'<div class="lpl">'+L.rows.map(function(r,i){ return '<div class="lprow'+(r.tick?' on':'')+'"><label><input type="checkbox" data-lpt="'+i+'"'+(r.tick?' checked':'')+'><span><b>'+esc(lpTitle(r.o))+'</b><small>'+lpDueTxt(r)+'</small></span></label>'
+      +'<input type="number" inputmode="decimal" data-lpa="'+i+'" placeholder="₹" value="'+(r.tick&&r.amt>0?r.amt:'')+'" aria-label="Amount for '+esc(lpShort(r.o))+'"></div>'; }).join('')+'</div>'
+    +'<div id="lp_sum" class="lpsum"></div><div id="lp_err" class="warnt" style="font-size:13px"></div>',
+    '<button class="btn primary" data-act="lpsave">'+(L.ed?'Save':'Save payment')+'</button>'+(L.ed&&admin()?'<button class="btn danger" data-act="lpdel">Delete</button>':'')+'<button class="btn" data-pjx="1">Cancel</button>');
+  lpPaint(); }
+/* the amount received is spread over the ticked flats / orders, oldest due first; what is left goes on the last one */
+function lpFill(){ var left=lpR2(LP.amt), last=null; LP.rows.forEach(function(r){ if(!r.x){ r.tick=false; r.amt=0; } });
+  LP.rows.forEach(function(r){ if(r.x||left<=0.005||!(r.due>0.005)) return; var t=Math.min(left,r.due); r.tick=true; r.amt=lpR2(t); left=lpR2(left-t); last=r; });
+  if(left>0.005){ if(!last) last=LP.rows.filter(function(r){ return !r.x; })[0]||LP.rows[0]; if(last){ last.tick=true; last.x=false; last.amt=lpR2(n(last.amt)+left); } } }
+function lpFillBtn(){ if(!LP) return; if(LP.fixed&&LP.amt>0) lpFill(); else { LP.rows.forEach(function(r){ r.x=false; r.tick=r.due>0.005; r.amt=r.tick?r.due:0; }); LP.fixed=false; } lpPaint(); }
+function lpPaint(skip){ if(!LP) return; if(!LP.fixed) LP.amt=lpLinked();
+  LP.rows.forEach(function(r,i){ var c=document.querySelector('[data-lpt="'+i+'"]'), a=document.querySelector('[data-lpa="'+i+'"]'); if(c) c.checked=!!r.tick; if(a&&i!==skip) a.value=r.tick&&r.amt>0?String(r.amt):''; var row=c&&c.closest('.lprow'); if(row) row.classList.toggle('on',!!r.tick); });
+  var A=document.getElementById('lp_amt'); if(A&&!LP.fixed&&document.activeElement!==A) A.value=LP.amt>0?String(LP.amt):'';
+  var el=document.getElementById('lp_sum'); if(!el) return; var L=lpLinked(), T=lpR2(LP.amt), d=lpR2(T-L), k=lpTicked().length, w=LP.kind==='own'?'flat':'order';
+  el.innerHTML=!(T>0)?'<span class="faint">Type the amount, or tick the '+w+'s it is for</span>'
+    :Math.abs(d)<=0.5?'<span class="goodt">✓ '+money(T)+' linked to '+k+' '+w+(k===1?'':'s')+'</span>'
+    :d>0?'<b class="warnt">'+money(d)+' not linked yet</b> — tick another '+w+' or change the amounts'
+    :'<b class="warnt">'+money(-d)+' more than the payment</b> — lower the amounts';
+  /* e.g. a big payment put on one flat: say so, Fill dues spreads it */
+  var over=LP.rows.filter(function(r){ return r.tick&&r.amt>r.due+0.5&&!(r.o.proj&&!(r.o.stage>=1)); }), other=LP.rows.some(function(r){ return !(r.tick&&r.amt>0)&&r.due>0.5; });
+  if(over.length&&other) el.innerHTML+='<div class="lpover">'+esc(over.map(function(r){ return lpShort(r.o); }).join(', '))+' gets '+money(over.reduce(function(a,r){ return a+r.amt-r.due; },0))+' more than '+(over.length>1?'their':'its')+' due — tap <b>Fill dues in order</b> to spread it over his other '+w+'s</div>'; }
+/* take the payment being changed off its flats / orders (false: it changed on another phone meanwhile) */
+function lpRemove(ed){ if(ed.grp){ var hit=false; D.orders.concat(liveFlats()).forEach(function(o){ var ps=o.payments||[]; if(ps.some(function(x){ return x&&x.grp===ed.grp; })){ o.payments=ps.filter(function(x){ return !(x&&x.grp===ed.grp); }); hit=true; } }); return hit; }
+  var h=ed.holder, ps=(h&&h.payments)||[], i=ps.indexOf(ed.x);
+  if(i<0) ps.forEach(function(x,j){ if(i<0&&x&&!x.grp&&(x.on||'')===(ed.x.on||'')&&lpR2(x.amt)===lpR2(ed.x.amt)&&(x.mode||'')===(ed.x.mode||'')&&(x.note||'')===(ed.x.note||'')) i=j; });
+  if(i<0) return false; ps.splice(i,1); return true; }
+function lpSave(){ var L=LP; if(!L) return; var er=document.getElementById('lp_err'), on=pjV('lp_on')||today(), md=pjV('lp_md')||'Cash', nt=pjV('lp_note'), w=L.kind==='own'?'flat':'order';
+  var parts=lpTicked(), tot=L.fixed?lpR2(L.amt):lpLinked(), lk=lpLinked();
+  var msg=!(tot>0)?'Enter the amount':!parts.length?'Tick the '+w+' this payment is for':Math.abs(lk-tot)>0.5?'The '+w+'s add up to '+money(lk)+' but the payment is '+money(tot)+' — make them match':'';
+  if(!msg&&L.ed&&!admin()) msg='Only Admin can change a payment';
+  if(!msg&&!L.ed&&parts.some(function(r){ return !lpCanAdd(r.o); })) msg='Only Admin records payments for flats';
+  if(msg){ if(er) er.textContent=msg; return; }
+  var grp=(L.ed&&L.ed.grp)||('lp'+uid()+uid());
+  if(L.ed&&!lpRemove(L.ed)){ if(er) er.textContent='This payment was changed on another phone — close and open it again'; return; }
+  parts.forEach(function(r){ r.o.payments=r.o.payments||[]; r.o.payments.push({on:on,note:nt,mode:md,amt:lpR2(r.amt),grp:grp}); });
+  LP=null; pjPopX(); save(); render();
+  toast('✓ '+money(tot)+(L.name?' from '+L.name:'')+(L.ed?' changed':' saved')+(parts.length>1?' — '+parts.map(function(r){ return lpShort(r.o)+' '+money(r.amt); }).join(' · '):' — '+lpShort(parts[0].o))); }
+function lpDel(){ var L=LP; if(!L||!L.ed||!admin()) return; var P=L.ed.parts, t=lpTot(P);
+  if(!confirm('Delete this payment of '+money(t)+' ('+dShort(L.ed.on)+')?'+(P.length>1?'\nIt is taken off '+P.map(function(p){ return lpShort(p.o); }).join(', ')+'.':''))) return;
+  if(!lpRemove(L.ed)){ toast('This payment was changed on another phone — open it again'); return; }
+  LP=null; pjPopX(); save(); render(); toast('Payment of '+money(t)+' deleted'); }
+function lpNew(o){ if(!lpCanAdd(o)) return; var rows=lpSibs(o); if(!o.proj) rows=[o].concat(rows.filter(function(x){ return x!==o; }));
+  lpOpen(rows,lpWho(o),o.proj?'own':'cust',null); var r=LP.rows.filter(function(r){ return r.o===o; })[0]; if(r){ r.tick=true; r.amt=r.due>0.005?r.due:0; } lpPaint(); }
+function lpEditRef(ref){ if(!admin()) return; var ed=null, s=String(ref||'');
+  if(s.slice(0,2)==='g:'){ var grp=s.slice(2), P=lpParts(grp); if(!P.length) return; ed={grp:grp,parts:P,on:P[0].x.on||today(),mode:P[0].x.mode||'Cash',note:P[0].x.note||'',amt:lpTot(P),skip:function(o,x){ return !!x&&x.grp===grp; }}; }
+  else { var m=s.split(':'), h=byId(m[1]), x=h&&(h.payments||[])[+m[2]]; if(!x) return; if(x.grp) return lpEditRef('g:'+x.grp);
+    ed={grp:'',holder:h,x:x,parts:[{o:h,x:x,i:+m[2]}],on:x.on||today(),mode:x.mode||'Cash',note:x.note||'',amt:lpR2(x.amt),skip:function(o,y){ return y===x; }}; }
+  var o=ed.parts[0].o, rows=lpSibs(o); ed.parts.forEach(function(p){ if(rows.indexOf(p.o)<0) rows.push(p.o); });
+  lpOpen(rows,lpWho(o),o.proj?'own':'cust',ed); }
+/* an owner's statement: one row per payment, its flats underneath — tap to change */
+function lpGroups(fl){ var by={}, out=[]; fl.forEach(function(f){ (f.payments||[]).forEach(function(x,i){ if(!x) return; var k=x.grp?'g:'+x.grp:'i:'+f.id+':'+i, G=by[k];
+    if(!G){ G=by[k]={ref:k,on:x.on||'',mode:x.mode||'Cash',note:x.note||'',amt:0,parts:[]}; out.push(G); } G.amt=lpR2(G.amt+n(x.amt)); G.parts.push({o:f,x:x}); }); });
+  return out.sort(function(a,b){ return a.on<b.on?-1:a.on>b.on?1:0; }); }
+function lpGroupsHtml(fl){ var G=lpGroups(fl); if(!G.length) return '<div class="empty">No payment yet</div>';
+  return G.map(function(g){ var multi=g.parts.length>1, P=g.parts.slice().sort(function(a,b){ return flatSort(a.o,b.o); });
+    return '<button type="button" class="lpg" data-lpe="'+esc(g.ref)+'"><span class="lpg1"><span>'+dShort(g.on)+' · '+esc(g.mode)+(g.note?' · '+esc(g.note):'')+'</span><b class="goodt">'+money(g.amt)+'</b></span>'
+      +'<span class="lpg2">'+P.map(function(p){ return '<span class="lpf">'+esc(lpShort(p.o))+(multi?' '+money(p.x.amt):'')+'</span>'; }).join(' · ')+' <span class="lped">✎ change</span></span></button>'; }).join(''); }
+
+/* ---------- flat owners in the Orders tab ---------- */
+function lpOwnAll(){ var out=[]; if(!FL.loaded) return out; (D.projects||[]).forEach(function(p){ if(p.archived) return; var all=projFlats(p.id); if(!all.length) return; var OI=ownIdx(all);
+    ownGroups(all.filter(function(f){ return !isBld(f); }),OI).forEach(function(g){ out.push({p:p,g:g}); }); }); return out; }
+function lpOwnChip(){ return !prod()&&!!FL.loaded&&(D.projects||[]).some(function(p){ return !p.archived; })&&liveFlats().some(function(f){ return !isBld(f)&&!!String(f.customer||f.phone||'').trim(); }); }
+function lpOwnStat(fl){ var t=fl.length, d=fl.filter(function(f){ return f.stage>=4; }).length, w=fl.filter(function(f){ return f.stage===2||f.stage===3; }).length, c=fl.filter(function(f){ return f.stage>=1; }).length;
+  return d===t?['Delivered','s4']:d?[d+'/'+t+' delivered','s3']:w?['In production','s2']:c?['Confirmed','s1']:['Not confirmed','s0']; }
+function lpOwnRow(r){ var g=r.g, s=admin()?ownSum(g.flats):null, nos=g.flats.map(function(f){ return f.no; }), st=lpOwnStat(g.flats);
+  return '<button class="o oown" data-ownopen="'+esc(r.p.id)+'" data-k="'+esc(g.k)+'"><div class="grow"><div class="n">👤 '+esc(g.name)+'</div><div class="d">🏢 '+esc(r.p.name)+' · '+nos.length+' flat'+(nos.length>1?'s':'')+': '+esc(nos.slice(0,4).join(', '))+(nos.length>4?' +'+(nos.length-4):'')+(g.phone?' · '+esc(g.phone):'')+'</div></div>'
+    +'<span class="stage '+st[1]+'">'+st[0]+'</span>'+(s?'<div class="amt right">'+money(s.bill)+(s.pend>0.5?'<small>pending '+money(s.pend)+'</small>':s.adv>0.5?'<small style="color:var(--good)">advance '+money(s.adv)+'</small>':s.bill>0.5?'<small style="color:var(--good)">paid</small>':'')+'</div>':'')+'</button>'; }
+function lpOrdersList(list,q){ var F=S.filter, h=list.map(oRow).join(''), ow=[];
+  if(F==='own'&&!FL.loaded) return '<div class="empty">Loading flats…</div>';
+  if(!prod()&&(F==='own'||(F===null&&q)||(F==='pay'&&admin()))){
+    ow=lpOwnAll().filter(function(r){ if(q&&(r.g.name+' '+(r.g.phone||'')+' '+r.p.name+' '+r.g.flats.map(function(f){ return f.no; }).join(' ')).toLowerCase().indexOf(q)<0) return false; return F!=='pay'||ownSum(r.g.flats).pend>0.5; });
+    if(F==='pay') ow.sort(function(a,b){ return ownSum(b.g.flats).pend-ownSum(a.g.flats).pend; }); }
+  if(!h&&!ow.length) return '<div class="empty">'+(F==='own'?(q?'No owner matches':'No flat owners yet — add owner names on the flats'):'No orders here')+'</div>';
+  var lim=S.owolim||60, more=ow.length-lim;
+  return h+(ow.length?(F==='own'?'':'<div class="olh">👤 Flat owners</div>')+ow.slice(0,lim).map(lpOwnRow).join('')+(more>0?'<button class="btn sm ghost" data-act="owomore" style="margin-top:8px">Show '+Math.min(more,200)+' more</button>':''):''); }
+function lpOwnOpen(pid,k){ var p=projById(pid); if(!p) return; if(S.pid!==p.id) pjFresh(); S.tab='project'; S.pid=p.id; S.psel=S.psel||{}; S.plim=60;
+  if(admin()){ S.psub='owners'; ownRef(p); S.owk=k; } else { S.psub='flats'; var F=S.pf||(S.pf={tower:'',st:'',q:''}); F.ow=k; F.grp=true; }
+  render(); window.scrollTo(0,0); }
+/* on a customer's order: his flats, if he is also a flat owner (same phone, or same name when a phone is missing) */
+function lpOwnOf(o){ var nm=lpNm(o.customer), dg=lpDg(o.phone); if(!nm&&dg.length<10) return [];
+  return lpOwnAll().filter(function(r){ var gd=lpDg(r.g.phone); if(dg.length===10&&gd.length===10) return gd===dg; return !!nm&&lpNm(r.g.name)===nm; }); }
+function lpOwnCard(o){ if(!o||o.proj||o.tpl||prod()) return ''; var M=lpOwnOf(o); if(!M.length) return '';
+  return '<div class="card olist"><h2>👤 '+esc(o.customer||'This customer')+' also has flats</h2>'+M.map(lpOwnRow).join('')+'</div>'; }
+
+/* ---------- events ---------- */
+document.addEventListener('input',function(e){ var t=e.target; if(!LP||!t||!t.closest||!t.closest('.pjpop')) return;
+  if(t.id==='lp_amt'){ LP.amt=lpR2(t.value); LP.fixed=String(t.value).trim()!==''; if(LP.fixed&&LP.amt>0) lpFill(); lpPaint(); return; }
+  if(t.dataset&&t.dataset.lpa!==undefined){ var i=+t.dataset.lpa, r=LP.rows[i]; if(!r) return; r.amt=lpR2(t.value); r.tick=r.amt>0; r.x=!r.tick; lpPaint(i); } });
+document.addEventListener('change',function(e){ var t=e.target; if(!LP||!t||!t.dataset||t.dataset.lpt===undefined) return; var i=+t.dataset.lpt, r=LP.rows[i]; if(!r) return;
+  if(t.checked){ r.tick=true; r.x=false; if(!(r.amt>0)){ var left=LP.fixed?lpR2(LP.amt-lpLinked()):0; r.amt=LP.fixed&&left>0.005?lpR2(r.due>0.005?Math.min(left,r.due):left):(r.due>0.005?r.due:0); } }
+  else { r.tick=false; r.x=true; r.amt=0; }
+  lpPaint(); if(t.checked&&!(r.amt>0)){ var a=document.querySelector('[data-lpa="'+i+'"]'); if(a) a.focus(); } });
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-lpe],[data-ownopen],[data-act="lpsave"],[data-act="lpdel"],[data-act="lpfill"],[data-act="lpnew"],[data-act="owomore"]'); if(!t) return; var d=t.dataset;
+  if(d.lpe!==undefined){ lpEditRef(d.lpe); return; }
+  if(d.ownopen!==undefined){ lpOwnOpen(d.ownopen,d.k||''); return; }
+  if(d.act==='lpsave') lpSave(); else if(d.act==='lpdel') lpDel(); else if(d.act==='lpfill') lpFillBtn();
+  else if(d.act==='lpnew'){ var o=order(); if(o) lpNew(o); } else if(d.act==='owomore'){ S.owolim=(S.owolim||60)+200; render(); } });
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
@@ -4158,10 +4327,10 @@ function subPayments(o){
   var ps=o.payments||[];
   var adv=advanceDue(o), bal=balance(o), pd=paid(o);
   return '<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Order total</span><b>'+money(orderTotal(o))+'</b><i>advance '+D.advancePct+'% = '+money(adv)+'</i></div><div class="kpi good"><span>Received</span><b>'+money(pd)+'</b><i>'+(pd>=adv-0.5?'advance received':pd>0?'part advance':'advance pending')+'</i></div><div class="kpi'+(bal>0.5?' warn':' good')+'"><span>Balance pending</span><b>'+money(Math.max(0,bal))+'</b><i>'+(bal<=0.5?'fully paid':o.stage>=3?'collect before delivery':'')+'</i></div></div>'
-   +'<div class="card"><div class="row between"><h2>Payments</h2><span class="row">'+(pd<adv-0.5?'<button class="btn sm primary" data-act="payadv">+ Advance '+money(adv-pd)+'</button>':'')+(bal>0.5?'<button class="btn sm good" data-act="paybal">+ Balance '+money(bal)+'</button>':'')+'</span></div>'
-   +'<table><thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody>'+(ps.length?ps.map(function(p,i){return '<tr><td>'+dShort(p.on)+'</td><td>'+esc(p.note)+' <span class="faint">'+(p.mode||'Cash')+'</span></td><td class="num">'+money(p.amt)+'</td><td>'+delBtn('data-pdel',i)+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">No payment yet</td></tr>')+'</tbody></table>'
+   +'<div class="card"><div class="row between"><h2>Payments</h2><span class="row">'+(pd<adv-0.5?'<button class="btn sm primary" data-act="payadv">+ Advance '+money(adv-pd)+'</button>':'')+(bal>0.5?'<button class="btn sm good" data-act="paybal">+ Balance '+money(bal)+'</button>':'')+lpBtn(o)+'</span></div>'
+   +'<table><thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody>'+(ps.length?ps.map(function(p,i){return '<tr><td>'+dShort(p.on)+'</td><td>'+esc(p.note)+' <span class="faint">'+(p.mode||'Cash')+'</span>'+lpInfo(o,p)+'</td><td class="num">'+money(p.amt)+'</td><td class="nw">'+lpEditBtn(o,p,i)+(lpMulti(p)?'':delBtn('data-pdel',i))+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">No payment yet</td></tr>')+'</tbody></table>'
    +'<div class="row" style="margin-top:12px"><input type="date" id="pon" value="'+today()+'" style="width:150px"><input type="text" id="pnote" placeholder="Advance / Balance" class="grow"><select id="pmode" style="width:95px">'+opts(MODES,'Cash')+'</select><input type="number" id="pamt" placeholder="₹" style="width:120px"><button class="btn primary" data-act="pay">Add</button></div>'
-   +'<div class="row" style="margin-top:12px"><button class="btn sm" data-act="invoice">Print bill / receipt</button></div></div>'+invCard(o);
+   +'<div class="row" style="margin-top:12px"><button class="btn sm" data-act="invoice">Print bill / receipt</button></div></div>'+lpOwnCard(o)+invCard(o);
 }
 function subCutting(o,forPrint){
   if(!o.items.length) return '<div class="card empty">Add items first</div>';
@@ -4434,7 +4603,7 @@ function itemsTable(orders,withGst){ var rows='',k=1,sub=0,gst=0;
     +'<tr class="tot"><td colspan="5" class="right">Total</td><td class="num">'+money(sub+gst)+'</td></tr></tfoot></table>', total:sub+gst}; }
 function quoteHtml(orders){ var o=orders[0], t=itemsTable(orders); return docHead('QUOTATION','Q-'+orders.map(function(x){return x.no;}).join('/'),o)+t.html+'<div class="foot"><b>Advance to confirm:</b> '+D.advancePct+'% = '+money(Math.round(t.total*n(D.advancePct)/100))+' · <b>Balance before delivery:</b> '+money(t.total-Math.round(t.total*n(D.advancePct)/100))+'<br><b>Terms:</b> '+esc(D.company.terms)+'<br><br>Thank you for your enquiry.</div><div class="sign"><span>Customer</span><span>For '+esc(D.company.name)+'</span></div>'; }
 function invoiceHtml(o){ var t=itemsTable([o]); return docHead(o.stage>=4?'INVOICE':'PROFORMA INVOICE','INV-'+o.no,o)+t.html
-  +'<table><tbody>'+(o.payments||[]).map(function(p){return '<tr><td>Received '+dShort(p.on)+' '+esc(p.note)+'</td><td class="num">'+money(p.amt)+'</td></tr>';}).join('')+'<tr><td>Total received (advance)</td><td class="num">'+money(paid(o))+'</td></tr>'+(isBld(o)?'<tr class="tot"><td>PAYABLE BY THE BUILDER</td><td class="num">'+money(orderTotal(o))+'</td></tr>':'<tr class="tot"><td>'+(balance(o)>0.5?'BALANCE PENDING':'FULLY PAID')+'</td><td class="num">'+money(Math.max(0,balance(o)))+'</td></tr>')+'</tbody></table><div class="sign"><span>Received by</span><span>For '+esc(D.company.name)+'</span></div>'; }
+  +'<table><tbody>'+(o.payments||[]).map(function(p){return '<tr><td>Received '+dShort(p.on)+' '+esc(lpNoteT(p))+'</td><td class="num">'+money(p.amt)+'</td></tr>';}).join('')+'<tr><td>Total received (advance)</td><td class="num">'+money(paid(o))+'</td></tr>'+(isBld(o)?'<tr class="tot"><td>PAYABLE BY THE BUILDER</td><td class="num">'+money(orderTotal(o))+'</td></tr>':'<tr class="tot"><td>'+(balance(o)>0.5?'BALANCE PENDING':'FULLY PAID')+'</td><td class="num">'+money(Math.max(0,balance(o)))+'</td></tr>')+'</tbody></table><div class="sign"><span>Received by</span><span>For '+esc(D.company.name)+'</span></div>'; }
 function quoteText(orders){ var o=orders[0], t='*'+D.company.name+'* — Quotation\nTo: '+o.customer+'\n\n', g=0;
   orders.forEach(function(x){ x.items.forEach(function(it){ t+='• '+(it.loc||'')+' '+it.type+(it.col&&it.col!=='white'&&x.kind!=='doors'?' '+wcol(it).n:'')+(x.kind!=='doors'&&shapeOf(it)?' ('+shapeName(it)+')':'')+(it.series?' '+it.series:'')+' '+it.w+'x'+it.h+' x'+it.qty+' = '+money(itemPrice(x,it))+'\n'; }); if(n(x.discount)) t+='Discount −'+money(x.discount)+'\n'; g+=orderTotal(x); });
   return t+'\n*Total: '+money(g)+'*'+(orders.some(function(x){return gstOf(x);})?' (incl. GST)':'')+'\nAdvance '+D.advancePct+'%: '+money(Math.round(g*n(D.advancePct)/100))+' · Balance: '+money(g-Math.round(g*n(D.advancePct)/100))+'\n\n'+D.company.terms+'\n'+D.company.phone; }
@@ -4486,7 +4655,7 @@ document.addEventListener('click',function(e){
   var o=order(), d=t.dataset;
   if(d.go){ go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
-  if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':+d.filter; go('orders'); return; }
+  if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':d.filter==='own'?'own':+d.filter; go('orders'); return; }
   if(d.sub){ S.sub=d.sub; render(); return; }
   if(d.esub){ S.esub=d.esub; render(); return; }
   if(d.act==='emon'){ S.em=d.m; render(); window.scrollTo(0,0); return; }
