@@ -719,6 +719,16 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 /* 🏗 builder flat: the builder at the top of the Owner tab */
 .bldbox{background:#fff7e6;border:1px solid #f5d9a8;border-radius:12px;padding:10px 12px;margin:0 0 12px;line-height:1.45}
 .bldbox a{color:inherit}
+
+/* ⚙ new window defaults + sizes in */
+.wdbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:0 0 10px;font-size:14px}
+.wdbar .btn{margin-left:4px}
+.wdu{display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--soft);font-size:13px}
+.wdu select{width:auto;min-height:34px;padding:4px 8px;font-size:14px}
+.wdhint{margin:-4px 0 10px 4px;font-size:12.5px}
+.wdapp{gap:8px;align-items:flex-start;margin:8px 0 4px;font-size:14px}
+.wdapp input{width:auto;min-height:0;margin-top:3px}
+.dkmm{display:block;margin-top:2px}
 </style>
 </head>
 <body>
@@ -773,7 +783,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 22:58';
+var APPV='03 Nov 2026, 23:39';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -896,7 +906,7 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "create or replace function ws_private.has_private() returns boolean language sql stable security definer set search_path = '' as $$ select exists(select 1 from public.shop_data where id = 'private') $$;",
  "revoke execute on function ws_private.has_private() from public, anon; grant execute on function ws_private.has_private() to authenticated;",
  "create or replace function ws_private.strip_private(d jsonb) returns jsonb language sql immutable set search_path = '' as $$\n  select case when jsonb_typeof(d) is distinct from 'object' then d\n    else (d - array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bldr', 'bcost', 'bcostx'])\n      || case when jsonb_typeof(d->'brands') = 'array' then jsonb_build_object('brands', (select coalesce(jsonb_agg(case when jsonb_typeof(b.v) = 'object' then b.v - 'cost' - 'doorCost' - 'nc' else b.v end order by b.ord), '[]'::jsonb) from jsonb_array_elements(d->'brands') with ordinality as b(v, ord))) else '{}'::jsonb end\n  end $$;",
- "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := '{}'::jsonb; n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; adm boolean;\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;   -- the database owner (SQL editor) is not checked\n  adm := ws_private.is_admin();\n  if tg_op = 'UPDATE' then\n    o := coalesce(old.data, '{}'::jsonb);\n    if new.id is distinct from old.id and not adm then raise exception 'only an admin can rename shop data' using errcode = '42501'; end if;\n  end if;\n  if new.id = 'main' then\n    if ws_private.has_private() then\n      -- the shared record never carries admin-only data once the admin record exists\n      o := ws_private.strip_private(o); n := ws_private.strip_private(n); new.data := n;\n    elsif tg_op = 'UPDATE' and coalesce(n->'pins'->>'admin', '') like '-%' then\n      -- a phone whose admin data was cleared (it was a staff phone) never overwrites the real admin data\n      foreach k in array array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bldr'] loop\n        if o ? k then n := jsonb_set(n, array[k], o->k, true); else n := n - k; end if;\n      end loop;\n      if jsonb_typeof(n->'brands') = 'array' then\n        n := jsonb_set(n, '{brands}', (select coalesce(jsonb_agg(case when ob.v is null then nb.v - 'nc' else (nb.v - 'nc' - 'cost' - 'doorCost') || jsonb_strip_nulls(jsonb_build_object('cost', ob.v->'cost', 'doorCost', ob.v->'doorCost')) end order by nb.ord), '[]'::jsonb)\n          from jsonb_array_elements(n->'brands') with ordinality as nb(v, ord)\n          left join lateral (select x.v from jsonb_array_elements(case when jsonb_typeof(o->'brands') = 'array' then o->'brands' else '[]'::jsonb end) as x(v) where x.v->>'name' = nb.v->>'name' limit 1) as ob on true), true);\n      end if;\n      new.data := n;\n    end if;\n  end if;\n  if adm then return new; end if;\n  r := o;\n  foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders'] loop\n    if n ? k then r := jsonb_set(r, array[k], n->k, true); end if;\n  end loop;\n  s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end;\n  s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end;\n  if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if;\n  if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if;\n  new.data := r;\n  return new;\nend $$;",
+ "create or replace function ws_private.main_guard() returns trigger language plpgsql set search_path = '' as $$\ndeclare o jsonb := '{}'::jsonb; n jsonb := coalesce(new.data, '{}'::jsonb); r jsonb; k text; s1 numeric; s2 numeric; adm boolean;\nbegin\n  if current_user not in ('authenticated', 'anon') then return new; end if;   -- the database owner (SQL editor) is not checked\n  adm := ws_private.is_admin();\n  if tg_op = 'UPDATE' then\n    o := coalesce(old.data, '{}'::jsonb);\n    if new.id is distinct from old.id and not adm then raise exception 'only an admin can rename shop data' using errcode = '42501'; end if;\n  end if;\n  if new.id = 'main' then\n    if ws_private.has_private() then\n      -- the shared record never carries admin-only data once the admin record exists\n      o := ws_private.strip_private(o); n := ws_private.strip_private(n); new.data := n;\n    elsif tg_op = 'UPDATE' and coalesce(n->'pins'->>'admin', '') like '-%' then\n      -- a phone whose admin data was cleared (it was a staff phone) never overwrites the real admin data\n      foreach k in array array['expenses', 'staff', 'att', 'saladj', 'pins', 'opening', 'heads', 'vseq', 'users', 'lockc', 'carry', 'bldr'] loop\n        if o ? k then n := jsonb_set(n, array[k], o->k, true); else n := n - k; end if;\n      end loop;\n      if jsonb_typeof(n->'brands') = 'array' then\n        n := jsonb_set(n, '{brands}', (select coalesce(jsonb_agg(case when ob.v is null then nb.v - 'nc' else (nb.v - 'nc' - 'cost' - 'doorCost') || jsonb_strip_nulls(jsonb_build_object('cost', ob.v->'cost', 'doorCost', ob.v->'doorCost')) end order by nb.ord), '[]'::jsonb)\n          from jsonb_array_elements(n->'brands') with ordinality as nb(v, ord)\n          left join lateral (select x.v from jsonb_array_elements(case when jsonb_typeof(o->'brands') = 'array' then o->'brands' else '[]'::jsonb end) as x(v) where x.v->>'name' = nb.v->>'name' limit 1) as ob on true), true);\n      end if;\n      new.data := n;\n    end if;\n  end if;\n  if adm then return new; end if;\n  r := o;\n  foreach k in array array['inv', 'invLog', 'offcuts', 'logArch', 'rlockv', 'orders', 'wdef'] loop\n    if n ? k then r := jsonb_set(r, array[k], n->k, true); end if;\n  end loop;\n  s1 := case when jsonb_typeof(o->'seq') = 'number' then (o->>'seq')::numeric else 0 end;\n  s2 := case when jsonb_typeof(n->'seq') = 'number' then (n->>'seq')::numeric else 0 end;\n  if o ? 'seq' or n ? 'seq' then r := jsonb_set(r, '{seq}', to_jsonb(greatest(s1, s2)), true); end if;\n  if n ? 'projects' then r := jsonb_set(r, '{projects}', ws_private.guard_projects(o->'projects', n->'projects'), true); end if;\n  new.data := r;\n  return new;\nend $$;",
  "create or replace trigger shop_data_guard before insert or update on public.shop_data for each row execute function ws_private.main_guard();",
  "create or replace trigger shop_orders_guard before update on public.shop_orders for each row execute function ws_private.row_guard();",
  "create or replace trigger shop_flats_guard before update on public.shop_flats for each row execute function ws_private.row_guard();",
@@ -1346,7 +1356,7 @@ function nextBtn(o){
   return '<button class="btn big" data-act="archive">Move to archive</button>';
 }
 
-function subItems(o){ return (noAmt(o)?'':lockLine(o))+noAmtItems(o,subItems0(o)); }
+function subItems(o){ return (noAmt(o)?'':lockLine(o))+wdefLine(o)+noAmtItems(o,subItems0(o)); }
 /* ============================================================
    Window / door sizes as an Excel-style sheet (asked: "windows sizes should be just like excel sheet").
    One row per window, one column per field, grid lines, row numbers, header that stays on top,
@@ -1364,17 +1374,17 @@ function subItems0(o){
   var pk=function(it,i){ return '<td class="pk"><button class="pick" data-pick="'+i+'" title="Open drawing" aria-label="Open drawing">'+sketch(o,it,26)+'</button></td>'; };
   var loc=function(it){ return '<td class="c1" data-l="Location"><input class="loc" type="text" data-k="loc" value="'+esc(it.loc)+'" placeholder="'+(dr?'Bedroom':'Hall')+'"></td>'; };
   if(dr){
-    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="num c-pr prth">Price ₹</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
+    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width '+uLab()+'</th><th class="num c-h">Height '+uLab()+'</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="num c-pr prth">Price ₹</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
     rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' class="on"':'')+'><td class="rn">'+(i+1)+'</td>'+pk(it,i)+loc(it)
-      +'<td class="c-w" data-l="Width mm">'+shN('w',it.w)+'</td><td class="c-h" data-l="Height mm">'+shN('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
+      +'<td class="c-w" data-l="Width '+uLab()+'">'+shD('w',it.w)+'</td><td class="c-h" data-l="Height '+uLab()+'">'+shD('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
       +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(DTYPES,it.type)+'</select></td>'
       +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td>'
       +'<td class="c-pr" data-l="Price ₹">'+shN('price',it.price)+'</td>'
       +'<td class="num amt" data-l="Amount">'+money(itemPrice(o,it))+'</td><td class="dl">'+itemDelBtn(i)+'</td></tr>'; }).join('');
   } else {
-    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width mm</th><th class="num c-h">Height mm</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="c-se">Series</th><th class="c-gl">Glass</th><th class="c-me">Mesh / Fan</th><th class="num sq">Sq ft</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
+    head='<tr><th class="rn">#</th><th class="pk"></th><th class="c1">Location</th><th class="num c-w">Width '+uLab()+'</th><th class="num c-h">Height '+uLab()+'</th><th class="num c-qt">Qty</th><th class="c-ty">Type</th><th class="c-br">Brand</th><th class="c-se">Series</th><th class="c-gl">Glass</th><th class="c-me">Mesh / Fan</th><th class="num sq">Sq ft</th><th class="num amt amth">Amount</th><th class="dl"></th></tr>';
     rows=o.items.map(function(it,i){ return '<tr data-i="'+i+'"'+(S.di===i?' class="on"':'')+'><td class="rn">'+(i+1)+'</td>'+pk(it,i)+loc(it)
-      +'<td class="c-w" data-l="Width mm">'+shN('w',it.w)+'</td><td class="c-h" data-l="Height mm">'+shN('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
+      +'<td class="c-w" data-l="Width '+uLab()+'">'+shD('w',it.w)+'</td><td class="c-h" data-l="Height '+uLab()+'">'+shD('h',it.h)+'</td><td class="c-qt" data-l="Qty">'+shN('qty',it.qty,'q')+'</td>'
       +'<td class="c-ty" data-l="Type"><select data-k="type">'+opts(WTYPES,it.type)+'</select></td>'
       +'<td class="c-br" data-l="Brand"><select data-k="brand">'+opts(brandNames(),it.brand)+'</select></td><td class="c-se" data-l="Series"><select data-k="series">'+opts(SERIES,it.series)+'</select></td>'
       +'<td class="c-gl" data-l="Glass"><select data-k="glass">'+opts(GLASS,it.glass)+'</select></td><td class="c-me" data-l="'+(it.type==='Ventilator'?'Fan':'Mesh')+'">'+shMesh(it)+'</td>'
@@ -4773,11 +4783,91 @@ function swCheck(){ if(!(location.protocol==='https:'||window.SWTEST)||!('servic
 setTimeout(swCheck,4000); setInterval(swCheck,15*60000);
 function swCard(){ return SWOLD&&admin()?'<div class="card pmcard"><b>⚠ Upload the new sw.js file to GitHub</b><div class="faint">The website still has the old sw.js, so 🔔 morning reminders cannot start on any phone. Upload sw.js next to index.html (GitHub → Add file → Upload files).</div></div>':''; }
 
+
+/* ============================================================
+   NEW WINDOW DEFAULTS · SIZES IN mm / cm / m / inch / feet
+   (asked: "Provide option to add defaults for window, like track, glass, mesh, track type for easy input of data,
+   also provide option for measurement unit like mm or cm or ft or in or meter")
+   - ⚙ above the windows of every order (and in Settings): the window type, brand, series, glass and mesh a new
+     window starts with (doors: type and brand). Kept for the whole shop (online), set by Admin or Sales.
+     "+ Add window" takes the default type; brand, series, glass and mesh follow the order's last window (the
+     customer's choice), so an order keeps its own glass / mesh. Saving can also change the windows of the order.
+   - "Sizes in": what this phone types and sees in the width / height boxes. Everything is still kept in mm, and
+     drawings, cutting lists, the factory sheet and the documents stay in mm.
+     Feet: 4 6 or 4'6" = 4 ft 6 in, 4.5 = 4½ ft. Inches: 54, 54.5, 54 1/2.
+   ============================================================ */
+var UNITS=[['mm','mm'],['cm','cm'],['m','metre'],['in','inch'],['ft','feet']], UMM={mm:1,cm:10,m:1000,'in':25.4,ft:304.8};
+var UFR=['','⅛','¼','⅜','½','⅝','¾','⅞'], UFV={'⅛':'1/8','¼':'1/4','⅜':'3/8','½':'1/2','⅝':'5/8','¾':'3/4','⅞':'7/8'};
+function uNow(){ try{ var u=localStorage.getItem('wunit'); return UMM[u]?u:'mm'; }catch(e){ return 'mm'; } }
+function uSet(u){ if(!UMM[u]) return; try{ localStorage.setItem('wunit',u); }catch(e){} }
+function uLab(u){ u=u||uNow(); return u==='in'?'inch':u; }
+/* inches → "54", "54½", "54⅛" (to the nearest ⅛) */
+function uInch(x){ var e=Math.round(x*8), w=Math.floor(e/8), f=e-w*8; return (w||!f?String(w):'')+UFR[f]; }
+/* mm → what a size box shows in the chosen unit */
+function uShow(mm,u){ u=u||uNow(); mm=n(mm); if(u==='mm') return String(Math.round(mm)); if(u==='cm') return String(Math.round(mm)/10); if(u==='m') return String(Math.round(mm)/1000);
+  var e8=Math.round(mm/25.4*8)/8; if(u==='in') return uInch(e8); var ft=Math.floor(e8/12); return ft+"' "+uInch(e8-ft*12)+'"'; }
+function uTxt(mm,u){ u=u||uNow(); var v=uShow(mm,u); return u==='mm'||u==='cm'||u==='m'?v+' '+u:u==='in'?v+'"':v; }
+/* what was typed → mm (NaN when it cannot be read) */
+function uNum(x){ x=String(x||'').trim(); if(!x) return 0; var m=x.match(/^(\d+(?:\.\d+)?|\.\d+)?\s*(?:(\d+)\s*\/\s*(\d+))?$/); if(!m||(!m[1]&&!m[2])) return NaN; return (m[1]?parseFloat(m[1]):0)+(m[2]?(+m[2])/((+m[3])||1):0); }
+function uParse(v,u){ u=u||uNow(); var s=String(v==null?'':v).trim().toLowerCase().replace(/[“”″]/g,'"').replace(/[‘’′`]/g,"'").replace(/,/g,'.');
+  s=s.replace(/[⅛¼⅜½⅝¾⅞]/g,function(c){ return ' '+UFV[c]; }).replace(/\s+/g,' ').trim(); if(!s) return NaN;
+  if(u==='ft'||u==='in'){ s=s.replace(/\s*(feet|foot|ft)\b\.?/g,"'").replace(/\s*(inches|inch|in)\b\.?/g,'"').trim();
+    var fi=s.match(/^(\d+(?:\.\d+)?)\s*'\s*-?\s*([^'"]*?)\s*"?$/);   // 4'6"  4' 6  4ft 6in  4' 6 1/2"  4'
+    if(fi){ var i1=uNum(fi[2]); return isNaN(i1)?NaN:(parseFloat(fi[1])*12+i1)*25.4; }
+    var oi=s.match(/^([^'"]+?)\s*"$/);   // 54"  54 1/2"
+    if(oi){ var i2=uNum(oi[1]); return isNaN(i2)?NaN:i2*25.4; }
+    if(/['"]/.test(s)) return NaN;
+    if(u==='in'){ var i3=uNum(s); return isNaN(i3)?NaN:i3*25.4; }
+    var t=s.split(/\s*-\s*|\s+/);   // feet: 4 = 4 ft · 4.5 = 4½ ft · 4 6 = 4 ft 6 in · 4 1/2 = 4½ ft · 4 6 1/2 = 4 ft 6½ in
+    if(t.length===1){ var f1=uNum(t[0]); return isNaN(f1)?NaN:f1*304.8; }
+    if(t.length===2&&/\//.test(t[1])){ var f2=uNum(t[0]+' '+t[1]); return isNaN(f2)?NaN:f2*304.8; }
+    var ft=uNum(t[0]), inch=uNum(t.slice(1).join(' ')); return isNaN(ft)||isNaN(inch)||/[./]/.test(t[0])?NaN:(ft*12+inch)*25.4; }
+  var x=s.replace(/\s*(mm|cm|m)$/,''), d=uNum(x); return isNaN(d)?NaN:d*UMM[u]; }
+/* a width / height box of the window sheet (and of the window panel) in the chosen unit */
+function shD(k,v){ if(uNow()==='mm') return shN(k,v); return '<input class="n" type="text" inputmode="decimal" autocomplete="off" data-k="'+k+'" data-u="1" value="'+esc(uShow(v))+'">'; }
+function dkSize(k,v){ var u=uNow(); return u==='mm'?'<input type="number" data-dk="'+k+'" value="'+v+'" style="font-size:18px;font-weight:600">'
+  :'<input type="text" inputmode="decimal" autocomplete="off" data-dk="'+k+'" data-u="1" value="'+esc(uShow(v))+'" style="font-size:18px;font-weight:600"><small class="faint dkmm">'+Math.round(n(v))+' mm</small>'; }
+/* ---------- defaults for a new window / door ---------- */
+var WDEF0={type:'2 Track',brand:'',series:'80',glass:'5mm clear',mesh:'Aluminium mesh',dtype:'PVC',dbrand:''};
+function wdef(){ var d=Object.assign({},WDEF0,D.wdef||{}), bn=brandNames();
+  if(bn.indexOf(d.brand)<0) d.brand=bn[0]; if(bn.indexOf(d.dbrand)<0) d.dbrand=bn[0]; if(WTYPES.indexOf(d.type)<0||d.type==='Custom') d.type=WTYPES[0];
+  if(SERIES.indexOf(d.series)<0) d.series=SERIES[0]; if(GLASS.indexOf(d.glass)<0) d.glass=GLASS[0]; if(MESH.indexOf(d.mesh)<0) d.mesh=MESH[0]; if(DTYPES.indexOf(d.dtype)<0) d.dtype=DTYPES[0]; return d; }
+function wdefCan(){ return !!S.role&&!prod(); }
+function wdefSum(dr){ var d=wdef(); return dr?d.dtype+' · '+d.dbrand:d.type+' · '+d.brand+' · '+d.series+' · '+d.glass+' · '+d.mesh; }
+function wdefLine(o){ if(!o||o.bat||!wdefCan()) return ''; var dr=o.kind==='doors', u=uNow();
+  return '<div class="wdbar"><span class="grow">⚙ New '+(dr?'doors':'windows')+': <b>'+esc(wdefSum(dr))+'</b> <button type="button" class="btn sm ghost" data-act="wdef">Change</button></span>'
+    +'<label class="wdu">Sizes in <select id="wunit" aria-label="Sizes in">'+UNITS.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===u?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></label></div>'
+    +(u==='ft'?'<div class="faint wdhint">Feet: type <b>4 6</b> or <b>4\'6"</b> for 4 ft 6 in · <b>4.5</b> = 4½ ft · kept in mm</div>':u==='in'?'<div class="faint wdhint">Inches: <b>54</b>, <b>54.5</b> or <b>54 1/2</b> · kept in mm</div>':u!=='mm'?'<div class="faint wdhint">Sizes typed in '+uLab(u)+' · kept in mm</div>':''); }
+function wdefSel(id,lab,list,val){ return '<label class="f"><span>'+lab+'</span><select id="'+id+'">'+list.map(function(x){ return '<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>'; }).join('')+'</select></label>'; }
+function wdefPop(){ if(!wdefCan()) return; var o=S.tab==='order'?order():null, d=wdef(), u=uNow(), dr=!!o&&o.kind==='doors', k=o&&!o.bat?o.items.length:0;
+  pjPop('⚙ New windows and doors',
+    '<p class="faint" style="margin:0 0 8px">A new window starts with these — for everyone in the shop. "+ Add window" uses this type; brand, series, glass and mesh follow the last window of the order.</p>'
+    +'<div class="grid2">'+wdefSel('wd_type','Window type (track)',WTYPES.filter(function(t){ return t!=='Custom'; }),d.type)+wdefSel('wd_brand','Brand',brandNames(),d.brand)
+    +wdefSel('wd_series','Series',SERIES,d.series)+wdefSel('wd_glass','Glass',GLASS,d.glass)+wdefSel('wd_mesh','Mesh',MESH,d.mesh)+'</div>'
+    +'<div class="grid2">'+wdefSel('wd_dtype','Door type',DTYPES,d.dtype)+wdefSel('wd_dbrand','Door brand',brandNames(),d.dbrand)+'</div>'
+    +'<label class="f"><span>Sizes in (this phone)</span><select id="wd_unit">'+UNITS.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===u?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></label>'
+    +(k?'<label class="row wdapp"><input type="checkbox" id="wd_apply"> <span>Also change the '+k+' '+(dr?'door'+(k>1?'s':'')+' of this order to this type and brand':'window'+(k>1?'s':'')+' of this order to this brand, series, glass and mesh')+'</span></label>':''),
+    '<button class="btn primary" data-act="wdsave">Save</button><button class="btn" data-pjx="1">Cancel</button>'); }
+function wdefSave(){ if(!wdefCan()) return; var g=function(id){ var e=document.getElementById(id); return e?e.value:''; };
+  var nd={type:g('wd_type'),brand:g('wd_brand'),series:g('wd_series'),glass:g('wd_glass'),mesh:g('wd_mesh'),dtype:g('wd_dtype'),dbrand:g('wd_dbrand')}, ap=document.getElementById('wd_apply'), ch=0;
+  D.wdef=nd; uSet(g('wd_unit')||uNow()); var d=wdef();
+  var o=S.tab==='order'?order():null;
+  if(ap&&ap.checked&&o&&!o.bat){ snap(o); o.items.forEach(function(it){ if(o.kind==='doors'){ it.type=d.dtype; it.brand=d.dbrand; it.price=brandOf(it.brand).doorRate[it.type]; } else { it.brand=d.brand; it.series=d.series; it.glass=d.glass; it.mesh=d.mesh; } ch++; }); }
+  pjPopX(); save(); render(); toast('⚙ Saved — new windows: '+wdefSum(false)+(ch?' · '+ch+' changed in this order':'')); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="wdef"],[data-act="wdsave"]'); if(!t) return;
+  if(t.dataset.act==='wdef') wdefPop(); else wdefSave(); });
+document.addEventListener('change',function(e){ var t=e.target; if(!t) return;
+  if(t.id==='wunit'){ uSet(t.value); render(); toast('Sizes in '+(UNITS.filter(function(x){ return x[0]===t.value; })[0]||['',''])[1]+' on this phone'); return; }
+  /* a size typed in ft / inch / cm / m: shown back the way it was read */
+  if(t.dataset&&t.dataset.u&&(t.dataset.k==='w'||t.dataset.k==='h'||t.dataset.dk==='w'||t.dataset.dk==='h')){ var o=order(); if(!o) return; var tr=t.closest('tr'), it=t.dataset.k?(tr&&o.items[+tr.dataset.i]):o.items[S.di]; if(!it) return;
+    var k=t.dataset.k||t.dataset.dk, v=uParse(t.value); if(!(v>0)) toast('⚠ Could not read "'+t.value+'" — kept '+uTxt(it[k]));
+    t.value=uShow(it[k]); var mm=t.parentNode&&t.parentNode.querySelector('.dkmm'); if(mm) mm.textContent=Math.round(n(it[k]))+' mm'; } });
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
   var form='<div class="grid2">'+F('loc','Location','<input type="text" data-dk="loc" value="'+esc(it.loc)+'" placeholder="Hall">')+F('qty','Qty','<input type="number" data-dk="qty" value="'+it.qty+'">')
-   +F('w','Width mm','<input type="number" data-dk="w" value="'+it.w+'" style="font-size:18px;font-weight:600">')+F('h','Height mm','<input type="number" data-dk="h" value="'+it.h+'" style="font-size:18px;font-weight:600">')
+   +F('w','Width '+uLab(),dkSize('w',it.w))+F('h','Height '+uLab(),dkSize('h',it.h))
    +F('type','Type','<select data-dk="type">'+opts(ro?DTYPES:WTYPES,it.type)+'</select>')+F('brand','Brand','<select data-dk="brand">'+opts(brandNames(),it.brand)+'</select>')
    +(ro?F('price','Price ₹','<input type="number" data-dk="price" value="'+it.price+'">'):F('series','Series','<select data-dk="series">'+opts(SERIES,it.series)+'</select>')+F('glass','Glass','<select data-dk="glass">'+opts(GLASS,it.glass)+'</select>')
    +(it.type==='Ventilator'?F('fan','Exhaust fan','<select data-dk="fan">'+opts(FAN,it.fan||'No fan')+'</select>')+(it.fan&&it.fan!=='No fan'?F('fanSz','Fan size','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″ fan</option>';}).join('')+'</select>')+F('fanW','Fan section width mm','<input type="number" data-dk="fanW" value="'+fanSec(it)+'">')+F('fanH','Fan section height mm','<input type="number" data-dk="fanH" value="'+(n(it.fanH)||fanSec(it))+'">')+'<div style="grid-column:1/-1;margin-bottom:8px"><button class="btn sm" data-act="dzopen">✎ Edit layout</button> <span class="faint">make the fan section bigger, put glass beside the fan, move lines… (or just tap / draw on the drawing)</span></div>':''):it.type==='Custom'?(leafPaths(it).length>1&&!shapeOf(it)?F('join','Frames','<select data-dk="join"><option value="">Separate windows ('+splitParts(it,di+1).map(function(q){return q.label;}).join(', ')+')</option><option value="mullion"'+(it.join==='mullion'?' selected':'')+'>One frame with mullions</option></select>'):'')+F('fanSz','Fan size (for fan cells)','<select data-dk="fanSz">'+['6','7','8'].map(function(z){return '<option value="'+z+'"'+((it.fanSz||'8')===z?' selected':'')+'>'+z+'″</option>';}).join('')+'</select>'):(it.type==='Openable'?F('hinge','Hinge side','<select data-dk="hinge"><option value="L"'+(it.hinge!=='R'?' selected':'')+'>Left</option><option value="R"'+(it.hinge==='R'?' selected':'')+'>Right</option></select>'):F('mesh','Mesh','<select data-dk="mesh"'+(it.type.indexOf('Track')<0?' disabled':'')+'>'+opts(MESH,it.mesh)+'</select>'))))+'</div>'
@@ -5066,6 +5156,7 @@ function viewSettings(){
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH','sashW','sashH','sashG'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
   return '<div class="card"><h2>Company (shown on quotes and statements)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
    +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><div class="grid2"><label class="f"><span>Email</span><input type="email" data-c="email" value="'+esc(D.company.email||'')+'"></label></div><label class="f"><span>Bank / UPI details for payment (printed on statements)</span><textarea data-c="bank" placeholder="Bank name · A/c no. · IFSC · UPI ID">'+esc(D.company.bank||'')+'</textarea></label><div class="grid2"><label class="f"><span>Tax invoice numbers start with</span><input type="text" data-c="invPre" maxlength="6" value="'+esc(D.company.invPre||'INV')+'"></label><label class="f"><span>HSN code (windows and doors)</span><input type="text" data-c="hsn" maxlength="8" inputmode="numeric" value="'+esc(D.company.hsn||'39252000')+'"></label><label class="f"><span>Glass supplier WhatsApp no.</span><input type="tel" data-c="glassPh" value="'+esc(D.company.glassPh||'')+'"></label></div><p class="faint" style="margin:-4px 0 10px">Tax invoice numbers go like '+esc((D.company.invPre||'INV')+'/'+invFY(today())+'/001')+' and start again from 001 every April. HSN 39252000 = plastic (uPVC) doors and windows, 18% GST.</p><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % for builder flats (other orders and owner flats: no GST unless you add it on the order)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
+   +'<div class="card"><div class="row between"><h2>⚙ New windows and doors</h2><button class="btn sm" data-act="wdef">Change</button></div><div class="faint">Windows: <b>'+esc(wdefSum(false))+'</b> · Doors: <b>'+esc(wdefSum(true))+'</b> · Sizes on this phone in <b>'+uLab()+'</b></div></div>'
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs.</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
@@ -5151,9 +5242,10 @@ function download(name,data,type){ var b=data instanceof Blob?data:new Blob(['\u
    EVENTS
    ============================================================ */
 function newOrder(){ var o={id:uid(),no:nextOrderNo(),dev:RLDEV,ts:Date.now(),kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today()}; D.orders.push(o); save(); go('order',o.id); S.sub='customer'; render(); setTimeout(function(){var i=$('[data-o=customer]'); if(i) i.focus();},0); }
-function newItem(o){ var l=o.items[o.items.length-1];
-  return o.kind==='doors'?{loc:'',type:l?l.type:'PVC',brand:l?l.brand:D.brands[0].name,w:l?l.w:900,h:l?l.h:2100,price:brandOf(l?l.brand:'').doorRate[l?l.type:'PVC'],qty:1}
-   :{loc:'',type:l?l.type:'2 Track',brand:l?l.brand:D.brands[0].name,series:l?l.series:'80',w:l?l.w:1200,h:l?l.h:1200,glass:l?l.glass:GLASS[0],mesh:l?l.mesh:MESH[0],qty:1}; }
+function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
+  if(o.kind==='doors') return {loc:'',type:l?l.type:df.dtype,brand:l?l.brand:df.dbrand,w:l?l.w:900,h:l?l.h:2100,price:brandOf(l?l.brand:df.dbrand).doorRate[l?l.type:df.dtype],qty:1};
+  it={loc:'',type:df.type,brand:l?l.brand:df.brand,series:l?l.series:df.series,w:l?l.w:1200,h:l?l.h:1200,glass:l?l.glass:df.glass,mesh:l?l.mesh:df.mesh,qty:1};
+  if(it.type==='Openable') it.hinge='L'; if(it.type==='Ventilator') it.fan='No fan'; return it; }
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
@@ -5188,7 +5280,7 @@ document.addEventListener('click',function(e){
     if(ans.trim()===''){ unsplit(itS,ax,ix,ph.row); normalizeCustom(itS); } else { var np=Math.round(n(ans)/10)*10, lo=posS-arrS[ix]+120, hi=posS+arrS[ix+1]-120; if(np<lo||np>hi){ toast('Must be between '+lo+' and '+hi); return; } var dlt=np-posS; arrS[ix]+=dlt; arrS[ix+1]-=dlt; }
     save(); render(); return; }
   var ce=e.target.closest('[data-cell]'); if(ce&&o&&S.di!=null&&!DRAGGED&&(S.pmode||'draw')==='draw'){ snap(o); var itC=o.items[S.di]; ensureCustom(itC); var Lc=layoutOf(itC), rc=ce.dataset.cell.split('|'), cur=(Lc.cells[+rc[0]]||[])[+rc[1]]||'Fixed'; Lc.cells[+rc[0]]=Lc.cells[+rc[0]]||[]; Lc.cells[+rc[0]][+rc[1]]=CELLT[(CELLT.indexOf(cur)+1)%CELLT.length]; save(); render(); return; }
-  var ed=e.target.closest('[data-edit]'); if(ed&&o&&S.di!=null){ var itE=o.items[S.di], key=ed.dataset.edit, v=prompt(key==='w'?'Width mm':'Height mm',itE[key]); if(v!=null&&n(v)>0){ itE[key]=Math.round(n(v)); save(); render(); } return; }
+  var ed=e.target.closest('[data-edit]'); if(ed&&o&&S.di!=null){ var itE=o.items[S.di], key=ed.dataset.edit, v=prompt((key==='w'?'Width ':'Height ')+uLab(),uShow(itE[key])); var vmm=v==null?NaN:uParse(v); if(vmm>0){ itE[key]=Math.round(vmm); save(); render(); } else if(v!=null) toast('⚠ Could not read "'+v+'"'); return; }
   if(d.del!==undefined&&o){ if(!canDelItem()){ toast('Only Admin and Sales can delete windows and doors'); return; } snap(o); o.items.splice(+d.del,1); if(S.di!=null&&S.di>=o.items.length) S.di=o.items.length?o.items.length-1:null; save(); render(); return; }
   if(d.pdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } o.payments.splice(+d.pdel,1); save(); render(); return; }
   if(d.edel!==undefined){ if(!canDel()){ toast('Only Admin can delete'); return; } D.expenses.splice(+d.edel,1); save(); render(); return; }
@@ -5288,14 +5380,15 @@ function onInput(e){
   if(d.imin){ D.inv[d.imin].min=n(t.value); save(); return; }
   if(d.hk){ var hi=+t.closest('tr').dataset.hi; D.hw[hi][d.hk]=t.type==='number'?n(t.value):t.value; save(); return; }
   if(d.sk){ var si=+t.closest('tr').dataset.si; D.staff[si][d.sk]=t.type==='number'?n(t.value):t.value; save(); return; }
-  if(d.k&&o){ snap(o,true); var tr=t.closest('tr'), it=o.items[+tr.dataset.i]; it[d.k]=t.type==='number'?n(t.value):t.value;
+  if(d.k&&o){ snap(o,true); var tr=t.closest('tr'), it=o.items[+tr.dataset.i]; if(t.dataset.u&&(d.k==='w'||d.k==='h')){ var umm=uParse(t.value); if(!(umm>0)) return; it[d.k]=Math.round(umm); } else it[d.k]=t.type==='number'?n(t.value):t.value;
     if((d.k==='type'||d.k==='brand')&&o.kind==='doors'){ it.price=brandOf(it.brand).doorRate[it.type]; tr.querySelector('[data-k=price]').value=it.price; }
     if(d.k==='type'&&o.kind!=='doors'){ render(); return; }
     save(); var am=tr.querySelector('.amt'), sq=tr.querySelector('.sq'); if(am) am.textContent=money(itemPrice(o,it)); if(sq) sq.textContent=fmt(sqft(it.w,it.h)*n(it.qty))+' ft²'; refreshTotals(o); return; }
   if(d.dk&&o&&S.di!=null){ snap(o,true); var it2=o.items[S.di];
-    if(d.dk==='w'||d.dk==='h'){ var L3=it2.layout; if(L3&&L3.rc){ var nv=n(t.value); if(nv>0){ if(d.dk==='h'){ var oh=L3.rows.reduce(function(a,b){return a+b;},0); if(oh>0) L3.rows=L3.rows.map(function(v){return v*nv/oh;}); } else L3.rc=L3.rc.map(function(row){ var ow=row.reduce(function(a,b){return a+b;},0); return ow>0?row.map(function(v){return v*nv/ow;}):row; }); } } }
-    it2[d.dk]=t.type==='number'?n(t.value):t.value; if(d.dk==='type'&&o.kind==='doors') it2.price=brandOf(it2.brand).doorRate[it2.type]; save();
-    if(t.tagName==='SELECT'||d.dk==='loc') render(); else { $('#bigsk').innerHTML=bigSketch(o,it2); var tr2=document.querySelector('tr[data-i="'+S.di+'"]'); if(tr2){ var ii=tr2.querySelector('[data-k='+d.dk+']'); if(ii) ii.value=it2[d.dk]; var am2=tr2.querySelector('.amt'), sq2=tr2.querySelector('.sq'); if(am2) am2.textContent=money(itemPrice(o,it2)); if(sq2) sq2.textContent=fmt(sqft(it2.w,it2.h)*n(it2.qty))+' ft²'; } var ms=$('#dsum'); if(ms) ms.innerHTML=noAmt(o)?(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft'):(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it2))+'</b>'; refreshTotals(o); } return; }
+    if((d.dk==='w'||d.dk==='h')&&t.dataset.u&&!(uParse(t.value)>0)) return;
+    if(d.dk==='w'||d.dk==='h'){ var L3=it2.layout; if(L3&&L3.rc){ var nv=t.dataset.u?Math.round(uParse(t.value)):n(t.value); if(nv>0){ if(d.dk==='h'){ var oh=L3.rows.reduce(function(a,b){return a+b;},0); if(oh>0) L3.rows=L3.rows.map(function(v){return v*nv/oh;}); } else L3.rc=L3.rc.map(function(row){ var ow=row.reduce(function(a,b){return a+b;},0); return ow>0?row.map(function(v){return v*nv/ow;}):row; }); } } }
+    it2[d.dk]=t.dataset.u&&(d.dk==='w'||d.dk==='h')?Math.round(uParse(t.value)):t.type==='number'?n(t.value):t.value; if(d.dk==='type'&&o.kind==='doors') it2.price=brandOf(it2.brand).doorRate[it2.type]; save();
+    if(t.tagName==='SELECT'||d.dk==='loc') render(); else { $('#bigsk').innerHTML=bigSketch(o,it2); var tr2=document.querySelector('tr[data-i="'+S.di+'"]'); if(tr2){ var ii=tr2.querySelector('[data-k='+d.dk+']'); if(ii&&ii!==document.activeElement) ii.value=ii.dataset.u?uShow(it2[d.dk]):it2[d.dk]; var dmm=t.parentNode&&t.parentNode.querySelector('.dkmm'); if(dmm) dmm.textContent=Math.round(n(it2[d.dk]))+' mm'; var am2=tr2.querySelector('.amt'), sq2=tr2.querySelector('.sq'); if(am2) am2.textContent=money(itemPrice(o,it2)); if(sq2) sq2.textContent=fmt(sqft(it2.w,it2.h)*n(it2.qty))+' ft²'; } var ms=$('#dsum'); if(ms) ms.innerHTML=noAmt(o)?(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft'):(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it2))+'</b>'; refreshTotals(o); } return; }
   if(t.id==='disc'&&o){ o.discount=n(t.value); save(); refreshTotals(o); return; }
   if(d.o&&o){ o[d.o]=t.value; save(); if(d.o==='remind') render(); if(d.o==='customer'){ $('#oh').textContent='#'+o.no+' · '+(o.customer||'New order'); } if(d.o==='kind') render(); return; }
   if(d.c){ D.company[d.c]=t.value; save(); if(d.c==='name') $('.top h1').textContent=t.value; }
