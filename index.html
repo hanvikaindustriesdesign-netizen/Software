@@ -729,6 +729,10 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .wdapp{gap:8px;align-items:flex-start;margin:8px 0 4px;font-size:14px}
 .wdapp input{width:auto;min-height:0;margin-top:3px}
 .dkmm{display:block;margin-top:2px}
+
+/* 📐 sizes in the PDF */
+.szchk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--soft);cursor:pointer}
+.szchk input{width:auto;min-height:0;margin:0}
 </style>
 </head>
 <body>
@@ -783,7 +787,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 23:39';
+var APPV='04 Nov 2026, 00:13';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1344,7 +1348,7 @@ function viewOrder0(){
   if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'; }); if(S.sub==='quote'||S.sub==='payments') S.sub='items'; }
   else if(isBld(o)&&paid(o)<0.5){ subs=subs.filter(function(x){ return x[0]!=='payments'; }); if(S.sub==='payments') S.sub='items'; }
   var tabs='<div class="subtabs osub">'+subs.map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
-  return head+tabs+({items:subItems,customer:subCustomer,quote:subQuote,payments:subPayments,cutting:subCutting,production:subProduction}[S.sub])(o);
+  return head+tabs+({items:subItems,customer:subCustomer,quote:subQuote,payments:function(x){ return subPayments(x)+ordStmtCard(x); },cutting:subCutting,production:subProduction}[S.sub])(o);
 }
 function nextBtn(o){
   if(o.archived) return '<button class="btn" data-act="unarchive">Bring back from archive</button>';
@@ -3115,7 +3119,7 @@ function builderView(p){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), bl=B.bill
     +(b.pend<-0.5?stL('Advance from builder',money(-b.pend),'goodt',true):stL('Pending',money(Math.max(0,b.pend)),b.pend>0.5?'warnt':'goodt',true))+'</div>'+bldCoverHtml(p,A)
    +(b.n?'':'<p class="faint" style="margin:8px 0 0">No flat is paid by the builder yet. On <b>All flats</b>, tick the flats and tap <b>🏗 Builder pays</b>.</p>')
    +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="bldpay" data-pid="'+p.id+'">+ Payment received</button><button class="btn" data-act="bldbill" data-pid="'+p.id+'">+ Extra bill</button></div>'
-   +'<div class="row" style="margin-top:8px"><button class="btn primary" data-act="bldsendpdf" data-pid="'+p.id+'">📤 Send PDF to builder</button><button class="btn" data-act="bldpdfdl" data-pid="'+p.id+'">⬇ PDF</button><button class="btn" data-act="bldxls" data-pid="'+p.id+'">⬇ Excel</button>'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">💬 As text</button>':'')+'</div></div>'
+   +'<div class="row" style="margin-top:8px"><button class="btn primary" data-act="bldsendpdf" data-pid="'+p.id+'">📤 Send PDF to builder</button><button class="btn" data-act="bldpdfdl" data-pid="'+p.id+'">⬇ PDF</button><button class="btn" data-act="bldxls" data-pid="'+p.id+'">⬇ Excel</button>'+(b.n||b.entries?'<button class="btn" data-act="bldshare" data-pid="'+p.id+'">💬 As text</button>':'')+'</div>'+szChk()+'</div>'
    +bldInvCard(p)+'<div class="card"><h2>Delivered flats (work done)</h2>'+(done.length?'<table class="bldt"><tbody>'+done.map(function(f){ return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td class="faint">'+(f.deliveredOn?dShort(f.deliveredOn):'')+'</td><td class="num">'+money(orderTotal(f))+'</td><td class="right">'+payChip(A.by[f.id])+'</td></tr>'; }).join('')+'</tbody></table>':'<div class="empty">No builder flat delivered yet</div>')
    +(rest>0?'<p class="faint" style="margin:8px 0 0">'+rest+' more builder flat'+(rest===1?' is':'s are')+' not delivered yet — not in this statement.</p>':'')+'</div>'
    +'<div class="card"><h2>Payments from the builder</h2>'+(py.length?'<table class="bldt"><tbody>'+py.map(function(x){ return '<tr class="tap" data-act="bldedit" data-pid="'+p.id+'" data-k="pays" data-id="'+esc(x.id)+'"><td>'+dYr(x.on)+'</td><td>'+esc(x.mode||'Cash')+(x.note?' · '+esc(x.note):'')+'</td><td class="num"><b class="goodt">'+money(x.amt)+'</b></td>'+del('pays',x)+'</tr>'; }).join('')+'</tbody></table>':'<div class="empty">No payment from the builder yet</div>')
@@ -3161,7 +3165,7 @@ function ownStmtView(p,g,OI,all){ var s=ownSum(g.flats), bf=all.filter(function(
    +'<div class="pjmoney owm"><button type="button" tabindex="-1"><span>Bill</span><b>'+money(s.bill)+'</b>'+(s.quote>0.5?'<small>+ '+money(s.quote)+' not confirmed</small>':'')+'</button><button type="button" tabindex="-1" class="good"><span>Received</span><b>'+money(s.recv)+'</b></button><button type="button" tabindex="-1" class="'+(s.pend>0.5?'warn':'good')+'"><span>'+(s.adv>0.5?'Advance with us':'Pending')+'</span><b>'+money(s.adv>0.5?s.adv:s.pend)+'</b></button></div>'
    +(s.billGst>0.5?'<div class="faint" style="margin-top:6px">Bill includes GST '+money(s.billGst)+' (before GST '+money(s.billSub)+')</div>':'')
    +'<div class="row" style="margin-top:10px"><button class="btn primary" data-act="opay" data-k="'+esc(g.k)+'">+ Payment</button><button class="btn primary" data-act="osendpdf" data-k="'+esc(g.k)+'">📤 Send PDF to owner</button></div>'
-   +'<div class="row" style="margin-top:8px"><button class="btn" data-act="opdfdl" data-k="'+esc(g.k)+'">⬇ PDF</button><button class="btn" data-act="oxls" data-k="'+esc(g.k)+'">⬇ Excel</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">💬 As text</button></div></div>'
+   +'<div class="row" style="margin-top:8px"><button class="btn" data-act="opdfdl" data-k="'+esc(g.k)+'">⬇ PDF</button><button class="btn" data-act="oxls" data-k="'+esc(g.k)+'">⬇ Excel</button><button class="btn" data-act="osend" data-k="'+esc(g.k)+'">💬 As text</button></div>'+szChk()+'</div>'
    +'<div class="card"><h2>Flats</h2><table class="bldt"><thead><tr><th>Flat</th><th>Status</th><th class="num">Bill</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody>'+g.flats.map(function(f){ var t=orderTotal(f), pd=paid(f);
       return '<tr><td><button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+f.id+'">'+esc(f.no)+'</button></td><td><span class="stage '+(FSTC[flatStatus(f)]||'s0')+'">'+flatStatus(f)+'</span></td><td class="num">'+(f.stage>=1?money(t):'<span class="faint">'+money(t)+'</span>')+'</td><td class="num">'+(pd>0.5?money(pd):'—')+'</td><td class="num">'+(f.stage>=1?(t-pd>0.5?'<b class="warnt">'+money(t-pd)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</td></tr>'; }).join('')+'</tbody></table></div>'
    +'<div class="card"><div class="row between"><h2>Payments</h2>'+(s.pays.length?'<span class="faint">tap a payment to change its flats</span>':'')+'</div>'+lpGroupsHtml(g.flats)+'</div>'; }
@@ -3354,10 +3358,11 @@ function stmtPdfDoc(o){ var d=PdfDoc(), M=36, W=d.W, CW=W-2*M, BOT=d.H-48, c=D.c
     d.text(M,d.H-24,['This is a computer-generated statement',[c.name,c.phone].filter(Boolean).join(' · ')].filter(Boolean).join(' — '),{size:7.4,color:PDFC.soft,w:CW-90}); d.text(W-M,d.H-24,'Page '+(i+1)+' of '+N,{size:7.4,align:'right',color:PDFC.soft}); });
   return d; }
 /* ---- the builder's statement ---- */
-function bldPdf(p){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), gx=done.some(function(f){ return gstOf(f)>0; }), k=0, j=0, m=0;
-  var cols=[{h:'#',w:22},{h:'Flat',w:52},{h:'Type',w:80},{h:'Delivered on',w:70},{h:'Windows',w:48,a:'r'}].concat(gx?[{h:'Taxable value',w:74,a:'r'},{h:'GST',w:70,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:72,a:'r'},{h:'Payment',w:50}]);
-  var rows=done.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',dFull(f.deliveredOn),qty(f)].concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f)),stTxt(A.by[f.id])]); });
-  var secs=[{title:'Work done — delivered flats ('+done.length+')',cols:cols,rows:rows,empty:'No flat delivered yet',total:['','Total','','',done.reduce(function(a,f){ return a+qty(f); },0)].concat(gx?[nIN(b.doneSub),nIN(b.doneGst)]:[]).concat([nIN(b.doneVal),''])}];
+function bldPdf(p,sz){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), gx=done.some(function(f){ return gstOf(f)>0; }), k=0, j=0, m=0;
+  var cols=[{h:'#',w:22},{h:'Flat',w:52},{h:'Type',w:80},{h:'Delivered on',w:70},{h:'Windows',w:48,a:'r'}].concat(sz?[{h:'Sq ft',w:52,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:74,a:'r'},{h:'GST',w:70,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:72,a:'r'},{h:'Payment',w:50}]);
+  var rows=done.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',dFull(f.deliveredOn),qty(f)].concat(sz?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f)),stTxt(A.by[f.id])]); });
+  var secs=[{title:'Work done — delivered flats ('+done.length+')',cols:cols,rows:rows,empty:'No flat delivered yet',total:['','Total','','',done.reduce(function(a,f){ return a+qty(f); },0)].concat(sz?[fmt(done.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(b.doneSub),nIN(b.doneGst)]:[]).concat([nIN(b.doneVal),''])}];
+  if(sz&&done.length) secs.push(szSection(done,function(f){ return f.no; },'Flat'));
   if(B.bills.length) secs.push({title:'Extra bills',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Description',w:270},{h:'Amount (Rs.)',w:90,a:'r'},{h:'Payment',w:60}],rows:B.bills.slice().sort(bldByOn).map(function(x){ return [++j,dFull(x.on),x.note||'',nIN(x.amt),stTxt(A.by[x.id])]; }),total:['','','Total extra bills',nIN(b.extra),'']});
   secs.push({title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Mode',w:64},{h:'Reference / note',w:236},{h:'Amount (Rs.)',w:90,a:'r'}],rows:B.pays.slice().sort(bldByOn).map(function(x){ return [++m,dFull(x.on),x.mode||'Cash',x.note||'',nIN(x.amt)]; }),empty:'No payment received yet',total:['','','','Total received',nIN(b.recv)]});
   var adv=b.pend<-0.5, sum=(gx?[['Work done — taxable value',rsIN(b.doneSub)],['GST',rsIN(b.doneGst)],['Work done incl. GST',rsIN(b.doneVal),1]]:[['Work done',rsIN(b.doneVal),1]]).concat(b.extra?[['Extra bills',rsIN(b.extra)]]:[])
@@ -3369,10 +3374,11 @@ function bldPdf(p){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDone(p
     sections:secs,sum:sum,words:b.pend>0.5?rupeesWords(b.pend):'',wordsLabel:'Balance due in words',leftSign:p.builder||'The builder',
     note:bldCoverTxt(p,'')+' Payments are applied to the flats and extra bills in date order. Only delivered flats are billed here. Please check and confirm; tell us within 7 days if anything does not match.'}).blob('Builder statement — '+p.name); }
 /* ---- one flat owner's statement (all his flats together) ---- */
-function ownPdf(p,g){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), gx=cf.some(function(f){ return gstOf(f)>0; }), k=0, m=0, adv=s.adv>0.5;
-  var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:96},{h:'Status',w:92}].concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
-  var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
+function ownPdf(p,g,sz){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), gx=cf.some(function(f){ return gstOf(f)>0; }), k=0, m=0, adv=s.adv>0.5;
+  var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:96},{h:'Status',w:92}].concat(sz?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
+  var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(sz?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(sz?[fmt(cf.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
     {title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Flat',w:60},{h:'Mode',w:62},{h:'Reference / note',w:180},{h:'Amount (Rs.)',w:90,a:'r'}],rows:s.pays.map(function(r){ return [++m,dFull(r.x.on),r.f.no,r.x.mode||'Cash',lpNoteT(r.x,1),nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(s.recv)]}];
+  if(sz&&cf.length) secs.splice(1,0,szSection(cf,function(f){ return f.no; },'Flat'));
   var sum=(gx?[['Bill — taxable value',rsIN(s.billSub)],['GST',rsIN(s.billGst)]]:[]).concat([['Total bill',rsIN(s.bill),1],['Less: received',rsIN(s.recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(adv?s.adv:s.pend),1,adv?PDFC.good:PDFC.warn]]);
   return stmtPdfDoc({title:'STATEMENT OF ACCOUNT',party:g.name,ref:p.name,
     to:{label:'Statement for',lines:[[g.name,1]].concat(g.phone?[['Phone: '+g.phone]]:[]).concat([['Flat'+(cf.length===1?'':'s')+': '+(cf.map(function(f){ return f.no; }).join(', ')||'—')]])},
@@ -3398,11 +3404,11 @@ function pdfSend(blob,fname,text,phone){ var file=null; try{ file=new File([blob
   download(fname,blob); var dg=String(phone||'').replace(/\D/g,'').slice(-10); toast('PDF saved — attach it in WhatsApp');
   if(dg.length===10) setTimeout(function(){ window.open('https://wa.me/91'+dg+'?text='+encodeURIComponent(text),'_blank'); },400); }
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act]'); if(!t||!admin()) return; var a=t.dataset.act, p=t.dataset.pid?projById(t.dataset.pid):(S.tab==='project'?projById(S.pid):null); if(!p) return;
-  if(a==='bldsendpdf'){ var b=pjStmt(p).b; pdfSend(bldPdf(p),pdfName('Builder statement - '+(p.builder||'Builder'),p),'Statement for '+(p.builder||'the builder')+' — '+p.name+' (as on '+dShort(today())+'). '+(b.pend<-0.5?'Advance with us ':'Balance due ')+money(Math.abs(b.pend))+'.',p.bphone); return; }
-  if(a==='bldpdfdl'){ download(pdfName('Builder statement - '+(p.builder||'Builder'),p),bldPdf(p)); return; }
+  if(a==='bldsendpdf'){ var b=pjStmt(p).b; pdfSend(bldPdf(p,szOn()),pdfName('Builder statement - '+(p.builder||'Builder'),p),'Statement for '+(p.builder||'the builder')+' — '+p.name+' (as on '+dShort(today())+'). '+(b.pend<-0.5?'Advance with us ':'Balance due ')+money(Math.abs(b.pend))+'.',p.bphone); return; }
+  if(a==='bldpdfdl'){ download(pdfName('Builder statement - '+(p.builder||'Builder'),p),bldPdf(p,szOn())); return; }
   if(a==='owpdfdl'){ download(pdfName('Owners statement',p),ownListPdf(p)); return; }
   if(a==='osendpdf'||a==='opdfdl'){ var g=ownFind(p,t.dataset.k||''); if(!g) return; var s=ownSum(g.flats), nm=pdfName('Statement - '+g.name,p);
-    if(a==='opdfdl') download(nm,ownPdf(p,g)); else pdfSend(ownPdf(p,g),nm,'Statement for '+g.name+' — '+p.name+' (as on '+dShort(today())+'). '+(s.adv>0.5?'Advance with us '+money(s.adv):'Balance due '+money(s.pend))+'.',g.phone); return; } });
+    if(a==='opdfdl') download(nm,ownPdf(p,g,szOn())); else pdfSend(ownPdf(p,g,szOn()),nm,'Statement for '+g.name+' — '+p.name+' (as on '+dShort(today())+'). '+(s.adv>0.5?'Advance with us '+money(s.adv):'Balance due '+money(s.pend))+'.',g.phone); return; } });
 
 /* ============================================================
    QUOTATION, GST TAX INVOICE AND GLASS ORDER — as real PDF files (asked: "Build top 3").
@@ -4862,6 +4868,57 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t) return;
   if(t.dataset&&t.dataset.u&&(t.dataset.k==='w'||t.dataset.k==='h'||t.dataset.dk==='w'||t.dataset.dk==='h')){ var o=order(); if(!o) return; var tr=t.closest('tr'), it=t.dataset.k?(tr&&o.items[+tr.dataset.i]):o.items[S.di]; if(!it) return;
     var k=t.dataset.k||t.dataset.dk, v=uParse(t.value); if(!(v>0)) toast('⚠ Could not read "'+t.value+'" — kept '+uTxt(it[k]));
     t.value=uShow(it[k]); var mm=t.parentNode&&t.parentNode.querySelector('.dkmm'); if(mm) mm.textContent=Math.round(n(it[k]))+' mm'; } });
+
+
+/* ============================================================
+   📐 WINDOW SIZES AND SQ FT IN THE STATEMENT PDFs — when wanted
+   (asked: "Provide option to add window size n sqft if required in pdf for all flat owner, builder n other orders")
+   - a tick "📐 Window sizes and sq ft in the PDF" next to the PDF buttons (owner statement, builder statement, and
+     the new customer statement of an ordinary order); remembered on this phone
+   - ticked: the flats / orders table gets a Sq ft column, and a table lists every window: flat or order, location,
+     type, size W x H (mm), qty, sq ft — with the totals
+   - ordinary orders get a statement PDF too (Payments tab): all confirmed orders of that customer, payments, balance
+   ============================================================ */
+function szOn(){ try{ return localStorage.getItem('wpsz')==='1'; }catch(e){ return false; } }
+function szChk(){ return '<label class="szchk"><input type="checkbox" data-szchk="1"'+(szOn()?' checked':'')+'> <span>📐 Window sizes and sq ft in the PDF</span></label>'; }
+document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.dataset||!t.dataset.szchk) return; try{ localStorage.setItem('wpsz',t.checked?'1':''); }catch(x){}
+  [].forEach.call(document.querySelectorAll('[data-szchk]'),function(c){ c.checked=t.checked; }); toast(t.checked?'📐 The PDF will list each window with its size and sq ft':'The PDF without window sizes'); });
+/* sq ft of one window line, to 0.1 — totals add up the lines as printed */
+function lineSq(o,it){ return !o||o.kind==='doors'?0:Math.round(sqft(it.w,it.h)*n(it.qty)*10)/10; }
+function oSq(o){ return !o?0:Math.round((o.items||[]).reduce(function(a,it){ return a+lineSq(o,it); },0)*10)/10; }
+/* every window of these flats / orders: where, type, size, qty, sq ft */
+function szSection(list,lab,head){ var k=0, tq=0, ts=0, hasD=list.some(function(o){ return o.kind==='doors'; }), hasW=list.some(function(o){ return o.kind!=='doors'; }), rows=[];
+  list.forEach(function(o){ (o.items||[]).forEach(function(it){ var q=n(it.qty), dr=o.kind==='doors', sq=lineSq(o,it); tq+=q; ts+=sq;
+      rows.push([++k,lab(o),it.loc||'',dr?(it.type||'')+' door':(it.type||'')+(it.series?' · '+it.series:''),Math.round(n(it.w))+' x '+Math.round(n(it.h)),fmt(q),dr?'-':fmt(sq)]); }); });
+  return {title:(hasW&&hasD?'Windows and doors':hasD?'Doors':'Windows')+' — sizes and sq ft',cols:[{h:'#',w:24},{h:head,w:58},{h:'Location',w:96},{h:'Type',w:104},{h:'Size W x H (mm)',w:98,a:'r'},{h:'Qty',w:36,a:'r'},{h:'Sq ft',w:58,a:'r'}],
+    rows:rows,empty:'No windows yet',total:['','Total','','','',fmt(tq),hasW?fmt(ts):'-']}; }
+/* ---- an ordinary order's customer: all their confirmed orders, payments and the balance ---- */
+function ordStmtList(o){ return (typeof lpSibs==='function'?lpSibs(o):[o]).filter(function(x){ return !x.proj&&!x.tpl&&!x.del&&(x.id===o.id||x.stage>=1||paid(x)>0.5); }); }
+function ordPdf(o,sz){ var L=ordStmtList(o), gx=L.some(function(x){ return gstOf(x)>0; }), k=0, m=0, bill=0, sub=0, gst=0, recv=0, sq=0, pays=[];
+  L.forEach(function(x){ bill+=orderTotal(x); sub+=subTotal(x); gst+=gstAmt(x); sq+=oSq(x); (x.payments||[]).forEach(function(p){ recv+=n(p.amt); pays.push({x:p,o:x}); }); });
+  pays.sort(function(a,b){ var p=String(a.x.on||''), q=String(b.x.on||''); return p<q?-1:p>q?1:0; });
+  var pend=bill-recv, adv=pend<-0.5, wn=L.some(function(x){ return x.kind!=='doors'; });
+  var cols=[{h:'#',w:24},{h:'Order',w:50},{h:'Date',w:74},{h:'Items',w:96},{h:'Status',w:84}].concat(sz?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
+  var rows=L.map(function(x){ return [++k,'#'+x.no,dFull(x.confirmedOn||x.created||''),fmt(qty(x))+' '+(x.kind==='doors'?'door':'window')+(qty(x)===1?'':'s'),STAGES[x.stage]||''].concat(sz?[x.kind==='doors'?'-':fmt(oSq(x))]:[]).concat(gx?[nIN(subTotal(x)),gstOf(x)?gstOf(x)+'%   '+nIN(gstAmt(x)):'-']:[]).concat([nIN(orderTotal(x))]); });
+  var secs=[{title:'Orders',cols:cols,rows:rows,total:['','Total','','',''].concat(sz?[wn?fmt(sq):'-']:[]).concat(gx?[nIN(sub),nIN(gst)]:[]).concat([nIN(bill)])}];
+  if(sz) secs.push(szSection(L,function(x){ return '#'+x.no; },'Order'));
+  secs.push({title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Order',w:56},{h:'Mode',w:62},{h:'Reference / note',w:184},{h:'Amount (Rs.)',w:90,a:'r'}],rows:pays.map(function(r){ return [++m,dFull(r.x.on),'#'+r.o.no,r.x.mode||'Cash',typeof lpNoteT==='function'?lpNoteT(r.x,1):(r.x.note||''),nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(recv)]});
+  var sum=(gx?[['Bill — taxable value',rsIN(sub)],['GST',rsIN(gst)]]:[]).concat([['Total bill',rsIN(bill),1],['Less: received',rsIN(recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(Math.abs(pend)),1,adv?PDFC.good:PDFC.warn]]);
+  var site=String(o.address||'').split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,3);
+  return stmtPdfDoc({title:'STATEMENT OF ACCOUNT',party:o.customer||'Customer',ref:'Order'+(L.length>1?'s ':' ')+L.map(function(x){ return '#'+x.no; }).join(', '),
+    to:{label:'Statement for',lines:[[o.customer||'Customer',1]].concat(o.phone?[['Phone: '+o.phone]]:[]).concat([['Order'+(L.length>1?'s':'')+': '+L.map(function(x){ return '#'+x.no; }).join(', ')]])},
+    proj:{label:'Site',lines:site.length?site.map(function(l,i){ return [l,i===0?1:0]; }):[['—']]},
+    boxes:[['Total bill','Rs. '+nIN(bill)],['Received','Rs. '+nIN(recv),PDFC.good],[adv?'Advance with us':'Balance due','Rs. '+nIN(Math.abs(pend)),adv?PDFC.good:PDFC.warn]],
+    sections:secs,sum:sum,words:pend>0.5?rupeesWords(pend):'',wordsLabel:'Balance due in words',leftSign:o.customer||'Customer',
+    note:'Please check and confirm; tell us within 7 days if anything does not match.'}).blob('Statement — '+(o.customer||'Customer')); }
+function ordStmtName(o){ return ('Statement - '+(o.customer||'Customer')+' - '+dFull(today())).replace(/[^\w\- ,.]+/g,'').replace(/\s+/g,' ').trim()+'.pdf'; }
+function ordStmtCard(o){ if(!o||o.proj||o.tpl||o.bat||prod()) return ''; var L=ordStmtList(o), bill=0, recv=0; L.forEach(function(x){ bill+=orderTotal(x); recv+=paid(x); });
+  return '<div class="card"><h2>Statement</h2><p class="faint" style="margin:0 0 8px">Bill, payments and balance of '+esc(o.customer||'this customer')+(L.length>1?' — '+L.length+' orders ('+L.map(function(x){ return '#'+x.no; }).join(', ')+')':'')+' as a PDF.</p>'
+    +'<div class="row"><button class="btn primary" data-act="ostmtsend">📤 Send statement PDF</button><button class="btn" data-act="ostmtdl">⬇ PDF</button></div>'+szChk()+'</div>'; }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="ostmtsend"],[data-act="ostmtdl"]'); if(!t) return; var o=order(); if(!o||o.proj||prod()) return;
+  var b=ordPdf(o,szOn()), nm=ordStmtName(o); if(t.dataset.act==='ostmtdl'){ download(nm,b); return; }
+  var L=ordStmtList(o), bill=0, recv=0; L.forEach(function(x){ bill+=orderTotal(x); recv+=paid(x); }); var pend=bill-recv;
+  pdfSend(b,nm,'Statement for '+(o.customer||'you')+' (as on '+dShort(today())+'). '+(pend<-0.5?'Advance with us '+money(-pend):'Balance due '+money(Math.max(0,pend)))+'.',o.phone); });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
