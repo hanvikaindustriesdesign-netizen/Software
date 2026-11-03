@@ -704,6 +704,17 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .pmx{flex:1 0 100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pmlang{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft)}
 .pmlang select{width:auto;min-height:34px;padding:4px 8px;font-size:14px}
+
+/* 🎤 listening */
+.micpill{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:45;background:#b42318;color:#fff;padding:9px 18px;border-radius:999px;font-size:14.5px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:92vw;text-align:center;pointer-events:none;animation:micp3 1.4s ease-in-out infinite}
+@keyframes micp3{50%{box-shadow:0 6px 26px rgba(180,35,24,.55)}}
+/* help window: the steps for this phone */
+.hppop{background:rgba(15,20,30,.45);align-items:flex-start;overflow:auto;padding:6vh 0 30px;z-index:41}
+.hph{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.hph h2{flex:1 1 auto;min-width:0;margin:0;font-size:19px;line-height:1.3}
+.hpl{margin:4px 0 6px;padding-left:22px;line-height:1.5}
+.hpl li{margin:6px 0}
+.toast{max-width:92vw;text-align:center}
 </style>
 </head>
 <body>
@@ -758,7 +769,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 20:04';
+var APPV='03 Nov 2026, 21:04';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -868,6 +879,10 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "revoke all on function ws_private.push_tick() from public, anon, authenticated;",
  "select cron.schedule('hanvika-push', '33 * * * *', 'select ws_private.push_tick()');",
  "update storage.buckets set allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/aac', 'audio/x-m4a', 'audio/wav'] where id = 'photos';",
+ "create table if not exists public.app_diag (id bigint generated always as identity primary key, at timestamptz not null default now(), role text not null default '' check (length(role) <= 20), what text not null check (length(what) <= 40), err text not null default '' check (length(err) <= 300), ua text not null default '' check (length(ua) <= 300), mode text not null default '' check (length(mode) <= 20));",
+ "alter table public.app_diag enable row level security;",
+ "do $$ begin if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'app_diag' and policyname = 'ws diag add') then create policy \"ws diag add\" on public.app_diag for insert to authenticated with check (ws_private.is_member()); end if; end $$;",
+ "revoke select, update, delete on public.app_diag from anon, authenticated;",
  "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; alter table public.shop_flats enable row level security; alter table public.shop_orders enable row level security; alter table public.shop_backups enable row level security; alter table public.shop_archive enable row level security;",
  "revoke all on public.shop_data, public.app_users, public.shop_flats, public.shop_orders, public.shop_backups, public.shop_archive from anon;",
  "create or replace function ws_private.keep_items(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare rest jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; i int;\nbegin\n  if jsonb_typeof(oa) is distinct from 'array' then return na; end if;\n  for e in select value from jsonb_array_elements(oa) loop\n    i := null; select min(x.ord) - 1 into i from jsonb_array_elements(rest) with ordinality as x(v, ord) where x.v = e;\n    if i is not null then rest := rest - i; end if;\n  end loop;\n  return oa || rest;\nend $$;",
@@ -934,7 +949,7 @@ function dShort(s){ if(!s) return '—'; return new Date(s+'T00:00').toLocaleDat
 function mLabel(ym){ return new Date(ym+'-01T00:00').toLocaleDateString('en-IN',{month:'short',year:'2-digit'}); }
 function addWorkDays(s,k){ var d=new Date(s+'T00:00'); while(k>0){ d.setDate(d.getDate()+1); if(d.getDay()!==0) k--; } return ymd(d); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
-function toast(m){ var t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show')},1800); }
+function toast(m){ var t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show')},Math.max(1800,Math.min(6500,String(m).length*60))); }
 function opts(list,sel){ return list.map(function(x){ return '<option'+(x==sel?' selected':'')+'>'+esc(x)+'</option>'; }).join(''); }
 function pl(k,w){ return k+' '+w+(k==1?'':'s'); }
 
@@ -1237,7 +1252,7 @@ function viewHome(){
    +(q.length?'<table class="hwkt"><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
   var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5&&!noAmt(o);}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
   var BH=bldHomeRows(), payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+BH+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):(BH?'':'<div class="empty">Nothing pending</div>'))+'</div></div>';
-  return installCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
+  return installCard()+swCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
 function salesR(){ return S.role==='sales'; }
 /* the sales person's home: follow-ups and payments to collect — no shop totals, no apartment flats */
@@ -1247,7 +1262,7 @@ function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; 
   var pay='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?pl(pend.length,'order'):'')+'</span></div><div class="olist">'
    +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
      +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
-  return installCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
+  return installCard()+swCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
 /* ============================================================
    GST — builder flats get GST (the shop's GST %, or the project's builder %). Owner flats and other orders
    have no GST unless it is added: on the order / flat, for ticked flats, or for a project's owner flats.
@@ -1280,7 +1295,7 @@ function homeProd(){
   var work='<div class="card olist"><div class="row between"><h2>Make next</h2><button class="btn ghost sm" data-go="planning">Day plan ›</button></div>'
    +(q.length?q.map(function(o){var p=P[o.id];return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'windows')+' left · '+madeCount(o)+'/'+o.items.length+' made</div></div><div class="right"><div class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</div><div class="faint">due '+dShort(o.due)+'</div></div></button>';}).join(''):'<div class="empty">Nothing to make — all caught up</div>')+'</div>';
   var rd=by[3].length?'<div class="card olist"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
-  return installCard()+permCard()+kp+work+rd;
+  return installCard()+swCard()+permCard()+kp+work+rd;
 }
 function oRow(o){ var t=orderTotal(o), b=balance(o);
   if(prod()) return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer||'(no name)')+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+(o.due?' · due '+dShort(o.due):'')+(o.stage===2?' · '+madeCount(o)+'/'+o.items.length+' made':'')+'</div></div><span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span></button>';
@@ -2361,9 +2376,9 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
     if(!nw) projFlats(pp.id).forEach(function(f){ if(!f.address||f.address===oa.replace('\u0001',f.no)) f.address=pjAddr(f.no,pp); });
     pjPopX(); save(); if(nw){ S.tab='project'; S.pid=pp.id; S.psub='types'; S.pf={tower:'',st:'',q:''}; S.psel={}; S.plim=60; render(); window.scrollTo(0,0); toast('Project made — now add its flat types'); } else { render(); toast('Project saved'); } return; }
   if(a==='pjgeo'){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); var gb=t; geoBusy(gb,true);
-    geoGet().then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); S.pjgeo={geo:la+', '+lo,maplink:'https://maps.google.com/?q='+la+','+lo};
-      return geoAddr(g).then(function(ad){ var el=$('#pj_site'); if(el) el.value=ad.text; S.pjgeo.pin=ad.pin; geoBusy(gb,false); toast(ad.pin?'📍 Site address filled · PIN '+ad.pin+' — tap Save':'📍 Site filled — PIN not found, please type it'); },
-        function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); if(er&&er.denied){ permPop(false,'loc'); return; } toast('⚠ '+er.message); }); return; }
+    geoGet(function(tx){ gb.textContent=tx; }).then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); S.pjgeo={geo:la+', '+lo,maplink:'https://maps.google.com/?q='+la+','+lo};
+      return geoAddr(g).then(function(ad){ var el=$('#pj_site'); if(el) el.value=ad.text; S.pjgeo.pin=ad.pin; geoBusy(gb,false); toast((ad.pin?'📍 Site address filled · PIN '+ad.pin+' — tap Save':'📍 Site filled — PIN not found, please type it')+geoNote(g)); },
+        function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); if(er&&er.denied){ permPop(false,'loc'); return; } if(er&&er.nogps){ helpPop('gps'); return; } toast('⚠ '+er.message); }); return; }
   if(a==='pjarch'){ var pa=projById(d.pid); if(!pa||!admin()) return; pa.archived=!pa.archived; pjPopX(); save(); if(pa.archived){ S.pjarch=false; go('orders'); toast(pa.name+' archived — find it under Archived projects'); } else { render(); toast(pa.name+' is back'); } return; }
   if(a==='pjdel'){ var pd=projById(d.pid); if(!pd||!admin()) return; var pf=projFlats(pd.id), got=pf.reduce(function(x,f){return x+paid(f);},0);
     if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+(bldSum(pd).n?'\nThe builder\'s payments and bills ('+money(bldSum(pd).received)+' received) will be removed too.':'')+'\n\nThis cannot be undone.')) return;
@@ -2446,10 +2461,6 @@ if(!(D.sb&&D.sb.url&&D.sb.key)) FL.ready.then(function(){ lockOldSoon(); });
    One lookup per button press (both services ask for light use), remembered per spot.
    ============================================================ */
 var GEOC={}, GEOT=0;
-function geoGet(){ return new Promise(function(res,rej){ if(!navigator.geolocation) return rej(new Error('This phone or browser cannot share its location'));
-  navigator.geolocation.getCurrentPosition(function(p){ PERM.locHard=false; if(PERM.loc==='denied') PERM.loc='granted'; res({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy||0)}); },
-    function(e){ var er=new Error(e&&e.code===1?'Location is blocked — allow location for this app in the phone / browser settings, then try again':e&&e.code===3?'Location took too long — turn on GPS, step outside and try again':'Could not get the location — turn on GPS and try again'); if(e&&e.code===1){ er.denied=true; PERM.loc='denied'; PERM.locHard=true; } rej(er); },
-    {enableHighAccuracy:true,timeout:20000,maximumAge:30000}); }); }
 function geoSlow(ms,pr){ return Promise.race([pr,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('slow')); },ms); })]); }
 function geoAddr(g){ var k=g.lat.toFixed(5)+','+g.lng.toFixed(5); if(GEOC[k]) return Promise.resolve(GEOC[k]);
   var pin=function(v){ v=String(v||'').replace(/\s+/g,''); return /^\d{6}$/.test(v)?v:(v.match(/\d{6}/)||[''])[0]; };
@@ -2464,13 +2475,13 @@ function geoAddr(g){ var k=g.lat.toFixed(5)+','+g.lng.toFixed(5); if(GEOC[k]) re
 function geoBusy(btn,on){ if(!btn) return; if(on){ btn.dataset.lbl=btn.textContent; btn.textContent='📍 Finding…'; btn.disabled=true; } else { btn.disabled=false; if(btn.dataset.lbl) btn.textContent=btn.dataset.lbl; } }
 /* fill an order's / flat's site address (+ PIN, map link) from where the phone is now */
 function geoFill(o,btn){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); geoBusy(btn,true);
-  geoGet().then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); o.geo=la+', '+lo; o.geoAcc=g.acc; o.maplink='https://maps.google.com/?q='+la+','+lo; save();
-    return geoAddr(g).then(function(a){ var pj=o.proj&&typeof projById==='function'&&projById(o.proj), full=(pj?'Flat '+o.no+', '+pj.name+', ':'')+a.text, cur=String(o.address||'').trim(), auto=pj?pjAddr(o.no,pj):'';
+  geoGet(function(t){ if(btn) btn.textContent=t; }).then(function(g){ o=(o&&o.id&&byId(o.id))||o; var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); o.geo=la+', '+lo; o.geoAcc=g.acc; o.maplink='https://maps.google.com/?q='+la+','+lo; save();
+    return geoAddr(g).then(function(a){ o=(o&&o.id&&byId(o.id))||o; var pj=o.proj&&typeof projById==='function'&&projById(o.proj), full=(pj?'Flat '+o.no+', '+pj.name+', ':'')+a.text, cur=String(o.address||'').trim(), auto=pj?pjAddr(o.no,pj):'';
         if(!cur||cur===auto||cur===o.geoAddr) o.address=full;
         else if(cur!==full){ if(confirm('Use this address from your location?\n\n'+full+'\n\nOK = replace the site address\nCancel = keep yours'+(a.pin&&cur.indexOf(a.pin)<0?' and only add PIN '+a.pin:''))) o.address=full; else if(a.pin&&cur.indexOf(a.pin)<0) o.address=cur.replace(/[\s,.\-–]+$/,'')+' - '+a.pin; }
-        o.geoAddr=o.address; o.geoSrc=a.src; if(a.pin) o.pin=a.pin; save(); geoBusy(btn,false); render(); toast(a.pin?'📍 Site address updated · PIN '+a.pin:'📍 Address filled — PIN not found, please type it'); },
-      function(){ geoBusy(btn,false); render(); toast('📍 Map location saved. Address not found (no internet?) — please type it.'); }); },
-    function(e){ geoBusy(btn,false); if(e&&e.denied){ permPop(false,'loc'); return; } toast('⚠ '+e.message); }); }
+        o.geoAddr=o.address; o.geoSrc=a.src; if(a.pin) o.pin=a.pin; save(); geoBusy(btn,false); render(); toast((a.pin?'📍 Site address updated · PIN '+a.pin:'📍 Address filled — PIN not found, please type it')+geoNote(g)); },
+      function(ae){ diagLog('addr',String((ae&&ae.message)||ae||'').slice(0,120)); geoBusy(btn,false); render(); toast('📍 Map location saved. Address not found (no internet?) — please type it.'); }); },
+    function(e){ geoBusy(btn,false); if(e&&e.denied){ permPop(false,'loc'); return; } if(e&&e.nogps){ helpPop('gps'); return; } toast('⚠ '+e.message); }); }
 
 
 /* ============================================================
@@ -4513,7 +4524,7 @@ function pushEnsure(force){ if(!pushCan()||Notification.permission!=='granted') 
           body:JSON.stringify([{id:id,email:em,role:S.role||'',sub:{endpoint:j.endpoint,keys:j.keys},ua:String(navigator.userAgent||'').slice(0,180)}])}); })
         .then(function(r){ if(!r.ok) return r.text().then(function(t){ throw new Error('sign-up '+r.status+(/push_subs|relation|schema cache/i.test(t)?' — the database needs the update':'')); });
           try{ localStorage.setItem('wpushid',id); localStorage.setItem('wpushfor',em); }catch(e){} PUSH.err=''; return true; }); })
-    .catch(function(e){ PUSH.err=(e&&e.message)||'could not turn on'; return false; })
+    .catch(function(e){ PUSH.err=(e&&e.message)||'could not turn on'; diagLog('push',PUSH.err); return false; })
     .then(function(x){ PUSH.busy=null; if(typeof permPaint==='function') permPaint(); return x; });
   return PUSH.busy; }
 /* log out: this phone stops getting that person's reminders */
@@ -4564,47 +4575,92 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
      speech recognition types what you say (language: 📱 Permissions → Microphone)
    - voice notes on an order or flat (Customer tab): recorded here, kept with the photos online, played on every
      phone (the factory too); admin deletes
-   - 👥 next to the customer / owner name: pick from the phone's contacts (Android Chrome) — name and phone filled in
+   - 👥 next to the customer / owner name and phone: pick from the phone's contacts (Android Chrome) — name and phone
+     filled in
+   - later (asked: "Not working in all accounts … Phone-add phone, Customer-mic to tell name, Location-its not taking"):
+     🎤 and 👥 in the phone boxes too (a spoken number becomes digits), "Listening…" shown while the 🎤 is on, the
+     words heard so far kept even when the phone never marks them final, each failure explained with the steps for
+     this phone (fixdev.js helpPop), and what failed noted online without names / numbers / places (diagLog)
    ============================================================ */
-var MICSR=window.SpeechRecognition||window.webkitSpeechRecognition||null, MIC=null, VN=null, VNP=null, VNMAX=120;
+var MICSR=window.webkitSpeechRecognition||window.SpeechRecognition||null, MIC=null, VN=null, VNP=null, VNMAX=120, MICWD=[7000,25000,30000];
 var CTS=!!(navigator.contacts&&navigator.contacts.select&&window.ContactsManager);
 var MICLANGS=[['en-IN','English'],['kn-IN','ಕನ್ನಡ Kannada'],['hi-IN','हिन्दी Hindi'],['ta-IN','தமிழ் Tamil'],['te-IN','తెలుగు Telugu']];
-var MICSEL='#q,#owq,#pyq,input[data-o="customer"],textarea[data-o="address"],textarea[data-o="notes"],input[data-o="remindNote"],#pnote,#lp_note,#fe_c,#of_c';
+var MICSEL='#q,#owq,#pyq,input[data-o="customer"],input[data-o="phone"],textarea[data-o="address"],textarea[data-o="notes"],input[data-o="remindNote"],#pnote,#lp_note,#fe_c,#fe_ph,#of_c,#of_ph';
+/* name box + phone box that belong together (👥 in either fills both) */
 var CTSEL=[['input[data-o="customer"]','input[data-o="phone"]'],['#fe_c','#fe_ph'],['#of_c','#of_ph']];
+var MICPH='input[data-o="phone"],#fe_ph,#of_ph';
 function micLang(){ try{ return localStorage.getItem('wmiclang')||'en-IN'; }catch(e){ return 'en-IN'; } }
 function micLangSel(){ return MICSR?'<label class="pmlang">Speak in <select id="miclang">'+MICLANGS.map(function(l){ return '<option value="'+l[0]+'"'+(micLang()===l[0]?' selected':'')+'>'+l[1]+'</option>'; }).join('')+'</select></label>':''; }
 /* the 🎤 / 👥 buttons go inside the box (added after each screen is drawn) */
 function micEnhance(){ if(!MICSR&&!CTS) return; [].forEach.call(document.querySelectorAll(MICSEL),function(el){ if(el.dataset.micd||el.disabled||el.readOnly||!el.parentNode) return; el.dataset.micd='1';
     var foc=document.activeElement===el, s0=foc?el.selectionStart:0, s1=foc?el.selectionEnd:0;
-    var pf=''; CTSEL.forEach(function(c){ if(el.matches(c[0])) pf=c[1]; });
-    var h=(MICSR?'<button type="button" class="micb" data-mic="1" aria-label="Speak instead of typing" title="Speak">🎤</button>':'')+(CTS&&pf?'<button type="button" class="micb" data-ctp="'+esc(pf)+'" aria-label="Pick from contacts" title="From contacts">👥</button>':'');
+    var ci=-1; CTSEL.forEach(function(c,i){ if(el.matches(c[0])||el.matches(c[1])) ci=i; });
+    var h=(MICSR?'<button type="button" class="micb" data-mic="1" aria-label="Speak instead of typing" title="Speak">🎤</button>':'')+(CTS&&ci>=0?'<button type="button" class="micb" data-ctp="'+ci+'" aria-label="Pick from contacts" title="From contacts">👥</button>':'');
     if(!h) return; var w=document.createElement('span'); w.className='micw'+(el.tagName==='TEXTAREA'?' ta':'')+(el.classList.contains('grow')?' grow':'');
-    el.parentNode.insertBefore(w,el); w.appendChild(el); w.insertAdjacentHTML('beforeend','<span class="micbs">'+h+'</span>'); w.style.setProperty('--micn',String((MICSR?1:0)+(CTS&&pf?1:0)));
+    el.parentNode.insertBefore(w,el); w.appendChild(el); w.insertAdjacentHTML('beforeend','<span class="micbs">'+h+'</span>'); w.style.setProperty('--micn',String((MICSR?1:0)+(CTS&&ci>=0?1:0)));
+    if(MIC&&!MIC.btn.isConnected&&MIC.key&&micKey(el)===MIC.key&&S.oid===MIC.oid){ var nb=w.querySelector('[data-mic]'); if(nb){ nb.classList.add('on'); nb.setAttribute('aria-label','Stop'); MIC.btn=nb; MIC.el=el; } }
     if(foc){ try{ el.focus({preventScroll:true}); el.setSelectionRange&&el.setSelectionRange(s0,s1); }catch(x){} } }); }
 (function(){ var go=function(){ micEnhance(); new MutationObserver(function(){ clearTimeout(micEnhance.t); micEnhance.t=setTimeout(micEnhance,40); }).observe(document.body,{childList:true,subtree:true}); };
   if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); })();
-function micClean(t,el){ t=String(t||'').replace(/\s+/g,' ').trim(); if(t&&el&&el.matches&&el.matches('input[data-o="customer"],#fe_c,#of_c')) t=t.replace(/(^|\s)(\S)/g,function(m,a,c){ return a+c.toUpperCase(); }); return t; }
-function micToggle(btn,el){ if(MIC){ var same=MIC.btn===btn; micStop(); if(same) return; } if(!MICSR||!el) return; if(PERM.mic==='denied'){ permPop(false,'mic'); return; }
-  var rec; try{ rec=new MICSR(); }catch(x){ toast('Voice typing is not available here'); return; }
+/* a phone number said aloud: "nine eight four five…", "double nine", "+91 98450 12345" → 9845012345 */
+function micDigits(t){ var W={zero:'0',oh:'0',o:'0',one:'1',two:'2',to:'2',too:'2',three:'3',four:'4',for:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9'}, out='', rep=1;
+  String(t||'').toLowerCase().replace(/[^a-z0-9+ ]/g,' ').split(/\s+/).forEach(function(w){ if(!w) return; if(w==='double'){ rep=2; return; } if(w==='triple'){ rep=3; return; }
+    var d=/^\+?\d+$/.test(w)?w:W[w]; if(d==null){ rep=1; return; } out+=rep>1&&d.length===1?new Array(rep+1).join(d):d; rep=1; });
+  out=out.replace(/(?!^)\+/g,''); if(/^\+?91\d{10}$/.test(out)) out=out.slice(-10); else if(/^0\d{10}$/.test(out)) out=out.slice(1); return out; }
+function micClean(t,el){ if(el&&el.matches&&el.matches(MICPH)) return micDigits(t); t=String(t||'').replace(/\s+/g,' ').trim(); if(t&&el&&el.matches&&el.matches('input[data-o="customer"],#fe_c,#of_c')) t=t.replace(/(^|\s)(\S)/g,function(m,a,c){ return a+c.toUpperCase(); }); return t; }
+/* the box again after the screen was redrawn while listening (same order, same box) */
+function micKey(el){ return el.id?'#'+el.id:el.dataset&&el.dataset.o?el.tagName.toLowerCase()+'[data-o="'+el.dataset.o+'"]':''; }
+function micBox(m){ if(m.el&&m.el.isConnected) return m.el; if(!m.key||S.oid!==m.oid) return null; return document.querySelector(m.key); }
+function micPill(t){ var p=document.getElementById('micpill'); if(!t){ if(p) p.remove(); return; } if(!p){ p=document.createElement('div'); p.id='micpill'; p.className='micpill'; p.setAttribute('role','status'); document.body.appendChild(p); } p.textContent=t; }
+function micToggle(btn,el){ if(MIC){ var same=MIC.btn===btn||(!!el&&!!MIC.key&&micKey(el)===MIC.key&&S.oid===MIC.oid);
+    /* 🎤 tapped again: stop listening and keep what was heard (the phone sends its last words, then ends) */
+    if(same){ var r0=MIC.rec; MIC.stopping=true; micPill('🎤 Finishing…'); try{ r0.stop(); }catch(x){} setTimeout(function(){ micFinish(r0); },2500); return; }
+    micStop(); }
+  if(!MICSR||!el) return; if(PERM.mic==='denied'){ permPop(false,'mic'); return; }
+  var rec; try{ rec=new MICSR(); }catch(x){ diagLog('mic','new: '+((x&&x.name)||x)); helpPop('micsvc'); return; }
   rec.lang=micLang(); rec.interimResults=true; rec.continuous=false; rec.maxAlternatives=1;
-  var search=/^(q|owq|pyq)$/.test(el.id||''), base=search?'':String(el.value||''), sep=base&&!/\s$/.test(base)?' ':'';
-  MIC={rec:rec,btn:btn,el:el,base:base,sep:sep,fin:'',search:search}; btn.classList.add('on'); btn.setAttribute('aria-label','Stop');
-  rec.onaudiostart=function(){ PERM.mic='granted'; PERM.micHard=false; };
+  var phone=el.matches(MICPH), search=/^(q|owq|pyq)$/.test(el.id||'')||phone, base=search?'':String(el.value||''), sep=base&&!/\s$/.test(base)?' ':'';
+  MIC={rec:rec,btn:btn,el:el,key:micKey(el),oid:S.oid,base:base,sep:sep,fin:'',tmp:'',err:'',heard:false,search:search,phone:phone}; btn.classList.add('on'); btn.setAttribute('aria-label','Stop');
+  var ask=PERM.mic!=='granted'; micPill(ask?'🎤 Tap Allow when the phone asks for the microphone':'🎤 Starting the microphone…');
+  /* a phone whose voice service never answers would leave the 🎤 lit for ever: give up after 7 s (25 s while the phone
+     may be asking "Allow microphone?") and say what to do; stop by itself after 30 s with what was heard */
+  MIC.wd=setTimeout(function(){ if(!MIC||MIC.rec!==rec||MIC.live) return; MIC.err='nostart'; diagLog('mic','did not start ('+rec.lang+(ask?', asked':'')+')'); try{ rec.abort(); }catch(x){} micStop(true); helpPop('micsvc','the phone did not start listening'); },ask?MICWD[1]:MICWD[0]);
+  MIC.cap=setTimeout(function(){ if(!MIC||MIC.rec!==rec) return; MIC.stopping=true; try{ rec.stop(); }catch(x){} setTimeout(function(){ micFinish(rec); },2500); },MICWD[2]);
+  rec.onstart=function(){ if(MIC&&MIC.rec===rec){ MIC.live=true; micPill('🎤 Listening… speak now'+(phone?' (the number)':'')); } };
+  rec.onaudiostart=function(){ PERM.mic='granted'; PERM.micHard=false; if(MIC&&MIC.rec===rec){ MIC.live=true; micPill('🎤 Listening… speak now'+(phone?' (the number)':'')); } };
   rec.onresult=function(ev){ if(!MIC||MIC.rec!==rec) return; var fin='', tmp=''; for(var i=0;i<ev.results.length;i++){ var r=ev.results[i]; if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript; }
-    MIC.fin=fin; el.value=MIC.base+MIC.sep+micClean(fin+' '+tmp,el); };
-  rec.onerror=function(ev){ var er=ev&&ev.error; if(er==='not-allowed'||er==='service-not-allowed'){ PERM.mic='denied'; PERM.micHard=true; micStop(true); permPop(false,'mic'); return; }
-    if(er==='no-speech') toast('🎤 Didn\'t hear anything — tap 🎤 and speak'); else if(er==='network') toast('🎤 Voice typing needs the internet'); else if(er&&er!=='aborted') toast('🎤 '+er); };
-  rec.onend=function(){ if(!MIC||MIC.rec!==rec) return; var m=MIC, said=micClean(m.fin,el); el.value=said?m.base+m.sep+said:m.base; micStop(true);
-    el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); if(said&&!m.search){ try{ el.focus(); el.setSelectionRange&&el.setSelectionRange(el.value.length,el.value.length); }catch(x){} } };
-  try{ rec.start(); }catch(x){ micStop(true); toast('🎤 Could not start — try again'); } }
-function micStop(ended){ if(!MIC) return; var m=MIC; MIC=null; m.btn.classList.remove('on'); m.btn.setAttribute('aria-label','Speak instead of typing'); if(!ended){ try{ m.rec.stop(); }catch(x){} } }
-/* 👥 a contact: name and phone (Indian numbers without +91) */
-function ctPick(nameEl,phoneEl){ if(!CTS) return; navigator.contacts.select(['name','tel'],{multiple:false}).then(function(cs){ var c=cs&&cs[0]; if(!c) return;
-    var nm=String((c.name&&c.name[0])||'').trim(), tel=String((c.tel&&c.tel[0])||'').replace(/[^\d+]/g,'');
-    if(/^\+?91\d{10}$/.test(tel)) tel=tel.slice(-10); else if(/^0\d{10}$/.test(tel)) tel=tel.slice(1);
-    if(nm&&nameEl){ nameEl.value=nm; nameEl.dispatchEvent(new Event('input',{bubbles:true})); }
-    if(tel&&phoneEl){ phoneEl.value=tel; phoneEl.dispatchEvent(new Event('input',{bubbles:true})); }
-    if(nm||tel) toast('👥 '+(nm||tel)+' filled in'); }).catch(function(){}); }
+    MIC.fin=fin; MIC.tmp=tmp; MIC.heard=MIC.live=true; var b=micBox(MIC); if(b) b.value=MIC.base+MIC.sep+micClean(fin+' '+tmp,b); micPill('🎤 Listening…'); };
+  rec.onerror=function(ev){ var er=(ev&&ev.error)||''; if(MIC&&MIC.rec===rec){ MIC.err=er; MIC.live=true; } if(er&&er!=='aborted'&&er!=='no-speech') diagLog('mic',er+' ('+rec.lang+')');
+    if(er==='not-allowed'){ PERM.mic='denied'; PERM.micHard=true; micStop(true); permPop(false,'mic'); return; }
+    if(er==='audio-capture'){ micStop(true); helpPop('miccap'); return; }
+    if(er==='service-not-allowed'){ micStop(true); helpPop('micsvc'); return; }
+    if(er==='language-not-supported'&&rec.lang!=='en-IN'){ try{ localStorage.setItem('wmiclang','en-IN'); }catch(x){} micStop(true); toast('🎤 '+((MICLANGS.filter(function(l){ return l[0]===rec.lang; })[0]||['',''])[1]||rec.lang)+' voice typing is not on this phone — changed to English. Tap 🎤 again.'); return; }
+    if(er==='no-speech') toast('🎤 Didn\'t hear anything — tap 🎤 and speak'); else if(er==='network') toast('🎤 Voice typing needs the internet — check the connection'); else if(er&&er!=='aborted'){ micStop(true); helpPop('micsvc',er); } };
+  rec.onend=function(){ micFinish(rec); };
+  try{ rec.start(); }catch(x){ micStop(true); diagLog('mic','start: '+((x&&x.name)||x)); toast('🎤 Could not start — try again'); } }
+/* listening ended: what was heard goes into the box (final words, or the last words heard if the phone never marked
+   them final) and is saved like typing; the box is found again if the screen was redrawn meanwhile */
+function micFinish(rec){ if(!MIC||MIC.rec!==rec) return; var m=MIC, el=m.el, b=micBox(m), said=micClean((m.fin+' '+m.tmp).trim(),b||el), rec0=!b&&m.key&&m.oid&&typeof byId==='function'?byId(m.oid):null;
+  micStop(true);
+  if(b){ b.value=said?m.base+m.sep+said:m.base; b.dispatchEvent(new Event('input',{bubbles:true})); b.dispatchEvent(new Event('change',{bubbles:true})); if(said&&!m.search){ try{ b.focus(); b.setSelectionRange&&b.setSelectionRange(b.value.length,b.value.length); }catch(x){} } }
+  else if(said&&rec0&&el.dataset&&el.dataset.o){ rec0[el.dataset.o]=m.base+m.sep+said; save(); renderSoon(); }
+  if(said) diagLog('mic','ok'+(m.fin?'':' (not final)'),true);
+  else if(!m.err&&!m.stopping){ diagLog('mic','ended, nothing heard'+(m.heard?' (empty)':'')); toast('🎤 Didn\'t catch that — tap 🎤 and speak clearly, close to the phone'); } }
+function micStop(ended){ if(!MIC) return; var m=MIC; MIC=null; clearTimeout(m.wd); clearTimeout(m.cap); micPill(''); m.btn.classList.remove('on'); m.btn.setAttribute('aria-label','Speak instead of typing'); if(!ended){ try{ m.rec.stop(); }catch(x){} } }
+/* 👥 a contact: name and phone (Indian numbers without +91). From the phone box: the name only if still empty.
+   The boxes are looked up again when the phone's contact list closes (the screen may have been redrawn). */
+function ctTel(v){ var tel=String(v||'').replace(/[^\d+]/g,''); if(/^\+?91\d{10}$/.test(tel)) tel=tel.slice(-10); else if(/^0\d{10}$/.test(tel)) tel=tel.slice(1); return tel; }
+function ctPick(ci,fromPhone){ var pr=CTSEL[ci]; if(!CTS||!pr) return; var oid=S.oid;
+  navigator.contacts.select(['name','tel'],{multiple:false}).then(function(cs){ var c=cs&&cs[0]; if(!c) return;
+    var nm=String((c.name&&c.name[0])||'').trim(), tel=ctTel((c.tel||[]).filter(function(x){ return String(x||'').replace(/\D/g,'').length>=6; })[0]||(c.tel&&c.tel[0]));
+    var here=S.oid===oid, rec=ci===0&&oid&&typeof byId==='function'?byId(oid):null, nEl=here?document.querySelector(pr[0]):null, pEl=here?document.querySelector(pr[1]):null;
+    var curName=nEl?String(nEl.value||'').trim():rec?String(rec.customer||'').trim():'', setName=!!nm&&(!fromPhone||!curName);
+    var put=function(el,key,v){ if(el&&!el.disabled&&!el.readOnly){ el.value=v; el.dispatchEvent(new Event('input',{bubbles:true})); return true; } if(rec&&key){ rec[key]=v; save(); renderSoon(); return true; } return false; };
+    var a=setName&&put(nEl,'customer',nm), b=!!tel&&put(pEl,'phone',tel);
+    diagLog('contacts','ok'+(tel?'':' (no number)'),true);
+    if(a||b) toast('👥 '+(a?nm:'')+(a&&b?' · ':'')+(b?tel:'')+' filled in'+(tel?'':' — this contact has no phone number'));
+    else if(!tel) toast('👥 '+(nm||'This contact')+' has no phone number saved'); })
+  .catch(function(e){ var n=(e&&e.name)||''; if(n==='InvalidStateError') return; diagLog('contacts',(n||'error')+': '+String((e&&e.message)||'').slice(0,160)); helpPop('ct'); }); }
 /* ---------- voice notes ---------- */
 function vnCan(){ return !!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); }
 function vnMime(){ var c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus']; for(var i=0;i<c.length;i++){ try{ if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(c[i])) return c[i]; }catch(e){} } return ''; }
@@ -4644,13 +4700,70 @@ function vnStopPlay(){ if(!VNP) return; var p=VNP; VNP=null; try{ p.a.pause(); }
 function vnDel(o,i){ if(!canDel()) return; var v=(o.voice||[])[i]; if(!v||!confirm('Delete this voice note ('+vnDur(v.dur)+', '+dShort(v.on)+')?')) return; vnStopPlay(); o.voice.splice(i,1); if(v.path) phForget(v); save(); render(); toast('Voice note deleted'); }
 document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&&e.target.closest('[data-mic],[data-ctp],[data-act="vnrec"],[data-act="vnstop"],[data-act="vncancel"],[data-vnplay],[data-vndel]'); if(!b) return; var d=b.dataset;
   if(d.mic!==undefined){ e.preventDefault(); var w=b.closest('.micw'); micToggle(b,w&&w.querySelector('input,textarea')); return; }
-  if(d.ctp!==undefined){ e.preventDefault(); var w2=b.closest('.micw'); ctPick(w2&&w2.querySelector('input'),document.querySelector(d.ctp)); return; }
+  if(d.ctp!==undefined){ e.preventDefault(); var w2=b.closest('.micw'), i2=w2&&w2.querySelector('input'); ctPick(+d.ctp,!!(i2&&i2.matches(MICPH))); return; }
   if(d.act==='vnrec'){ vnRec(order()); return; }
   if(d.act==='vnstop'){ if(VN&&VN.rec.state==='recording') VN.rec.stop(); return; }
   if(d.act==='vncancel'){ if(VN){ VN.cancel=true; if(VN.rec.state==='recording') VN.rec.stop(); else vnPopX(); } return; }
   if(d.vnplay!==undefined){ var o=byId(d.oid)||order(); if(o) vnPlay(o,+d.vnplay,b); return; }
   if(d.vndel!==undefined){ var o2=order(); if(o2) vnDel(o2,+d.vndel); return; } });
 document.addEventListener('change',function(e){ var t=e.target; if(t&&t.id==='miclang'){ try{ localStorage.setItem('wmiclang',t.value); }catch(x){} toast('🎤 Speak in '+t.options[t.selectedIndex].text); } });
+
+
+/* ============================================================
+   PHONE FEATURES THAT DEPEND ON THE PHONE ITSELF — clearer, sturdier
+   (asked: "Not working in all accounts, sales production n admin · Phone-add phone · Customer-mic to tell name ·
+   Loction-its not taking")
+   - 📍 location: GPS first; a tablet / phone without a GPS fix falls back to the Wi-Fi location; the order is looked
+     up again when the address comes back (the screen or the order may have been refreshed meanwhile)
+   - when the phone cannot do something: a window with the steps for this kind of phone (helpPop), not a 2-second line
+   - what failed is noted online for the shop's own database (app_diag: the feature, the phone's error code, the
+     browser name — never names, numbers, places or photos), at most 30 notes a day per phone
+   ============================================================ */
+var DIAGT={};
+function diagMode(){ try{ return window.matchMedia&&matchMedia('(display-mode: standalone)').matches?'app':'browser'; }catch(e){ return ''; } }
+function diagLog(what,err,once){ try{ var now=Date.now(), day=today(), k=what+'|'+(once?'ok':err), c={};
+    try{ c=JSON.parse(localStorage.getItem('wdiag')||'{}')||{}; }catch(e){ c={}; } if(c.d!==day) c={d:day,n:0,ok:{}}; c.ok=c.ok||{};
+    if(once){ if(c.ok[what]) return; c.ok[what]=1; } else { if(DIAGT[k]&&now-DIAGT[k]<6e5) return; DIAGT[k]=now; }
+    if(c.n>=30) return; c.n++; try{ localStorage.setItem('wdiag',JSON.stringify(c)); }catch(e){}
+    if(!(D.sb&&D.sb.url)||!SESS||typeof sbUrl!=='function') return;
+    fetch(sbUrl('/rest/v1/app_diag'),{method:'POST',headers:sbHeaders({Prefer:'return=minimal'}),body:JSON.stringify({role:String(S.role||'').slice(0,20),what:String(what).slice(0,40),err:String(err||'').slice(0,300),ua:String(navigator.userAgent||'').slice(0,300),mode:diagMode()})}).catch(function(){});
+  }catch(e){} }
+/* the steps for this kind of phone */
+function helpSteps(k,extra){ var os=permOS(), A=os==='android', I=os==='ios';
+  var chrome=function(x){ return 'Allow '+x+' for Chrome: phone <b>Settings → Apps → Chrome → Permissions → '+x+' → Allow</b>.'; };
+  if(k==='gps') return {t:'📍 Could not find where this phone is',f:'loc',li:I?['iPhone <b>Settings → Privacy &amp; Security → Location Services → On</b>.','In the same place: <b>Safari Websites → While Using the App</b>.','Then tap <b>📍 Use my location</b> again — or type the address.']
+      :A?['Turn on <b>Location</b>: swipe down from the top of the screen → tap <b>📍 Location</b> (it turns on / blue).','On a tablet keep <b>Wi-Fi on</b> — tablets find the place from Wi-Fi.','Indoors it can take long — go near a window or step outside.','Then tap <b>📍 Use my location</b> again — or type the address.']
+      :['Turn on location for this computer / browser, or type the address.']};
+  if(k==='miccap') return {t:'🎤 The microphone did not start',f:'mic',li:I?['Close any app using the microphone (call, recorder).','iPhone <b>Settings → Safari → Microphone → Allow</b>.','Then tap <b>🎤</b> again.']
+      :['Close any app using the microphone (phone call, voice recorder, video call).',A?chrome('Microphone'):'Allow the microphone for this browser.','Then tap <b>🎤</b> again.']};
+  if(k==='micsvc') return {t:'🎤 Voice typing is not working in this browser',li:['Use the <b>🎤 on the keyboard</b> instead: tap in the box, then the 🎤 key on the keyboard'+(A?' (Google keyboard: top right)':'')+'.',A?'For the 🎤 in the app: open the app in <b>Google Chrome</b> and update the <b>Google</b> app (Play Store) — it does the listening.':I?'For the 🎤 in the app: open it in <b>Safari</b>, and turn on <b>Settings → General → Keyboard → Enable Dictation</b>.':'For the 🎤 in the app: use <b>Google Chrome</b>.','Or type it.'],x:extra};
+  if(k==='ct') return {t:'👥 Could not open your contacts',li:[A?chrome('Contacts'):'This phone or browser does not share contacts.','Then tap <b>👥</b> again — your contacts open and you pick one (only that one is shared).','Or type the name and number.']};
+  return {t:'Something did not work',li:['Try again.']}; }
+function helpPop(k,extra){ var h=helpSteps(k,extra); helpPopX(); var v=document.createElement('div'); v.className='viewer hppop';
+  v.innerHTML='<div class="card pjpopc" role="dialog" aria-label="'+esc(h.t.replace(/<[^>]+>/g,''))+'"><div class="hph"><h2>'+h.t+'</h2><button class="btn sm ghost" data-hpx="1" aria-label="Close">✕</button></div>'
+    +'<ol class="hpl">'+h.li.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ol>'+(h.x?'<div class="faint" style="font-size:12px;margin-top:6px">Reason from the phone: '+esc(h.x)+'</div>':'')
+    +'<div class="row pjpopf"><button class="btn primary" data-hpx="1">OK</button>'+(h.f?'<button class="btn" data-act="pmopen" data-f="'+h.f+'">📱 Permissions</button>':'')+'</div></div>';
+  v.addEventListener('click',function(e){ if(e.target===v||(e.target.closest&&e.target.closest('[data-hpx],[data-act="pmopen"]'))) v.remove(); });
+  document.body.appendChild(v); }
+function helpPopX(){ var v=document.querySelector('.viewer.hppop'); if(v) v.remove(); }
+/* 📍 where the phone is: GPS (10 s), then the Wi-Fi / network location (15 s) */
+function geoGet(busy){ return new Promise(function(res,rej){ if(!navigator.geolocation) return rej(new Error('This phone or browser cannot share its location'));
+  var done=false, tried=[];
+  var ok=function(p,how){ if(done) return; done=true; var acc=Math.round(p.coords.accuracy||0); PERM.locHard=false; if(PERM.loc==='denied'||PERM.loc==='nogps') PERM.loc='granted';
+    diagLog('geo','ok '+how+(tried.length?' after '+tried.join(','):'')+' ±'+(acc>999?Math.round(acc/1000)+'km':acc+'m'),true); res({lat:p.coords.latitude,lng:p.coords.longitude,acc:acc,how:how}); };
+  var fail=function(e){ if(done) return; done=true; var c=e&&e.code;
+    var er=new Error(c===1?'Location is blocked — allow location for this app in the phone / browser settings, then try again':'Could not find where this phone is — turn on Location and try again');
+    if(c===1){ er.denied=true; PERM.loc='denied'; PERM.locHard=true; } else er.nogps=true; diagLog('geo','fail '+tried.join(',')); rej(er); };
+  var low=function(){ if(busy) busy('📍 Finding… (Wi-Fi)'); navigator.geolocation.getCurrentPosition(function(p){ ok(p,'wifi'); },function(e){ tried.push('wifi:'+(e&&e.code)); fail(e); },{enableHighAccuracy:false,timeout:15000,maximumAge:600000}); };
+  navigator.geolocation.getCurrentPosition(function(p){ ok(p,'gps'); },function(e){ tried.push('gps:'+(e&&e.code)); if(e&&e.code===1) return fail(e); low(); },{enableHighAccuracy:true,timeout:10000,maximumAge:60000}); }); }
+function geoNote(g){ return g&&g.acc>1000?' — only approximate (±'+Math.round(g.acc/1000)+' km), please check it':''; }
+/* the website still has the old sw.js (only index.html uploaded): the reminders cannot start on any phone — the admin
+   sees it on Home until the new sw.js is on the website */
+var SWOLD=false;
+function swCheck(){ if(!(location.protocol==='https:'||window.SWTEST)||!('serviceWorker' in navigator)||!(window.BAKED&&BAKED.url)) return;
+  fetch('sw.js',{cache:'no-store'}).then(function(r){ return r.ok?r.text():''; }).then(function(t){ var old=!!t&&!/notificationclick/.test(t); if(old!==SWOLD){ SWOLD=old; if(S.role&&S.tab==='home') render(); } },function(){}); }
+setTimeout(swCheck,4000); setInterval(swCheck,15*60000);
+function swCard(){ return SWOLD&&admin()?'<div class="card pmcard"><b>⚠ Upload the new sw.js file to GitHub</b><div class="faint">The website still has the old sw.js, so 🔔 morning reminders cannot start on any phone. Upload sw.js next to index.html (GitHub → Add file → Upload files).</div></div>':''; }
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
