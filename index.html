@@ -679,6 +679,31 @@ table.mpt td:first-child{min-width:118px}
 .phbig{flex-direction:column;gap:12px}
 .phbig img{max-height:80vh}
 .phbar{display:flex;gap:8px}
+
+/* 🎤 voice typing / 👥 contacts inside the boxes */
+label.f span.micw,span.micw{display:block;position:relative;font-size:inherit;color:inherit;margin:0}
+.micw.grow{flex:1 1 auto;min-width:0}
+.micw>input,.micw>textarea{width:100%;padding-right:calc(10px + var(--micn,1)*36px)}
+label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:flex;gap:2px;margin:0}
+.micw.ta>.micbs{top:6px;transform:none}
+.micb{width:34px;height:34px;min-height:0;padding:0;border:0;border-radius:8px;background:transparent;font-size:17px;line-height:1;cursor:pointer;opacity:.8;display:inline-flex;align-items:center;justify-content:center}
+.micb:hover,.micb:focus-visible{background:#eef3fd;opacity:1}
+.micb.on{background:#fde2e2;opacity:1;animation:micp 1s ease-in-out infinite}
+@keyframes micp{50%{background:#f8bcbc}}
+/* 🎤 voice notes */
+.vnl{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.vn{display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:14px}
+.vn:last-child{border-bottom:0}
+.vnp{min-width:44px}
+.vnpop{background:rgba(15,20,30,.55);z-index:40}
+.vnrec{max-width:320px;width:86vw;text-align:center;padding:22px 18px}
+.vnmic{font-size:40px;animation:micp2 1.2s ease-in-out infinite}
+@keyframes micp2{50%{transform:scale(1.12)}}
+.vnt{font-size:32px;font-weight:700;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+/* permissions window: extra line (test / language) */
+.pmx{flex:1 0 100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pmlang{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft)}
+.pmlang select{width:auto;min-height:34px;padding:4px 8px;font-size:14px}
 </style>
 </head>
 <body>
@@ -733,7 +758,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 18:32';
+var APPV='03 Nov 2026, 20:04';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -816,6 +841,33 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "grant usage on schema cron to postgres;",
  "grant all privileges on all tables in schema cron to postgres;",
  "select cron.schedule('hanvika-daily-copy', '31 * * * *', 'select ws_private.daily_copy()');",
+ "create extension if not exists pg_net with schema extensions;",
+ "create table if not exists public.push_subs (id text primary key, email text not null, role text not null default '', sub jsonb not null, ua text not null default '', created_at timestamptz not null default now(), last_ok timestamptz, fails integer not null default 0);",
+ "alter table public.push_subs enable row level security;",
+ "do $$ begin if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'push_subs' and policyname = 'ws own push subs') then create policy \"ws own push subs\" on public.push_subs for all to authenticated using (ws_private.is_member() and lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))) with check (ws_private.is_member() and lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))); end if; end $$;",
+ "create table if not exists public.push_digest (id text primary key check (id in ('admin', 'sales', 'production')), data jsonb not null, updated_at timestamptz not null default now());",
+ "alter table public.push_digest enable row level security;",
+ "do $$ begin if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'push_digest' and policyname = 'ws push digest') then create policy \"ws push digest\" on public.push_digest for all to authenticated using (ws_private.is_member() and (id <> 'admin' or ws_private.is_admin())) with check (ws_private.is_member() and (id <> 'admin' or ws_private.is_admin())); end if; end $$;",
+ "create table if not exists ws_private.push_cfg (id integer primary key default 1 check (id = 1), pub text not null, secret_id uuid not null, created_at timestamptz not null default now());",
+ "create or replace function public.push_vapid_public() returns text language sql stable security definer set search_path = '' as $$ select c.pub from ws_private.push_cfg c where c.id = 1 and ws_private.is_member() $$;",
+ "revoke all on function public.push_vapid_public() from public, anon;",
+ "grant execute on function public.push_vapid_public() to authenticated;",
+ "create or replace function public.push_keys_get() returns jsonb language sql stable security definer set search_path = '' as $$ select jsonb_build_object('pub', c.pub, 'priv', s.decrypted_secret) from ws_private.push_cfg c left join vault.decrypted_secrets s on s.id = c.secret_id where c.id = 1 $$;",
+ "revoke all on function public.push_keys_get() from public, anon, authenticated;",
+ "grant execute on function public.push_keys_get() to service_role;",
+ "create or replace function public.push_keys_set(pub text, priv text) returns boolean language plpgsql security definer set search_path = '' as $$\nbegin\n  -- made once, by the server function; the private key goes into the vault and never to the phones\n  if exists (select 1 from ws_private.push_cfg where id = 1) then return false; end if;\n  insert into ws_private.push_cfg (id, pub, secret_id) values (1, pub, vault.create_secret(priv, 'hanvika_push_private_' || to_char(clock_timestamp(), 'YYYYMMDDHH24MISSMS'), 'Web Push private key of the Hanvika app'));\n  return true;\nend $$;",
+ "revoke all on function public.push_keys_set(text, text) from public, anon, authenticated;",
+ "grant execute on function public.push_keys_set(text, text) to service_role;",
+ "create or replace function public.push_claim() returns jsonb language plpgsql security definer set search_path = '' as $$\ndeclare t timestamp := now() at time zone 'Asia/Kolkata'; d text := to_char(t::date, 'YYYY-MM-DD'); at text; m jsonb;\nbegin\n  -- once a day, at the time chosen in the app (Settings -> Morning reminders; 09:00 India time if not set)\n  select data into m from public.shop_data where id = 'main';\n  if coalesce(m ->> 'pushAt', '') = 'off' then return jsonb_build_object('due', false, 'why', 'off'); end if;\n  at := coalesce(substring(m ->> 'pushAt' from '^\\d\\d:\\d\\d$'), '09:00');\n  if to_char(t, 'HH24:MI') < at then return jsonb_build_object('due', false, 'why', 'at ' || at); end if;\n  -- only within 3 hours of that time: a missed morning (or a phone signed up in the evening) waits for the next morning\n  if extract(hour from t) * 60 + extract(minute from t) >= split_part(at, ':', 1)::int * 60 + split_part(at, ':', 2)::int + 180 then return jsonb_build_object('due', false, 'why', 'late'); end if;\n  insert into public.shop_archive (id, kind, data) values ('push-' || d, 'pushmark', jsonb_build_object('on', d)) on conflict (id) do nothing;\n  if not found then return jsonb_build_object('due', false, 'why', 'sent'); end if;\n  return jsonb_build_object('due', true, 'day', d);\nend $$;",
+ "revoke all on function public.push_claim() from public, anon, authenticated;",
+ "grant execute on function public.push_claim() to service_role;",
+ "create or replace function public.push_phones() returns jsonb language sql stable security definer set search_path = '' as $$ select case when ws_private.is_admin() then jsonb_build_object('n', count(s.id), 'admin', count(s.id) filter (where a.role = 'admin'), 'sales', count(s.id) filter (where a.role = 'sales'), 'production', count(s.id) filter (where a.role = 'production')) end from public.push_subs s left join public.app_users a on lower(a.email) = lower(s.email) $$;",
+ "revoke all on function public.push_phones() from public, anon;",
+ "grant execute on function public.push_phones() to authenticated;",
+ "create or replace function ws_private.push_tick() returns text language plpgsql security definer set search_path = '' as $$\ndeclare t timestamp := now() at time zone 'Asia/Kolkata'; d text := to_char(t::date, 'YYYY-MM-DD'); at text; m jsonb;\nbegin\n  -- every hour: when today's reminders are due, ask the server function to send them (it checks again itself)\n  if exists (select 1 from public.shop_archive where id = 'push-' || d) then return 'sent today'; end if;\n  if not exists (select 1 from public.push_subs) then return 'no phones'; end if;\n  select data into m from public.shop_data where id = 'main';\n  if coalesce(m ->> 'pushAt', '') = 'off' then return 'off'; end if;\n  at := coalesce(substring(m ->> 'pushAt' from '^\\d\\d:\\d\\d$'), '09:00');\n  if to_char(t, 'HH24:MI') < at then return 'at ' || at; end if;\n  if extract(hour from t) * 60 + extract(minute from t) >= split_part(at, ':', 1)::int * 60 + split_part(at, ':', 2)::int + 180 then return 'late'; end if;\n  perform net.http_post(url := '"+pushFnUrl()+"', body := '{}'::jsonb, headers := '{\"Content-Type\": \"application/json\"}'::jsonb, timeout_milliseconds := 30000);\n  return 'asked';\nend $$;",
+ "revoke all on function ws_private.push_tick() from public, anon, authenticated;",
+ "select cron.schedule('hanvika-push', '33 * * * *', 'select ws_private.push_tick()');",
+ "update storage.buckets set allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/aac', 'audio/x-m4a', 'audio/wav'] where id = 'photos';",
  "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; alter table public.shop_flats enable row level security; alter table public.shop_orders enable row level security; alter table public.shop_backups enable row level security; alter table public.shop_archive enable row level security;",
  "revoke all on public.shop_data, public.app_users, public.shop_flats, public.shop_orders, public.shop_backups, public.shop_archive from anon;",
  "create or replace function ws_private.keep_items(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare rest jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; i int;\nbegin\n  if jsonb_typeof(oa) is distinct from 'array' then return na; end if;\n  for e in select value from jsonb_array_elements(oa) loop\n    i := null; select min(x.ord) - 1 into i from jsonb_array_elements(rest) with ordinality as x(v, ord) where x.v = e;\n    if i is not null then rest := rest - i; end if;\n  end loop;\n  return oa || rest;\nend $$;",
@@ -1250,7 +1302,7 @@ function viewOrder0(){
      +'<div style="margin-top:12px">'+(o.stage===1?'<button class="btn primary big" data-act="next">Start production</button>':o.stage===2?'<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>':'<span class="muted">'+HINT[o.stage]+'</span>')+'</div></div>';
     if(S.sub!=='cutting'&&S.sub!=='production'&&S.sub!=='items') S.sub='production';
     var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
-    return hd+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
+    return hd+vnProd(o)+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
    +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
    +(!noAmt(o)&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
@@ -2557,7 +2609,7 @@ function phRemoteDel(list){ return sbRefresh().then(function(){ return fetch(sbU
 /* a removed photo's file is removed online only 3 weeks later (an online copy restored in that time still finds it),
    and only if nothing uses it any more and everything on this phone has gone online */
 var PHGONE=21*864e5;
-function phUsed(p){ var u=false; phRecs().forEach(function(r){ (r.photos||[]).forEach(function(x){ if(x&&x.path===p) u=true; }); }); return u; }
+function phUsed(p){ var u=false; phRecs().forEach(function(r){ (r.photos||[]).concat(r.voice||[]).forEach(function(x){ if(x&&x.path===p) u=true; }); }); return u; }
 function phDue(){ var now=Date.now(), n0=PHDQ.length; PHDQ=PHDQ.filter(function(x){ return Array.isArray(x)&&!phUsed(x[0]); }); if(PHDQ.length!==n0) phQSave(); return PHDQ.filter(function(x){ return now-x[1]>PHGONE; }).map(function(x){ return x[0]; }); }
 /* send waiting photos (and due removals) one at a time */
 function phKick(){ if(PHUP||!phOnline()) return Promise.resolve(); var due=PHDQ.length&&!unsentN()?phDue():[]; if(!PHQ.length&&!due.length) return Promise.resolve(); PHUP=true;
@@ -2728,7 +2780,7 @@ function csTick(){ var n=unsentN()+PHQ.length;
   if(n&&!UNS.since){ UNS.since=Date.now(); try{ localStorage.setItem('wunsince',String(UNS.since)); }catch(e){} }
   if(!n&&UNS.since){ UNS.since=0; try{ localStorage.removeItem('wunsince'); }catch(e){} }
   netBar(); if(!S.role||!sbOn()||!SESS) return;
-  if((PHQ.length||PHDQ.length)&&!backWait('phup')) phKick(); phMigrate(); logArchive(); lockCosts(); yearEnd(); snapMaybe(); phPrune(); }
+  if((PHQ.length||PHDQ.length)&&!backWait('phup')) phKick(); phMigrate(); logArchive(); lockCosts(); yearEnd(); snapMaybe(); phPrune(); pushTick(); }
 function cloudAfter(){ csTick(); }
 setInterval(function(){ if(document.visibilityState==='visible') csTick(); },20000);
 window.addEventListener('online',function(){ setTimeout(csTick,1500); });
@@ -2861,7 +2913,7 @@ function privEmpty(d){ return !d||!((d.expenses||[]).length||(d.staff||[]).lengt
 var PRIVKEPT=false;
 function privKeepIfEmpty(cur){ PRIVKEPT=false; if(!isAdm()||privEmpty(cur)||!privEmpty(D)) return false; privJoin(cur); PRIVKEPT=true; return true; }
 /* log out: admin changes are sent first; when they are online, the phone keeps no admin data */
-function logoutGo(){ NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
+function logoutGo(){ pushOff(); NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
 function logoutAsk(){ var adm=isAdm()&&sbOn()&&!!SESS;
   var go=function(){ var unl=unsentN()+PHQ.length, pd=adm&&!!localStorage.getItem('wpdirty');
     if(pd&&!confirm('Accounts / staff changes are not sent online yet. If someone else signs in on this phone before you sign in again, they are lost.\n\nLog out anyway?')) return;
@@ -4300,21 +4352,24 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
    - Settings → This phone (admin), a Home card when one is blocked, and 📷 Take photo / 📍 Locate open the same
      window when blocked — with the steps to allow it on this kind of phone
    - 📷 Take photo opens the camera straight away; a photo opened big has "⬇ Save to phone"
+   - later (asked: "Notification permissions other microphone other permissions"): 🎤 Microphone (voice typing,
+     voice notes), 🔔 Notifications (morning reminders, push.js), 👥 Contacts (nothing to allow: you pick each one)
    ============================================================ */
-var PERM={cam:'',loc:'',sto:'',ws:{}};
-var PERMK=['cam','loc','sto'], PERMW={cam:['📷','Camera','take site photos'],loc:['📍','Location','fill the site address from where you stand'],sto:['💾','Storage','keep your work and photos safe on this phone']};
+var PERM={cam:'',mic:'',loc:'',ntf:'',sto:'',ws:{}};
+var PERMK=['cam','mic','loc','ntf','sto'], PERMW={cam:['📷','Camera','take site photos'],mic:['🎤','Microphone','speak instead of typing, and record voice notes'],loc:['📍','Location','fill the site address from where you stand'],ntf:['🔔','Notifications','get the morning reminders on this phone'],sto:['💾','Storage','keep your work and photos safe on this phone']};
 function permOS(){ var u=navigator.userAgent||''; return /iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'ios':/Android/.test(u)?'android':'pc'; }
 function permFlag(){ try{ return JSON.parse(localStorage.getItem('wperm')||'{}')||{}; }catch(e){ return {}; } }
 function permSetFlag(x){ try{ localStorage.setItem('wperm',JSON.stringify(Object.assign(permFlag(),x))); }catch(e){} }
 function permQ(name){ try{ if(!navigator.permissions||!navigator.permissions.query) return Promise.resolve('');
     return navigator.permissions.query({name:name}).then(function(r){ if(r&&!PERM.ws[name]){ PERM.ws[name]=1; try{ r.addEventListener('change',function(){ permRead().then(permRefresh); }); }catch(e){} } return (r&&r.state)||''; },function(){ return ''; }); }catch(e){ return Promise.resolve(''); } }
 function permRead(){ var sto=navigator.storage&&navigator.storage.persisted?navigator.storage.persisted().then(function(p){ return p?'granted':'prompt'; },function(){ return ''; }):Promise.resolve('none');
-  return Promise.all([permQ('camera'),permQ('geolocation'),sto]).then(function(r){
+  return Promise.all([permQ('camera'),permQ('geolocation'),sto,permQ('microphone')]).then(function(r){
     /* the site may be allowed while the phone still refuses Chrome itself ("hard" = the last try was refused) */
     if(r[0]) PERM.cam=r[0]==='granted'&&PERM.camHard?'denied':r[0];
     if(r[1]) PERM.loc=r[1]==='granted'&&PERM.locHard?'denied':r[1]==='granted'&&PERM.loc==='nogps'?'nogps':r[1];
-    if(r[2]) PERM.sto=r[2]; return PERM; }); }
-function permOk(k){ var s=PERM[k]; return s==='granted'||s==='none'||(k==='loc'&&s==='nogps')||(k==='sto'&&!!permFlag().sto); }
+    if(r[2]) PERM.sto=r[2]; if(r[3]) PERM.mic=r[3]==='granted'&&PERM.micHard?'denied':r[3];
+    PERM.ntf=typeof pushState==='function'?pushState():'none'; return PERM; }); }
+function permOk(k){ var s=PERM[k]; return s==='granted'||s==='none'||(k==='loc'&&s==='nogps')||(k==='sto'&&!!permFlag().sto)||(k==='ntf'&&(s==='needinstall'||s==='nosub')); }
 function permAllOk(){ return PERMK.every(permOk); }
 /* the asks: the phone shows its own "Allow?" for each */
 function permCam(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ PERM.cam='none'; return Promise.resolve('none'); }
@@ -4324,19 +4379,38 @@ function permLoc(){ if(!navigator.geolocation){ PERM.loc='none'; return Promise.
   return new Promise(function(res){ navigator.geolocation.getCurrentPosition(function(){ PERM.loc='granted'; PERM.locHard=false; res('granted'); },function(e){ PERM.loc=e&&e.code===1?'denied':'nogps'; PERM.locHard=PERM.loc==='denied'; res(PERM.loc); },{enableHighAccuracy:false,timeout:12000,maximumAge:600000}); }); }
 function permSto(){ if(!navigator.storage||!navigator.storage.persist){ PERM.sto='none'; return Promise.resolve('none'); }
   return navigator.storage.persist().then(function(p){ PERM.sto=p?'granted':'prompt'; permSetFlag({sto:1}); return PERM.sto; },function(){ permSetFlag({sto:1}); return PERM.sto='prompt'; }); }
-var PERMASK={cam:permCam,loc:permLoc,sto:permSto};
+function permMic(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ PERM.mic='none'; return Promise.resolve('none'); }
+  return navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){ try{ st.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} PERM.mic='granted'; PERM.micHard=false; return 'granted'; },
+    function(e){ var nm=(e&&e.name)||''; PERM.mic=nm==='NotFoundError'?'none':nm==='NotReadableError'||nm==='AbortError'?'granted':'denied'; PERM.micHard=PERM.mic==='denied'; return PERM.mic; }); }
+/* camera and microphone in one question when both are still to ask */
+function permCamMic(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) return permCam().then(permMic);
+  return navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:true}).then(function(st){ try{ st.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} PERM.cam=PERM.mic='granted'; PERM.camHard=PERM.micHard=false; },
+    function(){ return permCam().then(permMic); }); }
+function permNtf(){ return typeof pushAsk==='function'?pushAsk().then(function(st){ PERM.ntf=st; return st; }):Promise.resolve('none'); }
+var PERMASK={cam:permCam,mic:permMic,loc:permLoc,ntf:permNtf,sto:permSto};
 /* how to allow it again once blocked */
-function permHow(k){ var os=permOS(), X=k==='cam'?'Camera':'Location';
+function permHow(k){ var os=permOS(), X={cam:'Camera',mic:'Microphone',loc:'Location',ntf:'Notifications'}[k]||'';
+  if(k==='ntf'&&PERM.ntf==='needinstall') return 'On iPhone, notifications come only to the app on the Home Screen: in Safari tap <b>Share → Add to Home Screen</b>, open the app from there, then tap <b>Allow</b> here.';
+  if(k==='ntf'&&PERM.ntf==='nosub') return typeof PUSH!=='undefined'&&PUSH.err?'⚠ '+esc(PUSH.err)+'. Then tap <b>Turn on</b>.':'Signing this phone up for the reminders…';
+  if(k==='ntf'&&os==='ios') return 'iPhone <b>Settings → Notifications → '+esc(D.company.name||'the app')+' → Allow Notifications</b>. Then come back and tap <b>Check again</b>.';
+  if(k==='ntf'&&os==='android') return 'Tap <b>🔒</b> left of the web address → <b>Permissions → Notifications → Allow</b>. In the installed app: long-press its icon → <b>App info → Notifications → Allow</b>. Then tap <b>Check again</b>.';
   if(k==='sto') return os==='ios'?'Add the app to the Home Screen (Share → Add to Home Screen) and open it from there — then the phone keeps its data.':'Install the app (⋮ → Install app / Add to Home screen) and open it from the home screen — then the phone keeps its data.';
   if(k==='loc'&&PERM.loc==='nogps') return 'Allowed. Turn on <b>Location</b> (GPS) in the phone\'s quick settings when you use 📍 Locate.';
   if(os==='ios') return 'iPhone <b>Settings → Safari → '+X+' → Allow</b>'+(k==='loc'?', and <b>Settings → Privacy & Security → Location Services → Safari Websites → While Using the App</b>':'')+'. Then come back and tap <b>Check again</b>.';
   if(os==='android') return 'Tap <b>🔒</b> left of the web address → <b>Permissions → '+X+' → Allow</b>. In the installed app: long-press its icon → <b>App info → Permissions → '+X+' → Allow</b>. Still blocked? Phone <b>Settings → Apps → Chrome → Permissions → '+X+' → Allow</b>'+(k==='loc'?' and turn on <b>Location</b>':'')+'. Then tap <b>Check again</b>.';
   return 'Click <b>🔒</b> in the address bar → <b>Site settings → '+X+' → Allow</b>, then reload the page.'; }
-function permRowHtml(k,focus){ var st=PERM[k], w=PERMW[k], ok=permOk(k)&&st!=='none'&&!(k==='sto'&&st!=='granted'), bad=st==='denied', noSto=k==='sto'&&st==='prompt'&&permFlag().sto;
-  var badge=st==='none'?'<span class="faint pmst">Not on this phone</span>':k==='loc'&&st==='nogps'?'<span class="pmwarn pmst">Allowed · GPS off</span>':ok?'<span class="pmok pmst">✓ '+(k==='sto'?'Kept safe':'Allowed')+'</span>':bad?'<span class="pmbad pmst">Blocked</span>':noSto?'<span class="pmwarn pmst">Not kept yet</span>':'<button class="btn sm" data-pma="'+k+'">Allow</button>';
+function permRowHtml(k,focus){ var st=PERM[k], w=PERMW[k], ok=(st==='granted')||(permOk(k)&&st!=='none'&&k!=='sto'&&k!=='ntf'), bad=st==='denied', noSto=k==='sto'&&st==='prompt'&&permFlag().sto, ntfx=k==='ntf'&&(st==='nosub'||st==='needinstall');
+  var badge=st==='none'?'<span class="faint pmst">Not on this phone</span>':k==='loc'&&st==='nogps'?'<span class="pmwarn pmst">Allowed · GPS off</span>'
+    :k==='ntf'&&st==='granted'?'<span class="pmok pmst">✓ On</span>':k==='ntf'&&st==='nosub'?'<button class="btn sm" data-act="pushon">Turn on</button>':k==='ntf'&&st==='needinstall'?'<span class="pmwarn pmst">Install first</span>'
+    :ok?'<span class="pmok pmst">✓ '+(k==='sto'?'Kept safe':'Allowed')+'</span>':bad?'<span class="pmbad pmst">Blocked</span>':noSto?'<span class="pmwarn pmst">Not kept yet</span>':'<button class="btn sm" data-pma="'+k+'">Allow</button>';
+  var extra=k==='ntf'&&st==='granted'?'<div class="pmx"><button class="btn sm ghost" data-act="pushtest">Send a test</button><span class="faint">every morning at '+(D.pushAt==='off'?'— (off in Settings)':hmLabel(typeof pushAt==='function'?pushAt():'09:00'))+'</span></div>'
+    :k==='mic'&&!bad&&st!=='none'&&typeof micLangSel==='function'&&micLangSel()?'<div class="pmx">'+micLangSel()+'</div>':'';
   return '<div class="pmrow'+(focus===k?' focus':'')+'" data-pmk="'+k+'"><span class="pmi">'+w[0]+'</span><span class="grow pmt"><b>'+w[1]+'</b><small>to '+w[2]+'</small></span>'+badge
-    +(bad||noSto||(k==='loc'&&st==='nogps')?'<div class="pmhow">'+permHow(k)+'</div>':'')+'</div>'; }
-function permBody(focus){ return '<div class="pml">'+PERMK.map(function(k){ return permRowHtml(k,focus); }).join('')+'</div><p class="faint" style="margin:10px 0 0">🖼 Choosing photos from the gallery needs no permission.</p>'; }
+    +(bad||noSto||ntfx||(k==='loc'&&st==='nogps')?'<div class="pmhow">'+permHow(k)+'</div>':'')+extra+'</div>'; }
+function permBody(focus){ var ct=typeof CTS!=='undefined'&&CTS;
+  return '<div class="pml">'+PERMK.map(function(k){ return permRowHtml(k,focus); }).join('')
+    +'<div class="pmrow" data-pmk="cts"><span class="pmi">👥</span><span class="grow pmt"><b>Contacts</b><small>pick a customer from your contacts — you choose each one</small></span>'+(ct?'<span class="pmok pmst">✓ Ready</span>':'<span class="faint pmst">Not on this phone</span>')+'</div>'
+    +'</div><p class="faint" style="margin:10px 0 0">🖼 Choosing photos from the gallery needs no permission.</p>'; }
 function permFoot(auto){ return permAllOk()?'<button class="btn primary" data-pmx="1">Done</button><button class="btn ghost sm" data-act="pmcheck">Check again</button>'
   :'<button class="btn primary" data-act="pmall">Allow all</button><button class="btn" data-act="pmlater">'+(auto?'Later':'Close')+'</button><button class="btn ghost sm" data-act="pmcheck">Check again</button>'; }
 var PERMPOP=null;
@@ -4352,9 +4426,11 @@ function permRefresh(){ permPaint(); if(S.tab==='home'||S.tab==='settings') rend
 function permAsk(k){ var f=PERMASK[k]; if(!f) return Promise.resolve(); return f().then(function(){ return permRead(); }).then(function(){ permPaint(); }); }
 function permAll(btn){ if(btn){ btn.disabled=true; btn.textContent='Asking…'; }
   var go=function(k){ return permOk(k)?Promise.resolve():PERMASK[k]().then(function(){ permPaint(); }); };
-  return go('sto').then(function(){ return go('cam'); }).then(function(){ return go('loc'); }).then(function(){ return permRead(); }).then(function(){
+  var cm=function(){ var a=!permOk('cam'), b=!permOk('mic'); return (a&&b?permCamMic():a?permCam():b?permMic():Promise.resolve()).then(function(){ permPaint(); }); };
+  /* notifications first (the phone only asks right after a tap), then the rest */
+  return go('ntf').then(function(){ return go('sto'); }).then(cm).then(function(){ return go('loc'); }).then(function(){ return permRead(); }).then(function(){
     permPaint(); var no=PERMK.filter(function(k){ return PERM[k]==='denied'; }).map(function(k){ return PERMW[k][1]; });
-    if(permAllOk()) permSetFlag({done:1}); toast(no.length?'⚠ '+no.join(' and ')+' blocked — see the steps':'✓ Camera, location and storage are set'); render(); }); }
+    if(permAllOk()) permSetFlag({done:1}); toast(no.length?'⚠ '+no.join(' and ')+' blocked — see the steps':'✓ All set on this phone'); render(); }); }
 /* once on each phone, after signing in (not in the factory login) */
 function permAuto(){ return location.protocol==='https:'||!!window.PERMTEST; }
 function permMaybe(){ if(!permAuto()||!S.role||prod()||(S.tab!=='home'&&S.tab!=='orders')||document.hidden||document.querySelector('.viewer')) return; var w=permFlag();
@@ -4365,9 +4441,9 @@ setTimeout(permMaybe,3500);
 setInterval(permMaybe,20000);
 document.addEventListener('visibilitychange',function(){ if(!document.hidden) permRead().then(permRefresh); });
 /* Home / Settings */
-function permCard(){ if(prod()) return ''; var bl=PERMK.filter(function(k){ return k!=='sto'&&PERM[k]==='denied'; }); if(!bl.length) return '';
+function permCard(){ if(prod()) return ''; var bl=PERMK.filter(function(k){ return k!=='sto'&&k!=='ntf'&&PERM[k]==='denied'; }); if(!bl.length) return '';
   return '<div class="card pmcard row between"><div class="grow"><b>⚠ '+bl.map(function(k){ return PERMW[k][1]; }).join(' and ')+' blocked on this phone</b><div class="faint">'+bl.map(function(k){ return 'needed to '+PERMW[k][2]; }).join(' · ')+'</div></div><button class="btn sm" data-act="pmopen">How to allow</button></div>'; }
-function permSetCard(){ return '<div class="card"><div class="row between"><h2>📱 This phone</h2><button class="btn sm" data-act="pmopen">Permissions</button></div><div class="faint">'+PERMK.map(function(k){ var st=PERM[k]; return PERMW[k][0]+' '+PERMW[k][1]+': '+(st==='none'?'not on this phone':k==='loc'&&st==='nogps'?'allowed (GPS off)':st==='granted'?(k==='sto'?'kept safe':'allowed'):st==='denied'?'<b class="warnt">blocked</b>':'not asked yet'); }).join(' · ')+'</div></div>'; }
+function permSetCard(){ return '<div class="card"><div class="row between"><h2>📱 This phone</h2><button class="btn sm" data-act="pmopen">Permissions</button></div><div class="faint">'+PERMK.map(function(k){ var st=PERM[k]; return PERMW[k][0]+' '+PERMW[k][1]+': '+(st==='none'?'not on this phone':k==='loc'&&st==='nogps'?'allowed (GPS off)':k==='ntf'&&st==='granted'?'on':k==='ntf'&&st==='nosub'?'allowed, not signed up yet':k==='ntf'&&st==='needinstall'?'install the app first':st==='granted'?(k==='sto'?'kept safe':'allowed'):st==='denied'?'<b class="warnt">blocked</b>':'not asked yet'); }).join(' · ')+'</div></div>'; }
 /* a photo opened big: Save to phone */
 function phBig(o,i){ var ph0=o&&o.photos&&o.photos[i]; if(!ph0) return; var v=document.createElement('div'); v.className='viewer phbig';
   v.innerHTML='<img src="'+esc(phSrc(ph0))+'" data-phk="'+esc(ph0.path||'')+'" alt=""><div class="phbar"><button class="btn sm" data-phsave="1">⬇ Save to phone</button><button class="btn sm" data-phclose="1">✕ Close</button></div>';
@@ -4385,8 +4461,196 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   if(d.act==='pmall'){ permAll(t); return; }
   if(d.act==='pmlater'){ permSetFlag({at:Date.now()}); permClose(); return; }
   if(d.act==='pmcheck'){ /* blocked ones are tried again (no question pops up while blocked; works once allowed in the settings) */
-    Promise.all(['cam','loc'].filter(function(k){ return PERM[k]==='denied'; }).map(function(k){ return PERMASK[k](); })).then(permRead).then(function(){ permPaint(); render(); if(permAllOk()) permSetFlag({done:1}); toast(permAllOk()?'✓ All set':PERMK.some(function(k){ return PERM[k]==='denied'; })?'Still blocked — see the steps':'Checked'); }); return; }
-  if(d.act==='pmopen'){ permPop(false,PERM.cam==='denied'?'cam':PERM.loc==='denied'?'loc':''); return; } });
+    Promise.all(['cam','mic','loc'].filter(function(k){ return PERM[k]==='denied'; }).map(function(k){ return PERMASK[k](); })).then(permRead)
+      .then(function(){ return PERM.ntf==='nosub'&&typeof pushEnsure==='function'?pushEnsure(true).then(permRead):null; })
+      .then(function(){ permPaint(); render(); if(permAllOk()) permSetFlag({done:1}); toast(permAllOk()?'✓ All set':PERMK.some(function(k){ return PERM[k]==='denied'; })?'Still blocked — see the steps':'Checked'); }); return; }
+  if(d.act==='pmopen'){ permPop(false,d.f||(PERM.cam==='denied'?'cam':PERM.mic==='denied'?'mic':PERM.loc==='denied'?'loc':'')); return; } });
+
+
+/* ============================================================
+   MORNING REMINDERS on the phones (asked: "Notification permissions …" → "Morning reminders")
+   - 🔔 Notifications in "📱 Allow this app": the phone asks; then this phone is signed up (push_subs: where the
+     phone's push service delivers, and the signed-in email). Logging out takes the phone off.
+   - the phones keep a small summary online (push_digest: follow-ups and deliveries by day, money to collect,
+     work in production); admin / sales / factory each get their own line
+   - the database job asks the server function push-reminders at the time set in Settings → Morning reminders
+     (9 am if not set); "Send a test" sends one now to your own phones
+   ============================================================ */
+var PUSH={err:'',busy:null,ensureAt:0,dgAt:0};
+function pushCan(){ return !!(window.Notification&&window.PushManager&&navigator.serviceWorker); }
+function pushWho(){ return String((SESS&&SESS.email)||'').toLowerCase(); }
+function pushState(){ if(!pushCan()) return permOS()==='ios'&&!isStandalone?'needinstall':'none';
+  var p=Notification.permission; if(p==='denied') return 'denied'; if(p!=='granted') return 'prompt';
+  return localStorage.getItem('wpushid')&&localStorage.getItem('wpushfor')===pushWho()?'granted':'nosub'; }
+function pushAt(){ return /^\d\d:\d\d$/.test(D.pushAt||'')?D.pushAt:'09:00'; }
+function pushFnUrl(){ return (D.sb&&D.sb.url?String(D.sb.url).replace(/\/$/,''):'https://YOUR-PROJECT.supabase.co')+'/functions/v1/push-reminders'; }
+function pB64u(buf){ var b=new Uint8Array(buf), s=''; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function pUnb64u(str){ var s=String(str).replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var bin=atob(s), out=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out; }
+/* the phone asks (needs a tap); then sign this phone up */
+function pushAsk(){ if(!pushCan()) return Promise.resolve(pushState()); var p=null; try{ p=Notification.requestPermission(); }catch(e){}
+  return Promise.resolve(p).then(function(){ return Notification.permission==='granted'?pushEnsure(true):null; }).then(function(){ return pushState(); },function(){ return pushState(); }); }
+/* the website's sw.js must be the new one (it shows the reminders) */
+function pushSwReady(){ if(window.PUSHTEST_REG) return Promise.resolve(window.PUSHTEST_REG);
+  return fetch('sw.js',{cache:'no-store'}).then(function(r){ return r.ok?r.text():''; },function(){ return ''; }).then(function(t){
+      if(!/notificationclick/.test(t)) throw new Error('the new sw.js file is not on the website yet');
+      return Promise.race([navigator.serviceWorker.ready,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('the app is still starting — try again in a minute')); },10000); })]); })
+    .then(function(reg){ try{ reg.update(); }catch(e){} return reg; }); }
+/* the server's public key (made on the server the first time) */
+function pushKey(){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/rpc/push_vapid_public'),{method:'POST',headers:sbHeaders(),body:'{}'}); })
+  .then(function(r){ if(!r.ok) throw new Error(r.status===404?'the database needs the update (Settings → Online sync → setup SQL)':'key '+r.status); return r.json(); })
+  .then(function(k){ if(k) return k; return fetch(sbUrl('/functions/v1/push-reminders'),{method:'POST',headers:sbHeaders(),body:'{"init":true}'})
+      .then(function(r){ if(!r.ok) throw new Error('the reminders server function is missing ('+r.status+')'); return r.json(); }).then(function(j){ if(!j||!j.pub) throw new Error('no key from the server'); return j.pub; }); }); }
+function pushEnsure(force){ if(!pushCan()||Notification.permission!=='granted') return Promise.resolve(false);
+  if(!sbOn()||!SESS){ PUSH.err='sign in online first — the reminders come from the online database'; return Promise.resolve(false); }
+  if(navigator.onLine===false){ PUSH.err='no internet now — it is finished when the phone is online'; return Promise.resolve(false); }
+  if(!force&&pushState()==='granted'&&Date.now()-PUSH.ensureAt<6*3600e3) return Promise.resolve(true);
+  if(PUSH.busy) return PUSH.busy; PUSH.ensureAt=Date.now();
+  PUSH.busy=pushSwReady().then(function(reg){ return pushKey().then(function(key){ return reg.pushManager.getSubscription().then(function(s){
+        if(s&&s.options&&s.options.applicationServerKey&&pB64u(s.options.applicationServerKey)!==key) return s.unsubscribe().then(function(){ return null; });
+        return s; }).then(function(s){ return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pUnb64u(key)}); }); }); })
+    .then(function(s){ var j=s.toJSON?s.toJSON():s, id=phHash(j.endpoint), em=pushWho();
+      return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/push_subs'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=minimal'}),
+          body:JSON.stringify([{id:id,email:em,role:S.role||'',sub:{endpoint:j.endpoint,keys:j.keys},ua:String(navigator.userAgent||'').slice(0,180)}])}); })
+        .then(function(r){ if(!r.ok) return r.text().then(function(t){ throw new Error('sign-up '+r.status+(/push_subs|relation|schema cache/i.test(t)?' — the database needs the update':'')); });
+          try{ localStorage.setItem('wpushid',id); localStorage.setItem('wpushfor',em); }catch(e){} PUSH.err=''; return true; }); })
+    .catch(function(e){ PUSH.err=(e&&e.message)||'could not turn on'; return false; })
+    .then(function(x){ PUSH.busy=null; if(typeof permPaint==='function') permPaint(); return x; });
+  return PUSH.busy; }
+/* log out: this phone stops getting that person's reminders */
+function pushOff(){ var id=localStorage.getItem('wpushid'); if(!id) return; try{ localStorage.removeItem('wpushid'); localStorage.removeItem('wpushfor'); }catch(e){}
+  try{ if(sbOn()&&SESS) fetch(sbUrl('/rest/v1/push_subs?id=eq.'+encodeURIComponent(id)),{method:'DELETE',headers:sbHeaders()}).catch(function(){}); }catch(e){}
+  try{ if(pushCan()) navigator.serviceWorker.getRegistration().then(function(reg){ return reg&&reg.pushManager.getSubscription(); }).then(function(s){ if(s) return s.unsubscribe(); }).catch(function(){}); }catch(e){} }
+function pushTest(btn){ if(!sbOn()||!SESS){ toast('Sign in online first'); return; } if(btn) btn.disabled=true;
+  pushEnsure(true).then(function(ok){ if(!ok) throw new Error(PUSH.err||'notifications are not on for this phone'); return sbRefresh(); })
+    .then(function(){ return fetch(sbUrl('/functions/v1/push-reminders'),{method:'POST',headers:sbHeaders(),body:JSON.stringify({test:true,at:hmLabel(pushAt()),site:location.origin+location.pathname})}); })
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('server '+r.status));
+      toast(j.sent?'✓ Test sent to '+j.sent+' phone'+(j.sent>1?'s':'')+' — look at the notifications':'⚠ No phone of yours is signed up yet'); }); })
+    .catch(function(e){ toast('⚠ '+((e&&e.message)||'Could not send')); }).then(function(){ if(btn) btn.disabled=false; }); }
+/* the summary the reminders are made from — admin (all money), sales (their orders), factory (production) */
+function pdAdd(days,d,k,t){ d=String(d||'').slice(0,10); if(!/^\d{4}-\d\d-\d\d$/.test(d)) return; if(d<t) d=t; var x=days[d]=days[d]||{f:0,d:0}; x[k]++; }
+function pushDigest(role){ var t=today(), lim=ymd(new Date(Date.parse(t+'T00:00:00')+9*864e5)), days={}, adm=role==='admin';
+  var jobs=D.orders.filter(function(o){ return !o.archived&&!o.del&&!o.tpl; }).concat(role==='sales'?[]:liveFlats().filter(function(f){ return !f.archived; }));
+  jobs.forEach(function(o){ if(role!=='production'&&o.remind&&o.remind<=lim) pdAdd(days,o.remind,'f',t); if(o.due&&o.stage>=1&&o.stage<4&&o.due<=lim) pdAdd(days,o.due,'d',t); });
+  var out={v:1,at:new Date().toISOString(),co:(D.company&&D.company.name)||'',site:location.protocol==='https:'?location.origin+location.pathname:'',days:days};
+  if(role==='production') out.work=jobs.filter(function(o){ return o.stage===2; }).length;
+  else { var c=0, k=0; openOrders().filter(function(o){ return adm||!o.proj; }).forEach(function(o){ if(o.stage>0&&!isBld(o)){ var b=balance(o); if(b>0.5){ c+=b; k++; } } });
+    if(adm&&typeof bldPendAll==='function'){ var bp=bldPendAll(); if(bp>0.5){ c+=bp; k++; } } out.collect=Math.round(c); out.collectN=k; }
+  return out; }
+function pushDigestSave(){ if(!sbOn()||!SESS||!S.role||navigator.onLine===false||!PULLOK||!FL.loaded) return; if(Date.now()-PUSH.dgAt<10*60000) return; PUSH.dgAt=Date.now();
+  var roles=S.role==='admin'?['admin','sales','production']:S.role==='sales'?['sales','production']:['production'], rows=[];
+  roles.forEach(function(r){ var d=pushDigest(r), sig=JSON.stringify(Object.assign({},d,{at:''})), old={}; try{ old=JSON.parse(localStorage.getItem('wpdg:'+r)||'{}')||{}; }catch(e){}
+    if(old.s!==sig||Date.now()-(old.t||0)>6*3600e3) rows.push({r:r,d:d,sig:sig}); });
+  if(!rows.length) return;
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/push_digest'),{method:'POST',headers:sbHeaders({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(rows.map(function(x){ return {id:x.r,data:x.d,updated_at:new Date().toISOString()}; }))}); })
+    .then(function(r){ if(r&&r.ok) rows.forEach(function(x){ try{ localStorage.setItem('wpdg:'+x.r,JSON.stringify({s:x.sig,t:Date.now()})); }catch(e){} }); }).catch(function(){}); }
+function pushTick(){ pushDigestSave(); if(pushCan()&&Notification.permission==='granted') pushEnsure(false); }
+/* Settings (admin): the time, how many phones get them, a test */
+function pushSetCard(){ var at=D.pushAt||'09:00', hrs=['off']; for(var h=5;h<=22;h++) hrs.push(('0'+h).slice(-2)+':00'); if(at!=='off'&&hrs.indexOf(at)<0) hrs.push(at);
+  setTimeout(pushPhones,0);
+  return '<div class="card"><div class="row between"><h2>🔔 Morning reminders</h2>'+(pushState()==='granted'?'<button class="btn sm" data-act="pushtest">Send a test</button>':'<button class="btn sm" data-act="pmopen" data-f="ntf">Turn on for this phone</button>')+'</div>'
+   +'<div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap"><label class="f" style="margin:0;max-width:180px"><span>Every morning at</span><select id="pushat">'+hrs.map(function(x){ return '<option value="'+x+'"'+(x===at?' selected':'')+'>'+(x==='off'?'Off':hmLabel(x))+'</option>'; }).join('')+'</select></label><span class="faint" id="pushn"></span></div>'
+   +'<p class="faint" style="margin:8px 0 0">Each phone that allowed notifications gets one line: 📞 follow-ups · 🚚 deliveries due · 💰 money to collect. Sales get their orders; the factory gets production. A phone turns it on in 📱 Permissions.</p></div>'; }
+function pushPhones(){ var el=document.getElementById('pushn'); if(!el||!sbOn()||!SESS||!admin()) return;
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/rpc/push_phones'),{method:'POST',headers:sbHeaders(),body:'{}'}); }).then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ var e2=document.getElementById('pushn'); if(!e2||!j) return; e2.textContent=j.n?j.n+' phone'+(j.n>1?'s':'')+' signed up ('+['admin','sales','production'].filter(function(k){ return j[k]; }).map(function(k){ return j[k]+' '+(k==='production'?'factory':k); }).join(', ')+')':'No phone signed up yet'; }).catch(function(){}); }
+document.addEventListener('change',function(e){ var t=e.target; if(!t||t.id!=='pushat'||!admin()) return; D.pushAt=t.value; save(); toast(t.value==='off'?'Morning reminders off':'🔔 Reminders every morning at '+hmLabel(t.value)); });
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="pushtest"],[data-act="pushon"]'); if(!t) return;
+  if(t.dataset.act==='pushtest'){ pushTest(t); return; } t.disabled=true; pushEnsure(true).then(function(ok){ t.disabled=false; toast(ok?'🔔 Reminders on for this phone':'⚠ '+(PUSH.err||'Could not turn on')); render(); }); });
+
+/* ============================================================
+   🎤 SPEAK INSTEAD OF TYPING · 🎤 VOICE NOTES · 👥 PICK FROM CONTACTS
+   (asked: "Notification permissions other microphone other permissions" → all of these)
+   - 🎤 inside search boxes, customer / owner name, address, notes, reminder and payment notes: the phone's own
+     speech recognition types what you say (language: 📱 Permissions → Microphone)
+   - voice notes on an order or flat (Customer tab): recorded here, kept with the photos online, played on every
+     phone (the factory too); admin deletes
+   - 👥 next to the customer / owner name: pick from the phone's contacts (Android Chrome) — name and phone filled in
+   ============================================================ */
+var MICSR=window.SpeechRecognition||window.webkitSpeechRecognition||null, MIC=null, VN=null, VNP=null, VNMAX=120;
+var CTS=!!(navigator.contacts&&navigator.contacts.select&&window.ContactsManager);
+var MICLANGS=[['en-IN','English'],['kn-IN','ಕನ್ನಡ Kannada'],['hi-IN','हिन्दी Hindi'],['ta-IN','தமிழ் Tamil'],['te-IN','తెలుగు Telugu']];
+var MICSEL='#q,#owq,#pyq,input[data-o="customer"],textarea[data-o="address"],textarea[data-o="notes"],input[data-o="remindNote"],#pnote,#lp_note,#fe_c,#of_c';
+var CTSEL=[['input[data-o="customer"]','input[data-o="phone"]'],['#fe_c','#fe_ph'],['#of_c','#of_ph']];
+function micLang(){ try{ return localStorage.getItem('wmiclang')||'en-IN'; }catch(e){ return 'en-IN'; } }
+function micLangSel(){ return MICSR?'<label class="pmlang">Speak in <select id="miclang">'+MICLANGS.map(function(l){ return '<option value="'+l[0]+'"'+(micLang()===l[0]?' selected':'')+'>'+l[1]+'</option>'; }).join('')+'</select></label>':''; }
+/* the 🎤 / 👥 buttons go inside the box (added after each screen is drawn) */
+function micEnhance(){ if(!MICSR&&!CTS) return; [].forEach.call(document.querySelectorAll(MICSEL),function(el){ if(el.dataset.micd||el.disabled||el.readOnly||!el.parentNode) return; el.dataset.micd='1';
+    var foc=document.activeElement===el, s0=foc?el.selectionStart:0, s1=foc?el.selectionEnd:0;
+    var pf=''; CTSEL.forEach(function(c){ if(el.matches(c[0])) pf=c[1]; });
+    var h=(MICSR?'<button type="button" class="micb" data-mic="1" aria-label="Speak instead of typing" title="Speak">🎤</button>':'')+(CTS&&pf?'<button type="button" class="micb" data-ctp="'+esc(pf)+'" aria-label="Pick from contacts" title="From contacts">👥</button>':'');
+    if(!h) return; var w=document.createElement('span'); w.className='micw'+(el.tagName==='TEXTAREA'?' ta':'')+(el.classList.contains('grow')?' grow':'');
+    el.parentNode.insertBefore(w,el); w.appendChild(el); w.insertAdjacentHTML('beforeend','<span class="micbs">'+h+'</span>'); w.style.setProperty('--micn',String((MICSR?1:0)+(CTS&&pf?1:0)));
+    if(foc){ try{ el.focus({preventScroll:true}); el.setSelectionRange&&el.setSelectionRange(s0,s1); }catch(x){} } }); }
+(function(){ var go=function(){ micEnhance(); new MutationObserver(function(){ clearTimeout(micEnhance.t); micEnhance.t=setTimeout(micEnhance,40); }).observe(document.body,{childList:true,subtree:true}); };
+  if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); })();
+function micClean(t,el){ t=String(t||'').replace(/\s+/g,' ').trim(); if(t&&el&&el.matches&&el.matches('input[data-o="customer"],#fe_c,#of_c')) t=t.replace(/(^|\s)(\S)/g,function(m,a,c){ return a+c.toUpperCase(); }); return t; }
+function micToggle(btn,el){ if(MIC){ var same=MIC.btn===btn; micStop(); if(same) return; } if(!MICSR||!el) return; if(PERM.mic==='denied'){ permPop(false,'mic'); return; }
+  var rec; try{ rec=new MICSR(); }catch(x){ toast('Voice typing is not available here'); return; }
+  rec.lang=micLang(); rec.interimResults=true; rec.continuous=false; rec.maxAlternatives=1;
+  var search=/^(q|owq|pyq)$/.test(el.id||''), base=search?'':String(el.value||''), sep=base&&!/\s$/.test(base)?' ':'';
+  MIC={rec:rec,btn:btn,el:el,base:base,sep:sep,fin:'',search:search}; btn.classList.add('on'); btn.setAttribute('aria-label','Stop');
+  rec.onaudiostart=function(){ PERM.mic='granted'; PERM.micHard=false; };
+  rec.onresult=function(ev){ if(!MIC||MIC.rec!==rec) return; var fin='', tmp=''; for(var i=0;i<ev.results.length;i++){ var r=ev.results[i]; if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript; }
+    MIC.fin=fin; el.value=MIC.base+MIC.sep+micClean(fin+' '+tmp,el); };
+  rec.onerror=function(ev){ var er=ev&&ev.error; if(er==='not-allowed'||er==='service-not-allowed'){ PERM.mic='denied'; PERM.micHard=true; micStop(true); permPop(false,'mic'); return; }
+    if(er==='no-speech') toast('🎤 Didn\'t hear anything — tap 🎤 and speak'); else if(er==='network') toast('🎤 Voice typing needs the internet'); else if(er&&er!=='aborted') toast('🎤 '+er); };
+  rec.onend=function(){ if(!MIC||MIC.rec!==rec) return; var m=MIC, said=micClean(m.fin,el); el.value=said?m.base+m.sep+said:m.base; micStop(true);
+    el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); if(said&&!m.search){ try{ el.focus(); el.setSelectionRange&&el.setSelectionRange(el.value.length,el.value.length); }catch(x){} } };
+  try{ rec.start(); }catch(x){ micStop(true); toast('🎤 Could not start — try again'); } }
+function micStop(ended){ if(!MIC) return; var m=MIC; MIC=null; m.btn.classList.remove('on'); m.btn.setAttribute('aria-label','Speak instead of typing'); if(!ended){ try{ m.rec.stop(); }catch(x){} } }
+/* 👥 a contact: name and phone (Indian numbers without +91) */
+function ctPick(nameEl,phoneEl){ if(!CTS) return; navigator.contacts.select(['name','tel'],{multiple:false}).then(function(cs){ var c=cs&&cs[0]; if(!c) return;
+    var nm=String((c.name&&c.name[0])||'').trim(), tel=String((c.tel&&c.tel[0])||'').replace(/[^\d+]/g,'');
+    if(/^\+?91\d{10}$/.test(tel)) tel=tel.slice(-10); else if(/^0\d{10}$/.test(tel)) tel=tel.slice(1);
+    if(nm&&nameEl){ nameEl.value=nm; nameEl.dispatchEvent(new Event('input',{bubbles:true})); }
+    if(tel&&phoneEl){ phoneEl.value=tel; phoneEl.dispatchEvent(new Event('input',{bubbles:true})); }
+    if(nm||tel) toast('👥 '+(nm||tel)+' filled in'); }).catch(function(){}); }
+/* ---------- voice notes ---------- */
+function vnCan(){ return !!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); }
+function vnMime(){ var c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus']; for(var i=0;i<c.length;i++){ try{ if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(c[i])) return c[i]; }catch(e){} } return ''; }
+function vnDur(s){ s=Math.max(0,Math.round(+s||0)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function vnWho(r){ return r==='admin'?'Admin':r==='sales'?'Sales':r==='production'?'Factory':String(r||''); }
+function vnRows(o,edit){ return (o.voice||[]).map(function(v,i){ return '<div class="vn"><button type="button" class="btn sm vnp" data-vnplay="'+i+'" data-oid="'+esc(o.id)+'" aria-label="Play voice note">▶</button><span class="grow">'+dShort(v.on)+' · '+vnDur(v.dur)+(v.by?' · '+esc(vnWho(v.by)):'')+(v.path&&PHQ.indexOf(v.path)>=0?' <span class="faint" title="Waiting to upload">⏳</span>':'')+'</span>'+(edit&&canDel()?'<button class="del" data-vndel="'+i+'" aria-label="Delete voice note">×</button>':'')+'</div>'; }).join(''); }
+function vnBlock(o){ var vs=o.voice||[]; if(!vs.length&&!vnCan()) return '';
+  return '<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Voice notes</span>'+(vs.length?'<div class="vnl">'+vnRows(o,true)+'</div>':'')
+   +(vnCan()?'<button type="button" class="btn sm" data-act="vnrec" style="margin-top:6px">🎤 Record voice note</button>':'<div class="faint">This phone cannot record here.</div>')+'</div>'; }
+function vnProd(o){ return (o.voice||[]).length?'<div class="card"><h2 style="font-size:16px">🎤 Voice notes from the site</h2><div class="vnl">'+vnRows(o,false)+'</div></div>':''; }
+function vnRec(o){ if(!o||VN) return; if(!vnCan()){ toast('This phone cannot record here'); return; } if(PERM.mic==='denied'){ permPop(false,'mic'); return; }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){ PERM.mic='granted'; PERM.micHard=false; var mt=vnMime(), rec, parts=[];
+      try{ rec=mt?new MediaRecorder(st,{mimeType:mt,audioBitsPerSecond:32000}):new MediaRecorder(st); }catch(e){ rec=new MediaRecorder(st); }
+      VN={o:o,rec:rec,st:st,t0:Date.now(),cancel:false};
+      rec.ondataavailable=function(e){ if(e.data&&e.data.size) parts.push(e.data); };
+      rec.onstop=function(){ var v=VN; try{ st.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} if(v&&v.tm) clearInterval(v.tm); vnPopX(); VN=null; if(!v||v.cancel) return;
+        var type=String(rec.mimeType||mt||'audio/webm').split(';')[0]||'audio/webm', b=new Blob(parts,{type:type}), dur=Math.max(1,Math.round((Date.now()-v.t0)/1000));
+        if(b.size<100){ toast('Nothing recorded — try again'); return; } vnSave(o,b,dur); };
+      rec.start(1000); vnPop(); VN.tm=setInterval(vnTick,250); },
+    function(e){ var nm=(e&&e.name)||''; if(nm==='NotAllowedError'||nm==='SecurityError'){ PERM.mic='denied'; PERM.micHard=true; permPop(false,'mic'); } else toast('⚠ Could not use the microphone'+(nm?' ('+nm+')':'')); }); }
+function vnPop(){ vnPopX(); var v=document.createElement('div'); v.className='viewer vnpop';
+  v.innerHTML='<div class="card vnrec" role="dialog" aria-label="Recording"><div class="vnmic">🎤</div><b>Recording…</b><div class="vnt" id="vnt">0:00</div><div class="faint">up to '+vnDur(VNMAX)+'</div><div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" data-act="vnstop">■ Stop &amp; save</button><button class="btn" data-act="vncancel">Cancel</button></div></div>';
+  document.body.appendChild(v); }
+function vnPopX(){ var v=document.querySelector('.viewer.vnpop'); if(v) v.remove(); }
+function vnTick(){ if(!VN) return; if(!document.querySelector('.viewer.vnpop')&&VN.rec.state==='recording'){ VN.cancel=true; VN.rec.stop(); return; }
+  var s=Math.floor((Date.now()-VN.t0)/1000), el=document.getElementById('vnt'); if(el) el.textContent=vnDur(s); if(s>=VNMAX&&VN.rec.state==='recording') VN.rec.stop(); }
+function vnSave(o,b,dur){ o.voice=o.voice||[]; var ext=/mp4|aac|m4a/.test(b.type)?'m4a':/ogg/.test(b.type)?'ogg':/mpeg/.test(b.type)?'mp3':'webm', it={on:today(),dur:dur,by:S.role||''};
+  if(!phCloud()){ var fr=new FileReader(); fr.onload=function(){ it.src=String(fr.result); o.voice.push(it); save(); render(); toast('🎤 Voice note saved on this phone'); }; fr.readAsDataURL(b); return; }
+  var p=phDir(o)+'/v'+Date.now().toString(36)+uid()+'.'+ext; it.path=p;
+  phPutLocal(p,b).then(function(){ PHQ.push(p); phQSave(); o.voice.push(it); save(); render(); toast('🎤 Voice note saved'+(phOnline()?'':' — sent when online')); phKick(); },
+    function(){ toast('⚠ Could not keep the voice note on this phone'); }); }
+function vnPlay(o,i,btn){ var v=(o.voice||[])[i]; if(!v) return; if(VNP&&VNP.btn===btn){ vnStopPlay(); return; } vnStopPlay();
+  btn.textContent='…'; var get=v.path?phBlob(v.path):Promise.resolve(v.src?d2b(v.src):null);
+  get.then(function(b){ if(!b) throw new Error('none'); var u=URL.createObjectURL(b), a=new Audio(u); VNP={a:a,u:u,btn:btn}; a.onended=function(){ vnStopPlay(); }; btn.textContent='❚❚'; return a.play(); })
+    .catch(function(){ if(VNP&&VNP.btn===btn) vnStopPlay(); else btn.textContent='▶'; toast('⚠ This voice note is not on this phone yet — connect to the internet'); }); }
+function vnStopPlay(){ if(!VNP) return; var p=VNP; VNP=null; try{ p.a.pause(); }catch(e){} try{ URL.revokeObjectURL(p.u); }catch(e){} if(p.btn) p.btn.textContent='▶'; }
+function vnDel(o,i){ if(!canDel()) return; var v=(o.voice||[])[i]; if(!v||!confirm('Delete this voice note ('+vnDur(v.dur)+', '+dShort(v.on)+')?')) return; vnStopPlay(); o.voice.splice(i,1); if(v.path) phForget(v); save(); render(); toast('Voice note deleted'); }
+document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&&e.target.closest('[data-mic],[data-ctp],[data-act="vnrec"],[data-act="vnstop"],[data-act="vncancel"],[data-vnplay],[data-vndel]'); if(!b) return; var d=b.dataset;
+  if(d.mic!==undefined){ e.preventDefault(); var w=b.closest('.micw'); micToggle(b,w&&w.querySelector('input,textarea')); return; }
+  if(d.ctp!==undefined){ e.preventDefault(); var w2=b.closest('.micw'); ctPick(w2&&w2.querySelector('input'),document.querySelector(d.ctp)); return; }
+  if(d.act==='vnrec'){ vnRec(order()); return; }
+  if(d.act==='vnstop'){ if(VN&&VN.rec.state==='recording') VN.rec.stop(); return; }
+  if(d.act==='vncancel'){ if(VN){ VN.cancel=true; if(VN.rec.state==='recording') VN.rec.stop(); else vnPopX(); } return; }
+  if(d.vnplay!==undefined){ var o=byId(d.oid)||order(); if(o) vnPlay(o,+d.vnplay,b); return; }
+  if(d.vndel!==undefined){ var o2=order(); if(o2) vnDel(o2,+d.vndel); return; } });
+document.addEventListener('change',function(e){ var t=e.target; if(t&&t.id==='miclang'){ try{ localStorage.setItem('wmiclang',t.value); }catch(x){} toast('🎤 Speak in '+t.options[t.selectedIndex].text); } });
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -4428,7 +4692,7 @@ function subCustomer(o){
    +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
    +'<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Site photos</span><div class="photos">'+(o.photos||[]).map(function(ph,i){return '<div class="ph"><img src="'+esc(phSrc(ph))+'" data-phk="'+esc(ph.path||'')+'" data-view="'+i+'" alt="">'+(ph.path&&PHQ.indexOf(ph.path)>=0?'<span class="phup" data-phq="'+esc(ph.path)+'" title="Waiting to upload">⏳</span>':'')+(canDel()?'<button class="phx" data-phdel="'+i+'">×</button>':'')+'<input type="text" data-phcap="'+i+'" value="'+esc(ph.cap||'')+'" placeholder="caption"></div>';}).join('')
    +'<label class="ph add" data-camtake="1"><input type="file" accept="image/*" capture="environment" id="phcam" class="hide"><span>📷<br>Take photo</span></label><label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>From gallery</span></label></div><div class="faint">Photos are shrunk to save space'+(phCloud()?' and kept online — they open on every phone.':'.')+'</div>'+(PERM.cam==='denied'?'<button class="btn ghost sm" data-act="pmopen" style="margin-top:6px">⚠ Camera blocked — how to allow</button>':'')+'</div>'
-   +'<div class="faint" style="margin-top:12px">Created '+dShort(o.created)+(o.confirmedOn?' · confirmed '+dShort(o.confirmedOn):'')+(o.deliveredOn?' · delivered '+dShort(o.deliveredOn):'')+'</div>'
+   +vnBlock(o)+'<div class="faint" style="margin-top:12px">Created '+dShort(o.created)+(o.confirmedOn?' · confirmed '+dShort(o.confirmedOn):'')+(o.deliveredOn?' · delivered '+dShort(o.deliveredOn):'')+'</div>'
    +(admin()?'<div style="margin-top:12px"><button class="btn danger sm" data-act="delete">Delete this order</button></div>':'')+'</div>';
 }
 function subQuote(o){
@@ -4700,7 +4964,7 @@ function viewSettings(){
         +rolesLine()+(Array.isArray(ru)&&ru.filter(function(u){ return u.role==='admin'; }).length<2?'<div class="netbar" style="margin:10px 0 0">👥 <b>Only one admin.</b> Add a second admin (a partner or a trusted person) so the shop is never locked out if this phone or email is lost.</div>':'')+'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
      if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
      return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
-   +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div>'+spaceLine()+'<p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'+permSetCard()
+   +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div>'+spaceLine()+'<p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'+permSetCard()+(admin()?pushSetCard():'')
    +'<div class="card"><h2>Backup</h2>'+snapsHtml()+'<div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label>'+phZipBtns()+'</div><p class="faint">'+(sbOn()?'Also download a backup file every 2 weeks and keep it on your computer or Google Drive'+(D.lastBackup?' (last one: '+dShort(D.lastBackup)+')':'')+'. Site photos are kept online — “All site photos” saves a copy of them.':'Download a backup once a week if you are not using online sync.')+'</p></div>';
 }
 
