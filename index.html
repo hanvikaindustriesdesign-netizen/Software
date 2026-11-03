@@ -634,6 +634,9 @@ table.mpt th.num,table.mpt td.num{white-space:nowrap}
 table.db td.vn{white-space:nowrap}
 table.mpt td:first-child{min-width:118px}
 @media (max-width:560px){ table.mpt .rt2{display:none} }
+
+/* Ledger heads (and users) on a small phone: name on its own line, group under it */
+@media (max-width:380px){ table.items.i3 tbody tr{grid-template-columns:minmax(0,1fr) 30px} table.items.i3 tbody td.c1,table.items.i3 tbody td:nth-child(2){grid-column:1} table.items.i3 tbody td.dl{grid-column:2;grid-row:1 / span 2} }
 </style>
 </head>
 <body>
@@ -688,7 +691,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 08:19';
+var APPV='03 Nov 2026, 09:51';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -703,7 +706,7 @@ function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sas
 function brandOf(name){ for(var i=0;i<D.brands.length;i++) if(D.brands[i].name===name) return D.brands[i]; return D.brands[0]; }
 function brandNames(){ return D.brands.map(function(b){return b.name;}); }
 function merge(a,b){ for(var k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==='object'){ merge(a[k],b[k]); } else a[k]=b[k]; } return a; }
-var PRIVK=['expenses','staff','att','saladj','pins','opening','heads','vseq','users','lockc','carry','bldr','sup','po','sbill','poseq','prate','hpv'];
+var PRIVK=['expenses','staff','att','saladj','pins','opening','heads','vseq','users','lockc','carry','bldr','sup','po','sbill','poseq','prate','hpv','hdv'];
 var PV={mode:localStorage.getItem('wpmode')||'', last:localStorage.getItem('wpseen')||'', base:localStorage.getItem('wpbase'), busy:null, okAt:0, tries:0, chk:''}, PRIVJ='';
 function pvSave(){ try{ localStorage.setItem('wpmode',PV.mode||''); localStorage.setItem('wpseen',PV.last||''); if(PV.base==null) localStorage.removeItem('wpbase'); else localStorage.setItem('wpbase',PV.base); }catch(e){} }
 var saveT, DSIZE=0, STFULL=false;
@@ -1859,7 +1862,7 @@ function RowStore(c){
     return sbRefresh().then(function(){ if(first) return page('id,data,updated_at',500);
         return page('id,updated_at',1000).then(function(list){ var need=[]; list.forEach(function(r){ if(!top||r.updated_at>top) top=r.updated_at; if(R.seen[r.id]!==r.updated_at) need.push(r.id); }); return need.length?byIds(need):[]; }); })
       .then(function(rows){ R.okAt=Date.now(); rows=rows.filter(function(r){ if(!R.since||r.updated_at>R.since) R.since=r.updated_at; return R.seen[r.id]!==r.updated_at; });
-        var res=apply(rows,true);
+        var res=apply(rows,true); if(res.ch&&c.after) setTimeout(c.after,0);
         if(top&&(!R.since||top>R.since)) R.since=top; R.meta(); if(res.lost.length) toast('⚠ '+c.word+' '+res.lost.slice(0,3).join(', ')+(res.lost.length>3?'…':'')+' was changed on another phone — loaded the latest. Check your last change.');
         if(res.ch) renderSoon(); }); };
   /* ---- online: push only changed records ---- */
@@ -2372,7 +2375,7 @@ function allJobs(){ var a=D.orders.slice(); (D.flats||[]).forEach(function(f){ i
    Older phones may still have orders inside the shared record: they are taken over once.
    ============================================================ */
 var ORS=RowStore({name:'orders',word:'Order',table:'shop_orders',dbn:'wshop-orders',store:'orders',ls:'wo:',mp:'wo',deletes:true,
-  get:function(){ return D.orders; }, set:function(a){ D.orders=a; }, label:function(x){ return '#'+x.no; },
+  get:function(){ return D.orders; }, set:function(a){ D.orders=a; }, label:function(x){ return '#'+x.no; }, after:function(){ numFix(); },
   cur:function(){ if(!S.oid) return null; for(var i=0;i<D.orders.length;i++) if(D.orders[i].id===S.oid) return D.orders[i]; return null; }});
 ROWSTORES.push(ORS);
 /* ---- the shared record: when another phone saved first, merge both changes ---- */
@@ -2716,7 +2719,7 @@ function privPull(){ if(!isAdm()||!sbOn()||!SESS||!PULLOK||navigator.onLine===fa
   PV.busy=sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_data?id=eq.private&select=updated_at'),{headers:sbHeaders()}); })
     .then(function(r){ if(!r.ok) return httpErr(r,'admin data'); return r.json(); })
     .then(function(rows){ if(!rows||!rows.length) return privCreate();
-      if(PV.mode==='row'&&rows[0].updated_at===PV.last) return localStorage.getItem('wpdirty')?privPush():null;
+      if(PV.mode==='row'&&rows[0].updated_at===PV.last){ PVTOOK=true; setTimeout(privFix,0); return localStorage.getItem('wpdirty')?privPush():null; }
       return privGet().then(function(rr){ if(!rr||!rr[0]) return; privTake(rr[0]); if(localStorage.getItem('wpdirty')) return privPush(); }); })
     .then(function(){ PV.okAt=Date.now(); backOk('priv'); },privErr)
     .then(function(){ PV.busy=null; });
@@ -2736,7 +2739,7 @@ function privTake(sv){ keepLocal(); var loc=PRIVJ, base=null, srv=sv.data||{}, n
   else if(privHasJ(MAINSENT)){ try{ base=JSON.stringify(privOf(JSON.parse(MAINSENT))); }catch(e){ base=null; } }
   if(base!=null){ try{ var b=JSON.parse(base), l=JSON.parse(loc); if(!sameJ(b,l)) next=merge3(b,l,srv,''); }catch(e){ next=srv; } }
   var was=loc; PV.mode='row'; PV.last=sv.updated_at; PV.base=JSON.stringify(srv); PV.chk=''; pvSave();
-  privJoin(next); standOff(); keepLocal(); privMark();
+  privJoin(next); standOff(); keepLocal(); privMark(); PVTOOK=true; setTimeout(privFix,0);
   var ch=true; try{ ch=!sameJ(JSON.parse(was),JSON.parse(PRIVJ)); }catch(e){} if(ch) renderSoon(); }
 function privPush(){ if(!isAdm()||PV.mode!=='row'||!sbOn()||!SESS) return Promise.resolve();
   if(!PV.last) return privPull();   /* never had the online copy: load it (and put this phone's changes on top) first */
@@ -3844,7 +3847,7 @@ function poSave(){ var P=S.pod, er=document.getElementById('po_err'), fail=funct
   D.prate=D.prate||{}; lines.forEach(function(l){ if(l.rate>0) D.prate[l.key]=l.rate; });
   var p=P.id?poById(P.id):null;
   if(p){ p.sid=s.id; p.lines=lines; p.note=pjV('po_note'); }
-  else { D.poseq=(D.poseq||0)+1; p={id:uid(),no:D.poseq,on:today(),sid:s.id,grp:P.grp,lines:lines,oids:(P.oids||[]).slice(),note:pjV('po_note'),rcv:[]}; D.po=D.po||[]; D.po.push(p); }
+  else { p={id:uid(),no:nextPoNo(),dev:RLDEV,ts:Date.now(),on:today(),sid:s.id,grp:P.grp,lines:lines,oids:(P.oids||[]).slice(),note:pjV('po_note'),rcv:[]}; D.po=D.po||[]; D.po.push(p); }
   pjPopX(); S.pod=null; S.isub='po'; S.poid=p.id; S.sid=null; save(); render(); window.scrollTo(0,0); toast('✓ '+poNo(p)+' saved — now send it to '+s.name); }
 function poLinesFor(g,rows){ var ks=invKeys(), pr=D.prate||{};
   if(rows) return rows.map(function(r){ return {key:r.key,name:r.name,unit:r.unit,qty:r.buy,rate:pr[r.key]||0,hint:'needed '+fmt(supRnd(r.unit,r.need))+' · in stock '+fmt(r.stock)+(r.on?' · on order '+fmt(r.on):'')}; });
@@ -3925,8 +3928,8 @@ function spPop(sid){ var s=supById(sid); if(!s) return; supHeadFix(); var b=supB
     +pjFld('sp_note','Note (cheque / UTR / bill no)','','text')+'<p class="faint" style="margin:4px 0 0">Saved as a payment voucher in Accounts. Material purchases are not counted again as expense — Reports already take material cost from the orders.</p><div id="sp_err" class="warnt" style="font-size:13px"></div>',
     '<button class="btn primary" data-act="spsave" data-k="'+sid+'">Save payment</button><button class="btn" data-pjx="1">Cancel</button>'); }
 function spSave(sid){ var s=supById(sid), amt=Math.round(n(pjV('sp_amt'))*100)/100, er=document.getElementById('sp_err'); if(!s) return; if(!(amt>0)){ if(er) er.textContent='Enter the amount'; return; }
-  var hd=pjV('sp_hd')||'Material purchase', vno=D.vseq||1; D.vseq=vno+1; D.expenses=D.expenses||[];
-  D.expenses.push({on:pjV('sp_on')||today(),head:hd,cat:hd,party:s.name,mode:pjV('sp_md')||'Bank',amt:amt,note:pjV('sp_note'),vno:vno,sid:s.id});
+  var hd=pjV('sp_hd')||'Material purchase'; D.expenses=D.expenses||[]; var vno=nextVno();
+  D.expenses.push({on:pjV('sp_on')||today(),head:hd,cat:hd,party:s.name,mode:pjV('sp_md')||'Bank',amt:amt,note:pjV('sp_note'),vno:vno,sid:s.id,dev:RLDEV,ts:Date.now()});
   pjPopX(); save(); render(); toast('✓ '+money(amt)+' paid to '+s.name+' — voucher P-'+vno+' in Accounts'); }
 
 /* ---- buttons ---- */
@@ -3971,6 +3974,53 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t) return;
   if(t.matches&&t.matches('[data-mp]')){ var M=S.mp; if(!M) return; if(t.checked) M.ids[t.dataset.mp]=true; else delete M.ids[t.dataset.mp]; mpRefresh(); return; }
   if(t.id==='po_sid'){ var nw=document.getElementById('po_new'); if(nw) nw.classList.toggle('hide',t.value!=='+'); } });
 document.addEventListener('input',function(e){ var t=e.target; if(!t||t.id!=='mpq'||!S.mp) return; S.mp.q=t.value; var L=document.getElementById('mplist'); if(L) L.innerHTML=mpShown(mpCand()).map(mpOrderRow).join(''); });
+
+/* ============================================================
+   NUMBERS STAY UNIQUE + STANDARD LEDGER HEADS (asked: "Yes" — fix the same order number on two phones,
+   and put the ledger heads back).
+   • A new order / voucher / purchase order takes the next number after every one this phone knows — not only
+     the counter, which can lag behind what came from another phone.
+   • If two phones still made the same number at the same moment, the one made later moves to the next free
+     number. Only the phone that made it changes it (ts = when made, dev = which phone), and it says so.
+   • Ledger heads: the standard list is put back once (blank heads removed); "+ Standard heads" adds any missing.
+   ============================================================ */
+var PVTOOK=false;
+function nextOrderNo(){ var mx=0; (D.orders||[]).forEach(function(o){ if(n(o.no)>mx) mx=n(o.no); }); var no=Math.max(n(D.seq)||1,mx+1); D.seq=no+1; return no; }
+function vnoPeek(){ var mx=0; (D.expenses||[]).forEach(function(e){ if(n(e.vno)>mx) mx=n(e.vno); }); return Math.max(n(D.vseq)||1,mx+1); }
+function nextVno(){ var no=vnoPeek(); D.vseq=no+1; return no; }
+function nextPoNo(){ var mx=0; (D.po||[]).forEach(function(p){ if(n(p.no)>mx) mx=n(p.no); }); var no=Math.max((n(D.poseq)||0)+1,mx+1); D.poseq=no; return no; }
+/* records sharing a number: the first made keeps it; the later ones made on this phone get the next free number */
+function dupFix(list,numOf,setNum){ var by={}, ch=[];
+  list.forEach(function(x){ var k=numOf(x); if(k==null||k==='') return; (by[k]=by[k]||[]).push(x); });
+  Object.keys(by).forEach(function(k){ var g=by[k]; if(g.length<2) return;
+    g.sort(function(a,b){ return (n(a.ts)-n(b.ts))||(String(a.id||'')<String(b.id||'')?-1:String(a.id||'')>String(b.id||'')?1:0); });
+    g.slice(1).forEach(function(x){ if(!x.dev||x.dev!==RLDEV) return; var old=numOf(x); setNum(x); ch.push([old,numOf(x)]); }); });
+  return ch; }
+function numFix(){ if(!S.role) return;
+  var ch=dupFix((D.orders||[]).filter(function(o){ return o&&!o.tpl&&!o.del; }),function(o){ return o.no; },function(o){ o.no=nextOrderNo(); });
+  if(ch.length){ save(); renderSoon(); toast('Order '+ch.map(function(c){ return '#'+c[0]+' is now #'+c[1]; }).join(', ')+' — another phone made the same number at the same time'); } }
+function privFix(){ if(!isAdm()) return; var msg=[];
+  var cv=D.expenses?dupFix(D.expenses,function(e){ return e.vno; },function(e){ e.vno=nextVno(); }):[];
+  if(cv.length) msg.push('Voucher '+cv.map(function(c){ return 'P-'+c[0]+' is now P-'+c[1]; }).join(', '));
+  var cp=D.po?dupFix(D.po,function(p){ return p.no; },function(p){ p.no=nextPoNo(); }):[];
+  if(cp.length) msg.push('Purchase order '+cp.map(function(c){ return 'PO-'+c[0]+' is now PO-'+c[1]; }).join(', '));
+  var hh=headsFix();
+  if(msg.length||hh){ save(); renderSoon(); }
+  if(msg.length) toast(msg.join(' · ')+' — another phone used the same number');
+  else if(hh===2) toast('✓ Ledger heads put back: Rent, Transport, Salary & wages, Electricity…'); }
+/* the same head twice (two phones added it) → one; once: the standard list back, blank heads removed */
+function headsFix(){ if(!Array.isArray(D.heads)) return 0; var ch=0, seen={}, out=[];
+  D.heads.forEach(function(h){ var k=String((h&&h.name)||''); if(k&&seen[k]){ ch=1; return; } if(k) seen[k]=1; out.push(h); }); if(ch) D.heads=out;
+  if(!D.hdv&&(PVTOOK||!sbOn()||PV.mode!=='row')){ D.hdv=1; ch=2; var used={}; (D.expenses||[]).forEach(function(e){ used[e.head||'']=1; });
+    var mine={}; D.heads.forEach(function(h){ if(h&&h.name) mine[h.name]=h; });
+    var std=defOf('heads')||[], names={}; std.forEach(function(h){ names[h.name]=1; });
+    D.heads=std.map(function(h){ return mine[h.name]||h; }).concat(D.heads.filter(function(h){ return h&&(h.name?!names[h.name]:!!used['']); })); }
+  return ch; }
+function headsStd(){ var std=defOf('heads')||[], k=0; D.heads=D.heads||[];
+  std.forEach(function(h){ if(!D.heads.some(function(x){ return x&&x.name===h.name; })){ D.heads.push(h); k++; } });
+  save(); render(); toast(k?'✓ Added '+k+' standard head'+(k===1?'':'s'):'All standard heads are already there'); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="headstd"]'); if(!t||!admin()) return; headsStd(); });
+setTimeout(function(){ try{ numFix(); if(!sbOn()||PV.mode!=='row') privFix(); }catch(e){} },3000);
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
@@ -4106,7 +4156,7 @@ function viewExpenses(){
      +(mv.length?mv.map(function(v){return '<tr><td class="dt">'+dShort(v.on)+'</td><td class="faint vn">'+v.vno+'</td><td class="ty">'+(v.kind==='Receipt'?'<span class="stage s3">Receipt</span>':v.mode==='Adjust'?'<span class="stage">Journal</span>':'<span class="stage s0">Payment</span>')+'</td><td class="lp"><b>'+esc(v.head)+'</b>'+(v.party?'<br><span class="faint">'+esc(v.party)+'</span>':'')+'</td><td class="md">'+v.mode+'</td><td class="faint nr">'+esc(v.narr)+'</td><td class="num goodt rc">'+(v.kind==='Receipt'?money(v.amt):'')+'</td><td class="num warnt py">'+(v.kind==='Payment'?money(v.amt):'')+'</td><td class="ac">'+(v.kind==='Payment'?(D.expenses[v.ei]&&D.expenses[v.ei].sal?'<span class="faint" style="font-size:11px">via Staff</span>':delBtn('data-edel',v.ei)):(v.pid?'<button class="btn ghost sm" style="padding:0;min-height:0" data-proj="'+v.pid+'" data-psubgo="builder">open</button>':'<button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+v.oid+'">open</button>'))+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No vouchers this month</td></tr>')
      +'</tbody><tfoot><tr><td colspan="6" class="right">Total</td><td class="num" data-l="In">'+money(inn)+'</td><td class="num" data-l="Out">'+money(out)+'</td><td></td></tr></tfoot></table></div></div>'; }
   if(sub==='in'){ body=moneyInView(m,months); }
-  if(sub==='pay'){ body='<div class="card"><h2>Payment voucher <span class="faint" style="font-weight:400;font-size:13px">P-'+D.vseq+'</span></h2><div class="grid2"><label class="f"><span>Date</span><input type="date" id="eon" value="'+today()+'"></label><label class="f"><span>Ledger head</span><select id="ecat">'+D.heads.map(function(h){return '<option>'+esc(h.name)+'</option>';}).join('')+'</select></label>'
+  if(sub==='pay'){ body='<div class="card"><h2>Payment voucher <span class="faint" style="font-weight:400;font-size:13px">P-'+vnoPeek()+'</span></h2><div class="grid2"><label class="f"><span>Date</span><input type="date" id="eon" value="'+today()+'"></label><label class="f"><span>Ledger head</span><select id="ecat">'+D.heads.map(function(h){return '<option>'+esc(h.name)+'</option>';}).join('')+'</select></label>'
      +'<label class="f"><span>Paid to (party)</span><input type="text" id="eparty" placeholder="Supplier / person" list="supdl"><datalist id="supdl">'+(D.sup||[]).map(function(x){ return '<option value="'+esc(x.name)+'">'; }).join('')+'</datalist></label><label class="f"><span>Mode</span><select id="emode">'+opts(MODES,'Cash')+'</select></label></div><label class="f"><span>Narration</span><input type="text" id="enote" placeholder="Bill no, what for…"></label><div class="row"><label class="f" style="margin:0;max-width:200px"><span>Amount ₹</span><input type="number" id="eamt" style="font-size:18px;font-weight:600"></label><button class="btn primary" data-act="exp" style="margin-top:18px">Save voucher</button></div></div>'
      +'<div class="card"><h2>Recent payments</h2><table><tbody>'+D.expenses.slice(-10).reverse().map(function(e){return '<tr><td>'+dShort(e.on)+'</td><td class="faint">P-'+e.vno+'</td><td>'+esc(e.head)+(e.party?' · '+esc(e.party):'')+'</td><td>'+e.mode+'</td><td class="num">'+money(e.amt)+'</td></tr>';}).join('')+'</tbody></table></div>'; }
   if(sub==='led'){ var byH={}; mv.filter(function(v){return v.kind==='Payment';}).forEach(function(v){ byH[v.head]=(byH[v.head]||0)+v.amt; }); var grpOf={}; D.heads.forEach(function(h){grpOf[h.name]=h.grp;});
@@ -4116,7 +4166,7 @@ function viewExpenses(){
   if(sub==='cash'){ body='<div class="card"><h2>Cash & Bank book — '+mLabel(m)+'</h2><p class="faint">Opening = balance brought forward from all earlier vouchers plus the opening balance in Ledger heads.</p><div class="tscroll"><table><thead><tr><th>Book</th><th class="num">Opening</th><th class="num">Receipts</th><th class="num">Payments</th><th class="num">Closing</th></tr></thead><tbody>'
      +MODES.map(function(md){ var before=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md])+yeCarry(md); var r=mv.filter(function(v){return v.mode===md&&v.kind==='Receipt';}).reduce(function(a,v){return a+v.amt;},0), p=mv.filter(function(v){return v.mode===md&&v.kind==='Payment';}).reduce(function(a,v){return a+v.amt;},0); return '<tr><td><b>'+md+'</b></td><td class="num">'+money(before)+'</td><td class="num goodt">'+money(r)+'</td><td class="num warnt">'+money(p)+'</td><td class="num"><b>'+money(before+r-p)+'</b></td></tr>'; }).join('')+'</tbody></table></div></div>'
      +'<div class="card"><h2>'+mLabel(m)+' — entries by book</h2><p class="faint" style="margin:-4px 0 6px">Tap an entry to open it.</p>'+MODES.map(function(md){ var vv=mv.filter(function(v){return v.mode===md;}); if(!vv.length) return ''; var run=all.filter(function(v){return v.mode===md&&(v.on||'').slice(0,7)<m;}).reduce(function(a,v){return a+(v.kind==='Receipt'?v.amt:-v.amt);},0)+n(D.opening[md])+yeCarry(md); return '<h3 style="margin:10px 0 4px">'+md+'</h3><table><tbody>'+vv.map(function(v){ run+=v.kind==='Receipt'?v.amt:-v.amt; return '<tr'+txVA(v)+'><td>'+dShort(v.on)+'</td><td>'+esc(v.head)+(v.party?' · '+esc(v.party):'')+'</td><td class="num '+(v.kind==='Receipt'?'goodt':'warnt')+'">'+(v.kind==='Receipt'?'+':'−')+money(v.amt)+'</td><td class="num faint">'+money(run)+'</td></tr>'; }).join('')+'</tbody></table>'; }).join('')+'</div>'; }
-  if(sub==='heads'){ body='<div class="card"><div class="row between"><h2>Ledger heads</h2><button class="btn sm primary" data-act="headadd">+ Add head</button></div><table class="items i3"><thead><tr><th>Head</th><th>Group</th><th></th></tr></thead><tbody>'+D.heads.map(function(h,i){return '<tr data-hdi="'+i+'"><td class="c1" data-l="Head"><input type="text" data-hdk="name" value="'+esc(h.name)+'"></td><td data-l="Group"><select data-hdk="grp">'+opts(['Direct','Indirect','Purchase','Capital','Advances'],h.grp)+'</select></td><td class="dl"><button class="del" data-hddel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'
+  if(sub==='heads'){ body='<div class="card"><div class="row between"><h2>Ledger heads</h2><span class="row" style="gap:6px"><button class="btn sm" data-act="headstd">+ Standard heads</button><button class="btn sm primary" data-act="headadd">+ Add head</button></span></div><table class="items i3"><thead><tr><th>Head</th><th>Group</th><th></th></tr></thead><tbody>'+D.heads.map(function(h,i){return '<tr data-hdi="'+i+'"><td class="c1" data-l="Head"><input type="text" data-hdk="name" value="'+esc(h.name)+'"></td><td data-l="Group"><select data-hdk="grp">'+opts(['Direct','Indirect','Purchase','Capital','Advances'],h.grp)+'</select></td><td class="dl"><button class="del" data-hddel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'
      +'<div class="card"><h2>Opening balances</h2><div class="grid3">'+MODES.map(function(md){return '<label class="f"><span>'+md+' opening ₹</span><input type="number" data-open="'+md+'" value="'+n(D.opening[md])+'"></label>';}).join('')+'</div></div>'; }
   return tabs+kp+body+yeCard();
 }
@@ -4224,9 +4274,9 @@ function parseAtt(text,ym){ var hit=0,miss=0, lines=text.split(/\r?\n/);
   return {hit:hit,miss:miss}; }
 function postSalaries(ym,mode){ var rows=D.staff.map(function(st){return salRow(ym,st);}); D.expenses=D.expenses.filter(function(e){return e.sal!==ym;}); var last=endOf(ym), k=0;
   rows.forEach(function(r){ var st=r.st; if(!r.gross) return; var info=mLabel(ym)+', '+r.sm.days+' days'+(r.sm.ot?' + '+r.sm.ot+' h OT':'')+(r.ded?' · gross '+money(r.gross)+', advance '+money(r.ded)+' deducted':'');
-    if(r.net>0) D.expenses.push({on:last,cat:'Salary',head:'Salary & wages',party:st.name,staffId:st.id,mode:mode||'Cash',note:info,amt:r.net,sal:ym,vno:D.vseq++});
-    if(r.ded>0){ D.expenses.push({on:last,cat:'Salary',head:'Salary & wages',party:st.name,staffId:st.id,mode:'Adjust',note:'Advance adjusted against '+mLabel(ym)+' salary',amt:r.ded,sal:ym,vno:D.vseq++});
-      D.expenses.push({on:last,head:'Staff advance',party:st.name,staffId:st.id,mode:'Adjust',note:'Recovered from '+mLabel(ym)+' salary',amt:-r.ded,sal:ym,rec:true,vno:D.vseq++}); }
+    if(r.net>0) D.expenses.push({on:last,cat:'Salary',head:'Salary & wages',party:st.name,staffId:st.id,mode:mode||'Cash',note:info,amt:r.net,sal:ym,vno:nextVno(),dev:RLDEV,ts:Date.now()});
+    if(r.ded>0){ D.expenses.push({on:last,cat:'Salary',head:'Salary & wages',party:st.name,staffId:st.id,mode:'Adjust',note:'Advance adjusted against '+mLabel(ym)+' salary',amt:r.ded,sal:ym,vno:nextVno(),dev:RLDEV,ts:Date.now()});
+      D.expenses.push({on:last,head:'Staff advance',party:st.name,staffId:st.id,mode:'Adjust',note:'Recovered from '+mLabel(ym)+' salary',amt:-r.ded,sal:ym,rec:true,vno:nextVno(),dev:RLDEV,ts:Date.now()}); }
     k++; }); return k; }
 function slipsHtml(ym){ var c=D.company; return D.staff.map(function(st){ var r=salRow(ym,st); if(!r.gross) return ''; var sm=r.sm;
   return '<div class="pg" style="border:1px solid #999;padding:10px 14px;margin-bottom:14px"><div class="hd" style="margin-bottom:6px"><div><h2 style="margin:0">'+esc(c.name)+'</h2><div>'+esc(c.address)+'</div></div><div class="right"><b>SALARY SLIP</b><div>'+mLabel(ym)+'</div></div></div>'
@@ -4343,7 +4393,7 @@ function download(name,data,type){ var b=data instanceof Blob?data:new Blob(['\u
 /* ============================================================
    EVENTS
    ============================================================ */
-function newOrder(){ var o={id:uid(),no:D.seq++,kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today()}; D.orders.push(o); save(); go('order',o.id); S.sub='customer'; render(); setTimeout(function(){var i=$('[data-o=customer]'); if(i) i.focus();},0); }
+function newOrder(){ var o={id:uid(),no:nextOrderNo(),dev:RLDEV,ts:Date.now(),kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today()}; D.orders.push(o); save(); go('order',o.id); S.sub='customer'; render(); setTimeout(function(){var i=$('[data-o=customer]'); if(i) i.focus();},0); }
 function newItem(o){ var l=o.items[o.items.length-1];
   return o.kind==='doors'?{loc:'',type:l?l.type:'PVC',brand:l?l.brand:D.brands[0].name,w:l?l.w:900,h:l?l.h:2100,price:brandOf(l?l.brand:'').doorRate[l?l.type:'PVC'],qty:1}
    :{loc:'',type:l?l.type:'2 Track',brand:l?l.brand:D.brands[0].name,series:l?l.series:'80',w:l?l.w:1200,h:l?l.h:1200,glass:l?l.glass:GLASS[0],mesh:l?l.mesh:MESH[0],qty:1}; }
@@ -4432,7 +4482,7 @@ document.addEventListener('click',function(e){
   if(a==='payadv'&&o){ $('#pamt').value=Math.max(0,advanceDue(o)-paid(o)); $('#pnote').value='Advance'; $('#pamt').focus(); }
   if(a==='paybal'&&o){ $('#pamt').value=Math.max(0,balance(o)); $('#pnote').value='Balance'; $('#pamt').focus(); }
   if(a==='pay'&&o){ var amt=n($('#pamt').value); if(!amt){toast('Enter amount');return;} o.payments.push({on:$('#pon').value||today(),note:$('#pnote').value,mode:$('#pmode').value,amt:amt}); save(); render(); toast('Payment added'); }
-  if(a==='exp'){ var ea=n($('#eamt').value); if(!ea){toast('Enter amount');return;} var vh=$('#ecat').value, vp=$('#eparty').value, vst=vh==='Staff advance'?D.staff.filter(function(x){return (x.name||'').toLowerCase()===vp.trim().toLowerCase();})[0]:null; if(vh==='Staff advance'&&!vst){ toast('For Staff advance, type the worker name exactly as in Staff (or use Staff → Salary advance)'); return; } D.expenses.push({on:$('#eon').value||today(),head:vh,cat:vh,party:vp,staffId:vst?vst.id:undefined,adv:vst?true:undefined,mode:$('#emode').value,note:$('#enote').value,amt:ea,vno:D.vseq++}); S.em=($('#eon').value||today()).slice(0,7); save(); render(); toast('Voucher P-'+(D.vseq-1)+' saved'); }
+  if(a==='exp'){ var ea=n($('#eamt').value); if(!ea){toast('Enter amount');return;} var vh=$('#ecat').value, vp=$('#eparty').value, vst=vh==='Staff advance'?D.staff.filter(function(x){return (x.name||'').toLowerCase()===vp.trim().toLowerCase();})[0]:null; if(vh==='Staff advance'&&!vst){ toast('For Staff advance, type the worker name exactly as in Staff (or use Staff → Salary advance)'); return; } D.expenses.push({on:$('#eon').value||today(),head:vh,cat:vh,party:vp,staffId:vst?vst.id:undefined,adv:vst?true:undefined,mode:$('#emode').value,note:$('#enote').value,amt:ea,vno:nextVno(),dev:RLDEV,ts:Date.now()}); S.em=($('#eon').value||today()).slice(0,7); save(); render(); toast('Voucher P-'+(D.vseq-1)+' saved'); }
   if(a==='copysql'){ var tx=$('#setupsql').textContent; (navigator.clipboard?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('SQL copied');}).catch(function(){ var r=document.createRange(); r.selectNodeContents($('#setupsql')); var sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('Selected — copy it'); }); }
   if(a==='ruadd'){ var re=($('#ruemail').value||'').trim().toLowerCase(), rr=$('#rurole').value; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(re)){ toast('Enter a valid email'); return; } sbUserSave(re,rr).then(function(){ toast(re+' added as '+rr); loadUsers(); pwPop(re,rr,true); }).catch(function(e){ toast(e.message); }); }
   if(a==='useradd'){ D.users=D.users||[]; D.users.push({email:'',role:'sales'}); save(); render(); }
@@ -4455,7 +4505,7 @@ document.addEventListener('click',function(e){
   if(a==='salpost'){ var ym2=S.am||today().slice(0,7), already=D.expenses.some(function(e){return e.sal===ym2;}); if(already&&!confirm('Salaries for '+mLabel(ym2)+' are already posted. Replace them with the current sheet?')) return; var kk=postSalaries(ym2,$('#salmode').value); save(); render(); toast(kk+' salaries posted to Accounts'); }
   if(a==='slips'){ printDoc(slipsHtml(S.am||today().slice(0,7))); }
   if(a==='advgive'){ var sid=$('#advst').value, sa=D.staff.filter(function(x){return x.id===sid;})[0], am=n($('#advamt').value); if(!sa||!am){ toast('Pick worker and amount'); return; }
-    D.expenses.push({on:$('#advon').value||today(),head:'Staff advance',party:sa.name,staffId:sa.id,mode:$('#advmode').value,note:$('#advnote').value||'Salary advance',amt:am,adv:true,vno:D.vseq++}); save(); render(); toast('Advance '+money(am)+' to '+sa.name+' recorded'); }
+    D.expenses.push({on:$('#advon').value||today(),head:'Staff advance',party:sa.name,staffId:sa.id,mode:$('#advmode').value,note:$('#advnote').value||'Salary advance',amt:am,adv:true,vno:nextVno(),dev:RLDEV,ts:Date.now()}); save(); render(); toast('Advance '+money(am)+' to '+sa.name+' recorded'); }
   if(a==='relock'&&o&&admin()&&o.rlock){ var oldL=JSON.parse(JSON.stringify(o.rlock)), oldG=o.gstPct, before=orderTotal(o); lockRates(o,true); var after=orderTotal(o); if(after!==before&&!confirm('Re-price this job at today\'s rates?\n\nTotal '+money(before)+' → '+money(after))){ o.rlock=oldL; if(oldG===undefined) delete o.gstPct; else o.gstPct=oldG; return; } save(); render(); toast(after!==before?'Prices now use the rates of '+dShort(today()):'Already the same as today\'s rates'); }
   if((a==='locate'||a==='geoaddr')&&o){ geoFill(o,t); }
   if(a==='pull') cloudPull(); if(a==='push') cloudPush();
