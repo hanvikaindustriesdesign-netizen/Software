@@ -691,7 +691,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 09:51';
+var APPV='03 Nov 2026, 10:28';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -742,6 +742,9 @@ function setupSql(owner){ var M='ws_private.is_member()', A='ws_private.is_admin
  "create or replace trigger shop_flats_touch before insert or update on public.shop_flats for each row execute function ws_private.flats_touch();",
  "create or replace trigger shop_orders_touch before insert or update on public.shop_orders for each row execute function ws_private.flats_touch();",
  "create or replace trigger shop_backups_prune after insert on public.shop_backups for each statement execute function ws_private.backups_prune();",
+ "create or replace function public.keep_alive() returns text language plpgsql security definer set search_path = '' as $$\ndeclare d text := to_char((now() at time zone 'Asia/Kolkata')::date, 'YYYY-MM-DD'); m jsonb; p jsonb; br jsonb; j jsonb;\nbegin\n  -- called once a day from outside (GitHub): this write keeps the free Supabase project active\n  insert into public.shop_archive (id, kind, data) values ('alive', 'alive', jsonb_build_object('at', now()))\n    on conflict (id) do update set data = excluded.data, created_at = now();\n  -- and the day's full online copy, the same as the admin's phone makes \u2014 unless a phone already made it today\n  if exists (select 1 from public.shop_backups where id = d || '-a') then return 'alive'; end if;\n  select data into m from public.shop_data where id = 'main';\n  if m is null or not (m ? 'company') then return 'alive'; end if;\n  select data into p from public.shop_data where id = 'private'; p := coalesce(p, '{}'::jsonb);\n  select jsonb_agg(case when coalesce(p->'bcost', '{}'::jsonb) ? (b->>'name')\n           then b || jsonb_build_object('cost', p->'bcost'->(b->>'name')->'cost', 'doorCost', p->'bcost'->(b->>'name')->'doorCost') else b end order by i)\n    into br from jsonb_array_elements(coalesce(m->'brands', '[]'::jsonb)) with ordinality as t(b, i);\n  j := ((m || (p - 'bcost')) - 'sb') || jsonb_build_object('brands', coalesce(br, '[]'::jsonb),\n         'orders', coalesce((select jsonb_agg(o.data order by o.updated_at) from public.shop_orders o where not coalesce((o.data->>'del')::boolean, false)), '[]'::jsonb),\n         'flats', coalesce((select jsonb_agg(f.data order by f.updated_at) from public.shop_flats f), '[]'::jsonb));\n  insert into public.shop_backups (id, by, size, data) values (d || '-a', 'automatic (daily)', length(j::text), j) on conflict (id) do nothing;\n  insert into public.shop_archive (id, kind, data) values ('snapa-' || d, 'snapmark', jsonb_build_object('on', d, 'by', 'automatic')) on conflict (id) do nothing;\n  return 'alive, copy saved ' || d;\nend $$;",
+ "revoke all on function public.keep_alive() from public;",
+ "grant execute on function public.keep_alive() to anon;",
  "alter table public.shop_data enable row level security; alter table public.app_users enable row level security; alter table public.shop_flats enable row level security; alter table public.shop_orders enable row level security; alter table public.shop_backups enable row level security; alter table public.shop_archive enable row level security;",
  "revoke all on public.shop_data, public.app_users, public.shop_flats, public.shop_orders, public.shop_backups, public.shop_archive from anon;",
  "create or replace function ws_private.keep_items(oa jsonb, na jsonb) returns jsonb language plpgsql immutable set search_path = '' as $$\ndeclare rest jsonb := case when jsonb_typeof(na) = 'array' then na else '[]'::jsonb end; e jsonb; i int;\nbegin\n  if jsonb_typeof(oa) is distinct from 'array' then return na; end if;\n  for e in select value from jsonb_array_elements(oa) loop\n    i := null; select min(x.ord) - 1 into i from jsonb_array_elements(rest) with ordinality as x(v, ord) where x.v = e;\n    if i is not null then rest := rest - i; end if;\n  end loop;\n  return oa || rest;\nend $$;",
@@ -1054,7 +1057,8 @@ function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWor
   if(admin()){ var lows=lowStock(); if(lows.length) al.push(['y','','inventory',lows.length+' item'+(lows.length>1?'s':'')+' low in stock — '+lows.slice(0,3).map(function(k){return D.inv[k].name;}).join(', ')+(lows.length>3?'…':'')]);
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
     if(DSIZE>3.5*1048576) al.push(['y','','settings','Shared data is '+(DSIZE/1048576).toFixed(1)+' MB — close to the phone limit (Settings → App version → Space used).']);
-    var lb=D.lastBackup||'', lbd=lb?Math.round((new Date(t)-new Date(lb))/864e5):0; if(!lb||lbd>(sbOn()?14:7)) al.push(['y','','settings','No backup file for '+(lb?lbd+' days':'a while')+' — download one from Settings → Backup']); var lc=lastCountDay(), lcd=lc?Math.round((new Date(t)-new Date(lc))/864e5):0; if(Object.keys(D.inv).length&&lc&&lcd>31) al.push(['y','','inventory','Stock not counted for '+lcd+' days — count it and use Adjust in the Stock tab']); }
+    var lb=D.lastBackup||'', lbd=lb?Math.round((new Date(t)-new Date(lb))/864e5):0; if(!lb||lbd>(sbOn()?14:7)) al.push(['y','','settings','No backup file for '+(lb?lbd+' days':'a while')+' — download one from Settings → Backup']);
+    if(sbOn()&&ALIVE.t){ var kad=aliveDays(); if(kad<0) al.push(['y','','settings','Daily automatic check is not set up yet (keeps the free database awake) — see Settings → Backup']); else if(kad>2) al.push(['y','','settings','Daily automatic check has not run for '+kad+' days — check GitHub → Actions → Daily database check']); } var lc=lastCountDay(), lcd=lc?Math.round((new Date(t)-new Date(lc))/864e5):0; if(Object.keys(D.inv).length&&lc&&lcd>31) al.push(['y','','inventory','Stock not counted for '+lcd+' days — count it and use Adjust in the Stock tab']); }
   return al.map(function(a){ return a.length===4?{c:a[0],go:a[2],txt:a[3]}:{c:a[0],id:a[1],txt:a[2]}; }); }
 /* ---- send the app link to a staff member ---- */
 var ROLEDESC={admin:'Admin — everything',sales:'Sales — orders, quotes, payments',production:'Production — floor work, cutting lists'};
@@ -2572,7 +2576,7 @@ function snapList(){ S.snaps='loading'; render(); sbRefresh().then(function(){ r
   .then(function(r){ if(!r.ok) throw new Error('backups '+r.status); return r.json(); }).then(function(rows){ S.snaps=rows||[]; render(); }).catch(function(e){ S.snaps={err:e.message||'offline'}; render(); }); }
 function snapName(b){ return /^\d{4}-\d\d-\d\d(-a)?$/.test(b.id)?dShort(b.id.slice(0,10))+' '+b.id.slice(0,4):'Before restore, '+String(b.created_at||'').slice(0,16).replace('T',' '); }
 function snapsHtml(){ if(!(sbOn()&&SESS&&admin())) return ''; var s=S.snaps;
-  var h='<div style="margin:2px 0 12px"><div class="row between"><b>Online copies</b>'+(s&&s!=='loading'?'<button class="btn sm ghost" data-cs="snapshide">Hide</button>':'<button class="btn sm" data-cs="snaps">Show</button>')+'</div><div class="faint">A full copy of everything is saved online once a day and kept for 21 days'+(localStorage.getItem('wsnap')?' · last: '+dShort(localStorage.getItem('wsnap')):'')+'.</div>';
+  var h='<div style="margin:2px 0 12px"><div class="row between"><b>Online copies</b>'+(s&&s!=='loading'?'<button class="btn sm ghost" data-cs="snapshide">Hide</button>':'<button class="btn sm" data-cs="snaps">Show</button>')+'</div><div class="faint">A full copy of everything is saved online once a day and kept for 21 days'+(localStorage.getItem('wsnap')?' · last: '+dShort(localStorage.getItem('wsnap')):'')+'.</div>'+aliveLine();
   if(s==='loading') h+='<div class="faint" style="margin-top:6px">Loading…</div>'; else if(s&&s.err) h+='<div class="warnt" style="margin-top:6px">Could not load: '+esc(s.err)+'</div>';
   else if(Array.isArray(s)) h+=s.length?'<table class="rt" style="margin-top:6px"><tbody>'+s.map(function(b){ return '<tr><td>'+esc(snapName(b))+'</td><td class="faint">'+Math.max(1,Math.round((b.size||0)/1024))+' KB</td><td class="faint" style="word-break:break-all">'+esc(String(b.by||'').split('@')[0])+'</td><td class="right"><button class="btn sm" data-csrestore="'+esc(b.id)+'">Restore</button></td></tr>'; }).join('')+'</tbody></table>':'<div class="faint" style="margin-top:6px">No online copies yet — the first one is made today.</div>';
   return h+'</div>'; }
@@ -4021,6 +4025,26 @@ function headsStd(){ var std=defOf('heads')||[], k=0; D.heads=D.heads||[];
   save(); render(); toast(k?'✓ Added '+k+' standard head'+(k===1?'':'s'):'All standard heads are already there'); }
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="headstd"]'); if(!t||!admin()) return; headsStd(); });
 setTimeout(function(){ try{ numFix(); if(!sbOn()||PV.mode!=='row') privFix(); }catch(e){} },3000);
+
+/* ============================================================
+   DAILY AUTOMATIC CHECK (asked: "Make this sync automatic … daily, so that subscription won't get disconnected").
+   Once a day GitHub calls keep_alive() on the server (see keep-alive.yml): that keeps the free Supabase project
+   from pausing and saves the day's full online copy even when nobody opens the app. Here the admin sees when it
+   last ran (Settings → Backup), and gets a reminder on Home if it stops.
+   ============================================================ */
+var ALIVE={t:0,at:'',busy:false};
+function aliveCheck(){ if(ALIVE.busy||!isAdm()||!sbOn()||!SESS||!PULLOK||navigator.onLine===false) return; if(ALIVE.t&&Date.now()-ALIVE.t<3*3600e3) return; ALIVE.busy=true;
+  sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/shop_archive?id=eq.alive&select=data'),{headers:sbHeaders()}); })
+    .then(function(r){ if(!r.ok) throw new Error('check '+r.status); return r.json(); })
+    .then(function(rows){ var at=(rows&&rows[0]&&rows[0].data&&rows[0].data.at)||'', ch=!ALIVE.t||at!==ALIVE.at; ALIVE.at=at; ALIVE.t=Date.now(); if(ch) renderSoon(); })
+    .catch(function(){}).then(function(){ ALIVE.busy=false; }); }
+function aliveDays(){ if(!ALIVE.at) return -1; var t=new Date(ALIVE.at).getTime(); return isNaN(t)?-1:Math.floor((Date.now()-t)/864e5); }
+function aliveLine(){ aliveCheck(); if(!ALIVE.t) return ''; var d=aliveDays();
+  if(d<0) return '<div class="warnt" style="margin-top:6px;font-size:13.5px">⚠ Daily automatic check is not set up yet. It keeps the free database awake and saves the day\'s copy even when nobody opens the app.</div>';
+  return '<div class="'+(d>2?'warnt':'faint')+'" style="margin-top:6px">'+(d>2?'⚠ ':'✓ ')+'Daily automatic check: last ran '+(d<1?'today':d===1?'yesterday':d+' days ago')+' ('+new Date(ALIVE.at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})+')'
+    +(d>2?' — check GitHub → Actions → Daily database check.':' — keeps the free database awake and saves the day\'s copy.')+'</div>'; }
+setInterval(function(){ if(document.visibilityState==='visible') aliveCheck(); },60000);
+setTimeout(aliveCheck,8000);
 
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
