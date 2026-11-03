@@ -661,6 +661,24 @@ table.mpt td:first-child{min-width:118px}
 .lpf{white-space:nowrap}
 .lped{color:var(--accent);white-space:nowrap;margin-left:4px}
 .olh{font-size:12.5px;font-weight:650;color:var(--soft);text-transform:uppercase;letter-spacing:.04em;padding:14px 0 4px;border-bottom:1px solid var(--line)}
+
+/* phone permissions */
+.pmpop{background:rgba(15,20,30,.45);align-items:flex-start;overflow:auto;padding:6vh 0 30px;z-index:30}
+.pml{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pmrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.pmrow:last-child{border-bottom:0}
+.pmrow.focus{background:#fff8eb}
+.pmi{font-size:22px;flex:none}
+.pmt{flex:1 1 0;min-width:0}
+.pmt b{display:block}
+.pmt small{display:block;color:var(--soft);font-size:12.5px}
+.pmhow{flex:1 0 100%;color:#6b4300;background:#fff4e5;border-radius:8px;padding:7px 9px;font-size:12.5px;line-height:1.5}
+.pmst{white-space:nowrap;font-size:13px;font-weight:600;flex:none}
+.pmok{color:var(--good)} .pmbad{color:var(--warn)} .pmwarn{color:#9a5b00}
+.pmcard{border-left:4px solid var(--warn);gap:10px}
+.phbig{flex-direction:column;gap:12px}
+.phbig img{max-height:80vh}
+.phbar{display:flex;gap:8px}
 </style>
 </head>
 <body>
@@ -715,7 +733,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='03 Nov 2026, 14:48';
+var APPV='03 Nov 2026, 18:32';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1049,7 +1067,7 @@ function navApply(nav){ NAVLOCK=true; S.tab=nav.tab||'home';
 function canBack(){ return !!(history.state&&history.state.nav&&history.state.d>0); }
 window.addEventListener('popstate',function(e){ var st=e.state;
   if(SKIPPOP){ SKIPPOP=false; if(st&&st.nav){ NAVSTACK.length=(st.d||0)+1; NAVSTACK[st.d||0]=st.nav; navKeep(); } NAVLOCK=true; render(); NAVLOCK=false; return; }
-  var pop=document.querySelector('#d3')||document.querySelector('#dz')||document.querySelector('.viewer'); if(pop){ if(pop.id==='d3') d3Close(); else if(pop.id==='dz') dzClose(); else pop.remove(); var cur=navNow(); history.pushState({nav:cur,d:(st&&st.d||0)+1},''); NAVSTACK.length=(st&&st.d||0)+1; NAVSTACK.push(cur); navKeep(); return; }
+  var vws=document.querySelectorAll('.viewer'), pop=document.querySelector('#d3')||document.querySelector('#dz')||vws[vws.length-1]; if(pop){ if(pop.id==='d3') d3Close(); else if(pop.id==='dz') dzClose(); else pop.remove(); var cur=navNow(); history.pushState({nav:cur,d:(st&&st.d||0)+1},''); NAVSTACK.length=(st&&st.d||0)+1; NAVSTACK.push(cur); navKeep(); return; }
   if(!S.role||!st||!st.nav) return; NAVSTACK.length=(st.d||0)+1; NAVSTACK[st.d||0]=st.nav; navKeep(); navApply(st.nav); });
 function go(tab,oid){ S.tab=tab; if(oid!==undefined){ S.oid=oid; S.sub=prod()?'production':'items'; } render(); window.scrollTo(0,0); }
 function order(){ if(!S.oid) return null; for(var i=0;i<D.orders.length;i++) if(D.orders[i].id===S.oid) return D.orders[i]; return byId(S.oid)||null; }
@@ -1167,7 +1185,7 @@ function viewHome(){
    +(q.length?'<table class="hwkt"><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.map(function(o){var p=P[o.id];return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td>'+dShort(o.due)+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed yet</div>')+'</div>';
   var pend=open.filter(function(o){return o.stage>0&&balance(o)>0.5&&!noAmt(o);}).sort(function(a,b){return b.stage-a.stage||balance(b)-balance(a);});
   var BH=bldHomeRows(), payCard='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){return a+balance(o);},0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+BH+(pend.length?pend.slice(0,8).map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>';}).join('')+(pend.length>8?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):(BH?'':'<div class="empty">Nothing pending</div>'))+'</div></div>';
-  return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
+  return installCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+kp+'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+'</div><div class="hcol">'+pipe+work+'</div></div>';
 }
 function salesR(){ return S.role==='sales'; }
 /* the sales person's home: follow-ups and payments to collect — no shop totals, no apartment flats */
@@ -1177,7 +1195,7 @@ function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; 
   var pay='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?pl(pend.length,'order'):'')+'</span></div><div class="olist">'
    +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
      +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
-  return installCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
+  return installCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
 /* ============================================================
    GST — builder flats get GST (the shop's GST %, or the project's builder %). Owner flats and other orders
    have no GST unless it is added: on the order / flat, for ticked flats, or for a project's owner flats.
@@ -1210,7 +1228,7 @@ function homeProd(){
   var work='<div class="card olist"><div class="row between"><h2>Make next</h2><button class="btn ghost sm" data-go="planning">Day plan ›</button></div>'
    +(q.length?q.map(function(o){var p=P[o.id];return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'windows')+' left · '+madeCount(o)+'/'+o.items.length+' made</div></div><div class="right"><div class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</div><div class="faint">due '+dShort(o.due)+'</div></div></button>';}).join(''):'<div class="empty">Nothing to make — all caught up</div>')+'</div>';
   var rd=by[3].length?'<div class="card olist"><h2>Ready, waiting for delivery</h2>'+by[3].map(function(o){return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · '+esc((o.address||'').split('\n')[0])+'</div></div></button>';}).join('')+'</div>':'';
-  return installCard()+kp+work+rd;
+  return installCard()+permCard()+kp+work+rd;
 }
 function oRow(o){ var t=orderTotal(o), b=balance(o);
   if(prod()) return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer||'(no name)')+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+(o.due?' · due '+dShort(o.due):'')+(o.stage===2?' · '+madeCount(o)+'/'+o.items.length+' made':'')+'</div></div><span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span></button>';
@@ -2293,7 +2311,7 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
   if(a==='pjgeo'){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); var gb=t; geoBusy(gb,true);
     geoGet().then(function(g){ var la=g.lat.toFixed(6), lo=g.lng.toFixed(6); S.pjgeo={geo:la+', '+lo,maplink:'https://maps.google.com/?q='+la+','+lo};
       return geoAddr(g).then(function(ad){ var el=$('#pj_site'); if(el) el.value=ad.text; S.pjgeo.pin=ad.pin; geoBusy(gb,false); toast(ad.pin?'📍 Site address filled · PIN '+ad.pin+' — tap Save':'📍 Site filled — PIN not found, please type it'); },
-        function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); toast('⚠ '+er.message); }); return; }
+        function(){ geoBusy(gb,false); toast('📍 Map location kept. Address not found — please type it.'); }); },function(er){ geoBusy(gb,false); if(er&&er.denied){ permPop(false,'loc'); return; } toast('⚠ '+er.message); }); return; }
   if(a==='pjarch'){ var pa=projById(d.pid); if(!pa||!admin()) return; pa.archived=!pa.archived; pjPopX(); save(); if(pa.archived){ S.pjarch=false; go('orders'); toast(pa.name+' archived — find it under Archived projects'); } else { render(); toast(pa.name+' is back'); } return; }
   if(a==='pjdel'){ var pd=projById(d.pid); if(!pd||!admin()) return; var pf=projFlats(pd.id), got=pf.reduce(function(x,f){return x+paid(f);},0);
     if(!confirm('Delete project "'+pd.name+'"?\n\nIts '+pf.length+' flats, '+(pd.types||[]).length+' flat types and '+(pd.batches||[]).length+' batches will all be deleted.'+(got?'\nOwner payments on these flats ('+money(got)+') will be removed from accounts too.':'')+(bldSum(pd).n?'\nThe builder\'s payments and bills ('+money(bldSum(pd).received)+' received) will be removed too.':'')+'\n\nThis cannot be undone.')) return;
@@ -2377,8 +2395,8 @@ if(!(D.sb&&D.sb.url&&D.sb.key)) FL.ready.then(function(){ lockOldSoon(); });
    ============================================================ */
 var GEOC={}, GEOT=0;
 function geoGet(){ return new Promise(function(res,rej){ if(!navigator.geolocation) return rej(new Error('This phone or browser cannot share its location'));
-  navigator.geolocation.getCurrentPosition(function(p){ res({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy||0)}); },
-    function(e){ rej(new Error(e&&e.code===1?'Location is blocked — allow location for this app in the phone / browser settings, then try again':e&&e.code===3?'Location took too long — turn on GPS, step outside and try again':'Could not get the location — turn on GPS and try again')); },
+  navigator.geolocation.getCurrentPosition(function(p){ PERM.locHard=false; if(PERM.loc==='denied') PERM.loc='granted'; res({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy||0)}); },
+    function(e){ var er=new Error(e&&e.code===1?'Location is blocked — allow location for this app in the phone / browser settings, then try again':e&&e.code===3?'Location took too long — turn on GPS, step outside and try again':'Could not get the location — turn on GPS and try again'); if(e&&e.code===1){ er.denied=true; PERM.loc='denied'; PERM.locHard=true; } rej(er); },
     {enableHighAccuracy:true,timeout:20000,maximumAge:30000}); }); }
 function geoSlow(ms,pr){ return Promise.race([pr,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('slow')); },ms); })]); }
 function geoAddr(g){ var k=g.lat.toFixed(5)+','+g.lng.toFixed(5); if(GEOC[k]) return Promise.resolve(GEOC[k]);
@@ -2400,7 +2418,7 @@ function geoFill(o,btn){ if(Date.now()-GEOT<2500) return; GEOT=Date.now(); geoBu
         else if(cur!==full){ if(confirm('Use this address from your location?\n\n'+full+'\n\nOK = replace the site address\nCancel = keep yours'+(a.pin&&cur.indexOf(a.pin)<0?' and only add PIN '+a.pin:''))) o.address=full; else if(a.pin&&cur.indexOf(a.pin)<0) o.address=cur.replace(/[\s,.\-–]+$/,'')+' - '+a.pin; }
         o.geoAddr=o.address; o.geoSrc=a.src; if(a.pin) o.pin=a.pin; save(); geoBusy(btn,false); render(); toast(a.pin?'📍 Site address updated · PIN '+a.pin:'📍 Address filled — PIN not found, please type it'); },
       function(){ geoBusy(btn,false); render(); toast('📍 Map location saved. Address not found (no internet?) — please type it.'); }); },
-    function(e){ geoBusy(btn,false); toast('⚠ '+e.message); }); }
+    function(e){ geoBusy(btn,false); if(e&&e.denied){ permPop(false,'loc'); return; } toast('⚠ '+e.message); }); }
 
 
 /* ============================================================
@@ -4273,6 +4291,103 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   if(d.act==='lpsave') lpSave(); else if(d.act==='lpdel') lpDel(); else if(d.act==='lpfill') lpFillBtn();
   else if(d.act==='lpnew'){ var o=order(); if(o) lpNew(o); } else if(d.act==='owomore'){ S.owolim=(S.owolim||60)+200; render(); } });
 
+
+/* ============================================================
+   PHONE PERMISSIONS (asked: "App should ask permissions for location, to store photos n take photos etc")
+   📷 Camera — take site photos · 📍 Location — fill the site address · 💾 Storage — keep the work and photos on
+   this phone (the phone does not clear them when space runs low)
+   - asked once on each phone after signing in ("Allow all" / "Later" → asked again after a week)
+   - Settings → This phone (admin), a Home card when one is blocked, and 📷 Take photo / 📍 Locate open the same
+     window when blocked — with the steps to allow it on this kind of phone
+   - 📷 Take photo opens the camera straight away; a photo opened big has "⬇ Save to phone"
+   ============================================================ */
+var PERM={cam:'',loc:'',sto:'',ws:{}};
+var PERMK=['cam','loc','sto'], PERMW={cam:['📷','Camera','take site photos'],loc:['📍','Location','fill the site address from where you stand'],sto:['💾','Storage','keep your work and photos safe on this phone']};
+function permOS(){ var u=navigator.userAgent||''; return /iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'ios':/Android/.test(u)?'android':'pc'; }
+function permFlag(){ try{ return JSON.parse(localStorage.getItem('wperm')||'{}')||{}; }catch(e){ return {}; } }
+function permSetFlag(x){ try{ localStorage.setItem('wperm',JSON.stringify(Object.assign(permFlag(),x))); }catch(e){} }
+function permQ(name){ try{ if(!navigator.permissions||!navigator.permissions.query) return Promise.resolve('');
+    return navigator.permissions.query({name:name}).then(function(r){ if(r&&!PERM.ws[name]){ PERM.ws[name]=1; try{ r.addEventListener('change',function(){ permRead().then(permRefresh); }); }catch(e){} } return (r&&r.state)||''; },function(){ return ''; }); }catch(e){ return Promise.resolve(''); } }
+function permRead(){ var sto=navigator.storage&&navigator.storage.persisted?navigator.storage.persisted().then(function(p){ return p?'granted':'prompt'; },function(){ return ''; }):Promise.resolve('none');
+  return Promise.all([permQ('camera'),permQ('geolocation'),sto]).then(function(r){
+    /* the site may be allowed while the phone still refuses Chrome itself ("hard" = the last try was refused) */
+    if(r[0]) PERM.cam=r[0]==='granted'&&PERM.camHard?'denied':r[0];
+    if(r[1]) PERM.loc=r[1]==='granted'&&PERM.locHard?'denied':r[1]==='granted'&&PERM.loc==='nogps'?'nogps':r[1];
+    if(r[2]) PERM.sto=r[2]; return PERM; }); }
+function permOk(k){ var s=PERM[k]; return s==='granted'||s==='none'||(k==='loc'&&s==='nogps')||(k==='sto'&&!!permFlag().sto); }
+function permAllOk(){ return PERMK.every(permOk); }
+/* the asks: the phone shows its own "Allow?" for each */
+function permCam(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ PERM.cam='none'; return Promise.resolve('none'); }
+  return navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(st){ try{ st.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} PERM.cam='granted'; PERM.camHard=false; return 'granted'; },
+    function(e){ var nm=(e&&e.name)||''; PERM.cam=nm==='NotFoundError'||nm==='OverconstrainedError'?'none':nm==='NotReadableError'||nm==='AbortError'?'granted':'denied'; PERM.camHard=PERM.cam==='denied'; return PERM.cam; }); }
+function permLoc(){ if(!navigator.geolocation){ PERM.loc='none'; return Promise.resolve('none'); }
+  return new Promise(function(res){ navigator.geolocation.getCurrentPosition(function(){ PERM.loc='granted'; PERM.locHard=false; res('granted'); },function(e){ PERM.loc=e&&e.code===1?'denied':'nogps'; PERM.locHard=PERM.loc==='denied'; res(PERM.loc); },{enableHighAccuracy:false,timeout:12000,maximumAge:600000}); }); }
+function permSto(){ if(!navigator.storage||!navigator.storage.persist){ PERM.sto='none'; return Promise.resolve('none'); }
+  return navigator.storage.persist().then(function(p){ PERM.sto=p?'granted':'prompt'; permSetFlag({sto:1}); return PERM.sto; },function(){ permSetFlag({sto:1}); return PERM.sto='prompt'; }); }
+var PERMASK={cam:permCam,loc:permLoc,sto:permSto};
+/* how to allow it again once blocked */
+function permHow(k){ var os=permOS(), X=k==='cam'?'Camera':'Location';
+  if(k==='sto') return os==='ios'?'Add the app to the Home Screen (Share → Add to Home Screen) and open it from there — then the phone keeps its data.':'Install the app (⋮ → Install app / Add to Home screen) and open it from the home screen — then the phone keeps its data.';
+  if(k==='loc'&&PERM.loc==='nogps') return 'Allowed. Turn on <b>Location</b> (GPS) in the phone\'s quick settings when you use 📍 Locate.';
+  if(os==='ios') return 'iPhone <b>Settings → Safari → '+X+' → Allow</b>'+(k==='loc'?', and <b>Settings → Privacy & Security → Location Services → Safari Websites → While Using the App</b>':'')+'. Then come back and tap <b>Check again</b>.';
+  if(os==='android') return 'Tap <b>🔒</b> left of the web address → <b>Permissions → '+X+' → Allow</b>. In the installed app: long-press its icon → <b>App info → Permissions → '+X+' → Allow</b>. Still blocked? Phone <b>Settings → Apps → Chrome → Permissions → '+X+' → Allow</b>'+(k==='loc'?' and turn on <b>Location</b>':'')+'. Then tap <b>Check again</b>.';
+  return 'Click <b>🔒</b> in the address bar → <b>Site settings → '+X+' → Allow</b>, then reload the page.'; }
+function permRowHtml(k,focus){ var st=PERM[k], w=PERMW[k], ok=permOk(k)&&st!=='none'&&!(k==='sto'&&st!=='granted'), bad=st==='denied', noSto=k==='sto'&&st==='prompt'&&permFlag().sto;
+  var badge=st==='none'?'<span class="faint pmst">Not on this phone</span>':k==='loc'&&st==='nogps'?'<span class="pmwarn pmst">Allowed · GPS off</span>':ok?'<span class="pmok pmst">✓ '+(k==='sto'?'Kept safe':'Allowed')+'</span>':bad?'<span class="pmbad pmst">Blocked</span>':noSto?'<span class="pmwarn pmst">Not kept yet</span>':'<button class="btn sm" data-pma="'+k+'">Allow</button>';
+  return '<div class="pmrow'+(focus===k?' focus':'')+'" data-pmk="'+k+'"><span class="pmi">'+w[0]+'</span><span class="grow pmt"><b>'+w[1]+'</b><small>to '+w[2]+'</small></span>'+badge
+    +(bad||noSto||(k==='loc'&&st==='nogps')?'<div class="pmhow">'+permHow(k)+'</div>':'')+'</div>'; }
+function permBody(focus){ return '<div class="pml">'+PERMK.map(function(k){ return permRowHtml(k,focus); }).join('')+'</div><p class="faint" style="margin:10px 0 0">🖼 Choosing photos from the gallery needs no permission.</p>'; }
+function permFoot(auto){ return permAllOk()?'<button class="btn primary" data-pmx="1">Done</button><button class="btn ghost sm" data-act="pmcheck">Check again</button>'
+  :'<button class="btn primary" data-act="pmall">Allow all</button><button class="btn" data-act="pmlater">'+(auto?'Later':'Close')+'</button><button class="btn ghost sm" data-act="pmcheck">Check again</button>'; }
+var PERMPOP=null;
+/* its own window (does not close a form that is open, e.g. the project form after 📍 Locate) */
+function permPop(auto,focus){ return permRead().then(function(){ permClose(); PERMPOP={auto:!!auto,focus:focus||''};
+  var v=document.createElement('div'); v.className='viewer pmpop';
+  v.innerHTML='<div class="card pjpopc" role="dialog" aria-label="Allow this app on this phone"><div class="row between" style="margin-bottom:10px"><h2 style="margin:0">📱 Allow this app on this phone</h2><button class="btn sm ghost" data-pmx="1" aria-label="Close">✕</button></div>'
+    +'<p class="faint" style="margin:0 0 10px">'+(auto?'Asked once on each phone. ':'')+'Tap <b>Allow</b> — the phone then asks you; choose <b>Allow</b> / <b>While using the app</b>.</p><div id="pmbox">'+permBody(focus)+'</div><div class="row pjpopf" id="pmfoot">'+permFoot(auto)+'</div></div>';
+  v.addEventListener('click',function(e){ if(e.target===v||(e.target.closest&&e.target.closest('[data-pmx]'))) permClose(); }); document.body.appendChild(v); }); }
+function permClose(){ var v=document.querySelector('.viewer.pmpop'); if(v) v.remove(); PERMPOP=null; }
+function permPaint(){ var b=document.getElementById('pmbox'); if(!b||!PERMPOP) return; b.innerHTML=permBody(PERMPOP.focus); var f=document.getElementById('pmfoot'); if(f) f.innerHTML=permFoot(PERMPOP.auto); }
+function permRefresh(){ permPaint(); if(S.tab==='home'||S.tab==='settings') render(); }
+function permAsk(k){ var f=PERMASK[k]; if(!f) return Promise.resolve(); return f().then(function(){ return permRead(); }).then(function(){ permPaint(); }); }
+function permAll(btn){ if(btn){ btn.disabled=true; btn.textContent='Asking…'; }
+  var go=function(k){ return permOk(k)?Promise.resolve():PERMASK[k]().then(function(){ permPaint(); }); };
+  return go('sto').then(function(){ return go('cam'); }).then(function(){ return go('loc'); }).then(function(){ return permRead(); }).then(function(){
+    permPaint(); var no=PERMK.filter(function(k){ return PERM[k]==='denied'; }).map(function(k){ return PERMW[k][1]; });
+    if(permAllOk()) permSetFlag({done:1}); toast(no.length?'⚠ '+no.join(' and ')+' blocked — see the steps':'✓ Camera, location and storage are set'); render(); }); }
+/* once on each phone, after signing in (not in the factory login) */
+function permAuto(){ return location.protocol==='https:'||!!window.PERMTEST; }
+function permMaybe(){ if(!permAuto()||!S.role||prod()||(S.tab!=='home'&&S.tab!=='orders')||document.hidden||document.querySelector('.viewer')) return; var w=permFlag();
+  if(w.done||(w.at&&Date.now()-w.at<7*864e5)) return;
+  permRead().then(function(){ if(permAllOk()){ permSetFlag({done:1}); return; } if(document.querySelector('.viewer')||!S.role) return; permSetFlag({at:Date.now()}); permPop(true); }); }
+setTimeout(function(){ permRead().then(function(){ if(PERM.cam==='denied'||PERM.loc==='denied') permRefresh(); }); },300);
+setTimeout(permMaybe,3500);
+setInterval(permMaybe,20000);
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) permRead().then(permRefresh); });
+/* Home / Settings */
+function permCard(){ if(prod()) return ''; var bl=PERMK.filter(function(k){ return k!=='sto'&&PERM[k]==='denied'; }); if(!bl.length) return '';
+  return '<div class="card pmcard row between"><div class="grow"><b>⚠ '+bl.map(function(k){ return PERMW[k][1]; }).join(' and ')+' blocked on this phone</b><div class="faint">'+bl.map(function(k){ return 'needed to '+PERMW[k][2]; }).join(' · ')+'</div></div><button class="btn sm" data-act="pmopen">How to allow</button></div>'; }
+function permSetCard(){ return '<div class="card"><div class="row between"><h2>📱 This phone</h2><button class="btn sm" data-act="pmopen">Permissions</button></div><div class="faint">'+PERMK.map(function(k){ var st=PERM[k]; return PERMW[k][0]+' '+PERMW[k][1]+': '+(st==='none'?'not on this phone':k==='loc'&&st==='nogps'?'allowed (GPS off)':st==='granted'?(k==='sto'?'kept safe':'allowed'):st==='denied'?'<b class="warnt">blocked</b>':'not asked yet'); }).join(' · ')+'</div></div>'; }
+/* a photo opened big: Save to phone */
+function phBig(o,i){ var ph0=o&&o.photos&&o.photos[i]; if(!ph0) return; var v=document.createElement('div'); v.className='viewer phbig';
+  v.innerHTML='<img src="'+esc(phSrc(ph0))+'" data-phk="'+esc(ph0.path||'')+'" alt=""><div class="phbar"><button class="btn sm" data-phsave="1">⬇ Save to phone</button><button class="btn sm" data-phclose="1">✕ Close</button></div>';
+  v.addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('[data-phsave]')){ phSave(o,i); return; } v.remove(); }); document.body.appendChild(v); }
+function phSave(o,i){ var ph=o.photos[i]; if(!ph) return; var nm=((o.proj?'Flat '+o.no:'Order '+o.no+(o.customer?' '+o.customer:''))+' photo '+(i+1)).replace(/[^\w\- ]+/g,'').trim()+'.jpg';
+  var get=ph.path?phBlob(ph.path):Promise.resolve(ph.src&&/^data:/.test(ph.src)?d2b(ph.src):null);
+  get.then(function(b){ if(!b) throw new Error('no photo'); var f=null; try{ f=new File([b],nm,{type:b.type||'image/jpeg'}); }catch(e){}
+      if(permOS()==='ios'&&f&&navigator.canShare&&navigator.share&&navigator.canShare({files:[f]})) return navigator.share({files:[f]}).then(function(){ toast('✓ Photo saved'); },function(){});
+      download(nm,b); toast('⬇ Photo saved to this phone (Downloads)'); })
+    .catch(function(){ toast('⚠ This photo is not on this phone yet — connect to the internet and try again'); }); }
+/* clicks */
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-pma],[data-act="pmall"],[data-act="pmlater"],[data-act="pmcheck"],[data-act="pmopen"],[data-camtake]'); if(!t) return; var d=t.dataset;
+  if(d.camtake!==undefined){ if(PERM.cam==='denied'){ e.preventDefault(); permPop(false,'cam'); } return; }
+  if(d.pma){ t.disabled=true; permAsk(d.pma).then(function(){ var no=PERM[d.pma]==='denied'; if(no) toast('⚠ '+PERMW[d.pma][1]+' blocked — see the steps'); if(permAllOk()) permSetFlag({done:1}); }); return; }
+  if(d.act==='pmall'){ permAll(t); return; }
+  if(d.act==='pmlater'){ permSetFlag({at:Date.now()}); permClose(); return; }
+  if(d.act==='pmcheck'){ /* blocked ones are tried again (no question pops up while blocked; works once allowed in the settings) */
+    Promise.all(['cam','loc'].filter(function(k){ return PERM[k]==='denied'; }).map(function(k){ return PERMASK[k](); })).then(permRead).then(function(){ permPaint(); render(); if(permAllOk()) permSetFlag({done:1}); toast(permAllOk()?'✓ All set':PERMK.some(function(k){ return PERM[k]==='denied'; })?'Still blocked — see the steps':'Checked'); }); return; }
+  if(d.act==='pmopen'){ permPop(false,PERM.cam==='denied'?'cam':PERM.loc==='denied'?'loc':''); return; } });
+
 function drawPanel(o,di){
   var it=o.items[di], ro=o.kind==='doors', pm=S.pmode||'draw';
   var F=function(k,label,html){ return '<label class="f"><span>'+label+'</span>'+html+'</label>'; };
@@ -4312,7 +4427,7 @@ function subCustomer(o){
    +'<label class="f"><span>Notes (site, floor, colour…)</span><textarea data-o="notes">'+esc(o.notes||'')+'</textarea></label>'
    +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
    +'<div class="f" style="margin-top:12px"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">Site photos</span><div class="photos">'+(o.photos||[]).map(function(ph,i){return '<div class="ph"><img src="'+esc(phSrc(ph))+'" data-phk="'+esc(ph.path||'')+'" data-view="'+i+'" alt="">'+(ph.path&&PHQ.indexOf(ph.path)>=0?'<span class="phup" data-phq="'+esc(ph.path)+'" title="Waiting to upload">⏳</span>':'')+(canDel()?'<button class="phx" data-phdel="'+i+'">×</button>':'')+'<input type="text" data-phcap="'+i+'" value="'+esc(ph.cap||'')+'" placeholder="caption"></div>';}).join('')
-   +'<label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>Add photo</span></label></div><div class="faint">Camera or gallery. Photos are shrunk to save space'+(phCloud()?' and kept online — they open on every phone.':'.')+'</div></div>'
+   +'<label class="ph add" data-camtake="1"><input type="file" accept="image/*" capture="environment" id="phcam" class="hide"><span>📷<br>Take photo</span></label><label class="ph add"><input type="file" accept="image/*" multiple id="phin" class="hide"><span>＋<br>From gallery</span></label></div><div class="faint">Photos are shrunk to save space'+(phCloud()?' and kept online — they open on every phone.':'.')+'</div>'+(PERM.cam==='denied'?'<button class="btn ghost sm" data-act="pmopen" style="margin-top:6px">⚠ Camera blocked — how to allow</button>':'')+'</div>'
    +'<div class="faint" style="margin-top:12px">Created '+dShort(o.created)+(o.confirmedOn?' · confirmed '+dShort(o.confirmedOn):'')+(o.deliveredOn?' · delivered '+dShort(o.deliveredOn):'')+'</div>'
    +(admin()?'<div style="margin-top:12px"><button class="btn danger sm" data-act="delete">Delete this order</button></div>':'')+'</div>';
 }
@@ -4585,7 +4700,7 @@ function viewSettings(){
         +rolesLine()+(Array.isArray(ru)&&ru.filter(function(u){ return u.role==='admin'; }).length<2?'<div class="netbar" style="margin:10px 0 0">👥 <b>Only one admin.</b> Add a second admin (a partner or a trusted person) so the shop is never locked out if this phone or email is lost.</div>':'')+'<div class="row" style="margin-top:10px"><input type="email" id="ruemail" placeholder="staff@email.com" class="grow">'+roleSel('id="rurole"','sales')+'<button class="btn primary sm" data-act="ruadd">Add</button></div></div>'; }
      if(sbOn()) return '<div class="card"><h2>Users & roles</h2><div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px">You are signed in with the <b>PIN</b>, so staff logins cannot be added here. <b>Log out</b> and sign in with your admin email — then add staff here and tap <b>📤 Send link</b>.<div style="margin-top:8px"><button class="btn sm" data-act="logout">Log out</button></div></div></div>';
      return '<div class="card"><div class="row between"><h2>Users & roles</h2><button class="btn sm primary" data-act="useradd">+ Add user</button></div><p class="faint">Used once online sync is set up. The role decides what each person sees.</p><table class="items i3"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>'+(D.users||[]).map(function(u,i){return '<tr data-ui="'+i+'"><td class="c1" data-l="Email"><input type="email" data-uk="email" value="'+esc(u.email)+'"></td><td data-l="Role">'+roleSel('data-uk="role"',u.role)+'</td><td class="dl"><button class="del" data-udel="'+i+'">×</button></td></tr>';}).join('')+'</tbody></table></div>'; })()
-   +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div>'+spaceLine()+'<p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'
+   +'<div class="card"><div class="row between"><h2>App version</h2><button class="btn sm" data-act="chkupd">Check for update</button></div><div class="muted">'+esc(APPV==='dev'?'Preview copy':APPV)+'</div>'+spaceLine()+'<p class="faint">When you upload a new version to the website, the app shows <b>New version ready → Update now</b>. Your data is not touched by updates.</p></div>'+permSetCard()
    +'<div class="card"><h2>Backup</h2>'+snapsHtml()+'<div class="row"><button class="btn" data-act="export">Download backup</button><label class="btn">Restore backup<input type="file" id="imp" accept=".json" class="hide"></label>'+phZipBtns()+'</div><p class="faint">'+(sbOn()?'Also download a backup file every 2 weeks and keep it on your computer or Google Drive'+(D.lastBackup?' (last one: '+dShort(D.lastBackup)+')':'')+'. Site photos are kept online — “All site photos” saves a copy of them.':'Download a backup once a week if you are not using online sync.')+'</p></div>';
 }
 
@@ -4687,7 +4802,7 @@ document.addEventListener('click',function(e){
   if(d.pdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } o.payments.splice(+d.pdel,1); save(); render(); return; }
   if(d.edel!==undefined){ if(!canDel()){ toast('Only Admin can delete'); return; } D.expenses.splice(+d.edel,1); save(); render(); return; }
   if(d.phdel!==undefined&&o){ if(!canDel()){ toast('Only Admin can delete'); return; } if(!confirm('Delete this photo?')) return; phForget(o.photos.splice(+d.phdel,1)[0]); save(); render(); return; }
-  if(d.view!==undefined&&o){ var v=document.createElement('div'); v.className='viewer'; var ph0=o.photos[+d.view]; v.innerHTML='<img src="'+esc(phSrc(ph0))+'" data-phk="'+esc(ph0&&ph0.path||'')+'">'; v.onclick=function(){v.remove();}; document.body.appendChild(v); return; }
+  if(d.view!==undefined&&o){ phBig(o,+d.view); return; }
   if(d.iin){ var qi=prompt('Stock in — quantity ('+D.inv[d.iin].unit+')'); if(qi!=null&&n(qi)){ var nt=prompt('Note (supplier / bill no)','')||''; D.inv[d.iin].qty=Math.round((D.inv[d.iin].qty+n(qi))*10)/10; D.invLog.push({id:uid(),on:today(),key:d.iin,qty:n(qi),note:nt}); save(); render(); } return; }
   if(d.iadj){ var qa=prompt('Counted quantity ('+D.inv[d.iadj].unit+')',D.inv[d.iadj].qty); if(qa!=null&&qa!==''){ var diff=Math.round((n(qa)-D.inv[d.iadj].qty)*10)/10; D.inv[d.iadj].qty=n(qa); D.lastCount=today(); if(diff) D.invLog.push({id:uid(),on:today(),key:d.iadj,qty:diff,note:'Stock count'}); save(); render(); } return; }
   if(d.ocdel){ var pc=d.ocdel.split('|'); D.offcuts[pc[0]].splice(+pc[1],1); save(); render(); return; }
@@ -4836,7 +4951,7 @@ function shrink(file,cb){ var img=new Image(), u=URL.createObjectURL(file); img.
 document.addEventListener('change',function(e){ var t=e.target;
   if(t.dataset&&t.dataset.rurole){ sbUserSave(t.dataset.rurole,t.value).then(function(){ toast('Role updated'); loadUsers(); }).catch(function(e2){ toast(e2.message); }); return; }
   if(t.dataset&&t.dataset.ded){ var ymC=S.am||today().slice(0,7), stC=D.staff.filter(function(x){return x.id===t.dataset.ded;})[0]; if(stC){ var rC=salRow(ymC,stC); if(n(t.value)!==rC.ded){ t.value=rC.ded; D.saladj[ymC][t.dataset.ded]=rC.ded; save(); var c2=$('#sn-'+t.dataset.ded); if(c2) c2.textContent=money(rC.net); toast('Deduction limited to '+money(rC.ded)); } } return; }
-  if(t.id==='phin'&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}, cur=privOf(D); D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); privKeepIfEmpty(cur); keepNumbers(sq0); save(); toast('Backup restored'+(PRIVKEPT?' — it had no accounts or staff, today\'s are kept':'')); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
+  if((t.id==='phin'||t.id==='phcam')&&t.files.length){ var o=order(); if(!o) return; o.photos=o.photos||[]; var files=Array.prototype.slice.call(t.files), k=0; files.forEach(function(f){ shrink(f,function(src){ if(src) phAdd(o,src); if(++k===files.length){ save(); render(); toast(files.length+' photo'+(files.length>1?'s':'')+' added'); } }); }); return; } if(t.id==='imp'&&t.files[0]){ var r=new FileReader(); r.onload=function(){ try{ var fl0=D.flats, or0=D.orders, sq0={seq:D.seq,vseq:D.vseq}, cur=privOf(D); D=migrate(merge(JSON.parse(JSON.stringify(DEF)),JSON.parse(r.result))); D.flats=flatsMerge(fl0,D.flats); D.orders=flatsMerge(or0,D.orders); privKeepIfEmpty(cur); keepNumbers(sq0); save(); toast('Backup restored'+(PRIVKEPT?' — it had no accounts or staff, today\'s are kept':'')); render(); }catch(x){ toast('Not a valid backup'); } }; r.readAsText(t.files[0]); return; }
   if(t.tagName==='SELECT') onInput(e); });
 document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='y'||(e.key==='Z'&&e.shiftKey))&&S.tab==='order'&&S.sub==='items'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){ var o=order(); if(o){ e.preventDefault(); undo(o,e.key==='y'||e.shiftKey); } return; } if(e.key!=='Enter') return; var id=e.target.id, b=id==='pin'?'[data-act=login]':id==='lpass'||id==='lemail'?'[data-act=sblogin]':id==='pamt'?'[data-act=pay]':id==='eamt'?'[data-act=exp]':null; if(b&&$(b)) $(b).click(); });
 function refreshTotals(o){ sheetTotals(o); var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
