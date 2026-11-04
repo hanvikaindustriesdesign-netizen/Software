@@ -742,6 +742,68 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 /* ⚠ sizes that look wrong */
 .sheet td.szbad input{background:#fff1f0;border-color:#f04438;color:#b42318;font-weight:600}
 .szwarn{background:#fff6ed;border:1px solid #fbc490;color:#93370d;border-radius:12px;padding:8px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
+
+/* ⚙ settings like a spreadsheet — the same look as the windows sheet of an order */
+.xs{max-width:980px;margin:0 auto}
+.xs .card.xsec{background:#fff;border:1px solid #d3d9e1;border-radius:8px;padding:0;margin:0 0 14px;box-shadow:none;overflow:hidden}
+.xs .xsec>.xh{display:flex;align-items:center;justify-content:space-between;gap:6px 8px;flex-wrap:wrap;padding:9px 12px;background:#f1f3f6;border-bottom:1px solid #cdd4dd}
+.xs .xsec>.xh h2{font-size:15.5px;margin:0;line-height:1.3;color:var(--ink)}
+.xs .xh h2 small,.xs .xr>span:first-child small{display:block;font-size:12px;font-weight:400;color:var(--faint);line-height:1.35;margin-top:1px}
+.xs .xsec>*:not(.xh)+*{border-top:1px solid #e4e8ed}
+.xs .xg{display:block}
+.xs label.f.xr,.xs .xr{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);align-items:stretch;margin:0;min-height:44px;border-bottom:1px solid #e4e8ed;flex:none}
+.xs .xg>.xr:last-child{border-bottom:0}
+.xs .xr>span:first-child{display:flex;flex-direction:column;justify-content:center;margin:0;padding:8px 10px;background:#f8f9fb;border-right:1px solid #e4e8ed;font-size:14px;font-weight:500;color:#475467;line-height:1.3}
+.xs .xr>*:not(:first-child){grid-column:2;min-width:0}
+.xs .xr>input,.xs .xr>select,.xs .xr>textarea{display:block;width:100%;max-width:none;min-width:0;min-height:44px;margin:0;border:0;border-radius:0;background-color:transparent;box-shadow:none;padding:8px 10px;color:var(--ink)}
+.xs .xr>select{padding-right:28px;background-position:right 10px center}
+.xs .xr>div{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:8px 10px;font-size:14px;line-height:1.35;color:var(--ink)}
+.xs label.f.xr.xw,.xs .xr.xw{grid-template-columns:minmax(0,1fr)}
+.xs .xr.xw>span:first-child{border-right:0;border-bottom:1px solid #e4e8ed}
+.xs .xr.xw>textarea{grid-column:1;min-height:80px}
+@media(max-width:600px){ .xs label.f.xr.xlong{grid-template-columns:minmax(0,1fr)} .xs .xr.xlong>span:first-child{border-right:0;border-bottom:1px solid #e4e8ed} .xs .xr.xlong>*:not(:first-child){grid-column:1} }
+.xs .xr input:focus,.xs .xr select:focus,.xs .xr textarea:focus,.xs table.xt td input:focus,.xs table.xt td select:focus{outline:2px solid var(--accent);outline-offset:-2px;background-color:#fff;box-shadow:none;border:0;position:relative;z-index:1}
+.xs input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.xs input[type=number]::-webkit-inner-spin-button,.xs input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.xs .xp{padding:10px 12px}
+.xs .xp>*:first-child{margin-top:0} .xs .xp>*:last-child{margin-bottom:0}
+.xs .xp>p{margin:0 0 6px}
+.xs .xp>.faint,.xs .xp>p.faint{font-size:13px;line-height:1.45}
+.xs .xp .xg{border:1px solid #d3d9e1;border-radius:8px;overflow:hidden;margin:8px 0}
+.xs .xp>.row+*,.xs .xp>*+.row{margin-top:8px}
+/* the grids: rates, doors, profile codes, cutting deductions, hardware, how we cut */
+.xs .tscroll{overflow-x:auto;margin:0;padding:0;-webkit-overflow-scrolling:touch}
+.xs table.xt{width:100%;border-collapse:separate;border-spacing:0;margin:0;font-size:14px;line-height:1.25}
+.xs table.xt th{position:static;background:#f1f3f6;color:#475467;font-size:12px;font-weight:650;text-align:left;padding:7px 8px;white-space:nowrap;border:0;border-right:1px solid #dde2e8;border-bottom:1px solid #cdd4dd}
+.xs table.xt th.num{text-align:right}
+.xs table.xt th.xgh{text-align:center}
+.xs table.xt td{padding:0;height:42px;background:#fff;border:0;border-right:1px solid #e4e8ed;border-bottom:1px solid #e4e8ed;vertical-align:middle}
+.xs table.xt tr>*:last-child{border-right:0}
+.xs table.xt tbody tr:last-child>td{border-bottom:0}
+.xs table.xt td.xc{padding:6px 10px;background:#f8f9fb;color:var(--ink);font-weight:600;font-size:14px;white-space:nowrap}
+.xs table.xpc td.xc{white-space:normal;min-width:84px} .xs table.xt.xpc td input{padding:0 6px;min-width:84px}
+.xs table.xrate td.xc{font-size:13.5px;padding:6px 8px} .xs table.xrate th{padding:7px 4px} .xs table.xrate th:first-child{padding-left:8px} .xs table.xrate td.num input{padding:0 4px}
+@media(max-width:380px){ .xs table.xrate td.xc{font-size:13px;padding:6px 6px} .xs table.xrate td.num input{padding:0 3px} }
+.xs table.xt td.xc:first-child,.xs table.xt th:first-child{position:sticky;left:0;z-index:2}
+.xs table.xt th:first-child{z-index:3}
+.xs table.xt .xcost{border-left:2px solid #cdd4dd}
+.xs table.xt td input,.xs table.xt td select{display:block;width:100%;min-width:0;max-width:none;height:42px;min-height:42px;margin:0;border:0;border-radius:0;background-color:transparent;box-shadow:none;padding:0 8px;color:var(--ink)}
+.xs table.xt td select{padding-right:24px;background-position:right 8px center}
+.xs table.xt td.num input,.xs table.xt td input.n{text-align:right;font-variant-numeric:tabular-nums}
+.xs table.xt td .del{display:block;margin:0 auto}
+.xs table.xt tbody tr:hover>td{background:#fafbfd}
+.xs table.xt tbody tr:hover>td.xc{background:#f2f4f7}
+/* hardware on a phone: the item across, then qty · basis · × under it */
+@media(max-width:700px){
+  .xs table.xhw,.xs table.xhw thead,.xs table.xhw tbody{display:block}
+  .xs table.xhw tr{display:grid;grid-template-columns:64px minmax(0,1fr) 46px;grid-template-areas:"it it it" "qt bs dl"}
+  .xs table.xhw tr>*:nth-child(1){grid-area:it;border-right:0} .xs table.xhw tr>*:nth-child(2){grid-area:qt}
+  .xs table.xhw tr>*:nth-child(3){grid-area:bs} .xs table.xhw tr>*:nth-child(4){grid-area:dl;border-right:0;display:flex;align-items:center;justify-content:center}
+  .xs table.xhw tbody tr+tr{border-top:2px solid #dde2e8}
+  .xs table.xhw tbody tr:last-child>td:nth-child(1){border-bottom:1px solid #e4e8ed}
+  .xs table.xhw th:nth-child(4){display:block}
+}
+@media(min-width:701px){ .xs table.xhw th:nth-child(2){width:80px} .xs table.xhw th:nth-child(3){width:250px} .xs table.xhw th:nth-child(4){width:48px} }
 </style>
 </head>
 <body>
@@ -796,7 +858,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='04 Nov 2026, 01:31';
+var APPV='04 Nov 2026, 09:25';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1259,7 +1321,7 @@ function dismissed(){ try{ return JSON.parse(localStorage.getItem('wdismiss')||'
 function setDismissed(m){ var cut=Date.now()-120*864e5; Object.keys(m).forEach(function(k){ if(m[k]<cut) delete m[k]; }); try{ localStorage.setItem('wdismiss',JSON.stringify(m)); }catch(e){} }
 function alertSets(){ var dm=dismissed(), all=alerts(), live=all.filter(function(a){ return !dm[alertKey(a)]; }); return {live:live, hidden:all.length-live.length}; }
 function alertTools(AS){ return (AS.live.length>1?'<button class="btn ghost sm" data-act="aclear">Clear all</button>':'')+(AS.hidden?'<button class="btn ghost sm" data-act="ashow">Show '+AS.hidden+' cleared</button>':''); }
-function alertBtn(a){ return '<div class="arow"><button class="alert" '+(a.id?'data-open="'+a.id+'"':'data-go="'+a.go+'"')+'><i class="'+a.c+'"></i><span>'+esc(a.txt)+'</span></button><button class="adx" data-adx="'+esc(alertKey(a))+'" aria-label="Clear this alert" title="Clear">×</button></div>'; }
+function alertBtn(a){ return '<div class="arow"><button class="alert" '+(a.id?'data-open="'+a.id+'"':'data-go="'+a.go+'"'+(a.go==='settings'&&setTabOf(a.txt)?' data-stab="'+setTabOf(a.txt)+'"':''))+'><i class="'+a.c+'"></i><span>'+esc(a.txt)+'</span></button><button class="adx" data-adx="'+esc(alertKey(a))+'" aria-label="Clear this alert" title="Clear">×</button></div>'; }
 function remHtml(){ var AS=alertSets(), al=AS.live; return '<div class="row between"><h2>🔔 Reminders'+(al.length?' ('+al.length+')':'')+'</h2><span class="row" style="gap:4px">'+alertTools(AS)+'<button class="btn sm" id="remclose">Close</button></span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing pending — all good 👍</div>'); }
 function refreshAlerts(){ var rc=document.getElementById('remcard'); if(rc) rc.innerHTML=remHtml(); render(); }
 function showReminders(){ var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" id="remcard" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto">'+remHtml()+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
@@ -2806,7 +2868,7 @@ function hhmm(t){ var d=new Date(t); return d.toLocaleTimeString('en-IN',{hour:'
 function netBarHtml(){ var h='', off=navigator.onLine===false, n=unsentN(), np=PHQ.length;
   if(S.role&&sbOn()&&!SESS&&(S.sdead||localStorage.getItem('sbdead')==='1')) h='<div class="netbar bad">⚠ <b>Please sign in again</b> — your work is kept on this phone and is sent after you sign in. <button class="btn sm" data-cs="relogin">Sign in</button></div>';
   if(S.role&&sbOn()&&SESS){
-    if(admin()&&(ROWSTORES.some(function(R){ return R.missing; })||Object.keys(BACK).some(function(k){ return BACK[k].missing; }))) h='<div class="netbar bad">⚠ <b>The online database needs an update</b> for this version. Settings → Online sync → copy the setup SQL and run it in Supabase (SQL editor). Nothing is lost meanwhile.</div>';
+    if(admin()&&(ROWSTORES.some(function(R){ return R.missing; })||Object.keys(BACK).some(function(k){ return BACK[k].missing; }))) h='<div class="netbar bad">⚠ <b>The online database needs an update</b> for this version. Settings → 👥 Users → Online sync → copy the setup SQL and run it in Supabase (SQL editor). Nothing is lost meanwhile.</div>';
     else if(!off&&NET.bad>=2) h='<div class="netbar bad">⚠ <b>Can\'t reach the online database</b> since '+hhmm(NET.since)+'. Your work is safe on this phone and is sent when it\'s back. <button class="btn sm" data-cs="nethelp">What to do</button></div>';
     else if((n||np)&&UNS.since&&Date.now()-UNS.since>(off?2:10)*60000) h='<div class="netbar">⏳ <b>'+(n?n+' change'+(n>1?'s':''):'')+(n&&np?' and ':'')+(np?np+' photo'+(np>1?'s':''):'')+' not sent online yet</b>'+(off?' — this phone is offline':' (since '+hhmm(UNS.since)+')')+'. '+(n+np>1?'They are':'It is')+' kept on this phone.'+(off?'':' <button class="btn sm" data-cs="sendnow">Send now</button>')+'</div>';
     else if(np&&PHERR&&admin()) h='<div class="netbar">📷 '+np+' photo'+(np>1?'s':'')+' waiting to upload ('+esc(PHERR)+'). <button class="btn sm" data-cs="sendnow">Try again</button></div>'; }
@@ -4544,7 +4606,7 @@ function pushSwReady(){ if(window.PUSHTEST_REG) return Promise.resolve(window.PU
     .then(function(reg){ try{ reg.update(); }catch(e){} return reg; }); }
 /* the server's public key (made on the server the first time) */
 function pushKey(){ return sbRefresh().then(function(){ return fetch(sbUrl('/rest/v1/rpc/push_vapid_public'),{method:'POST',headers:sbHeaders(),body:'{}'}); })
-  .then(function(r){ if(!r.ok) throw new Error(r.status===404?'the database needs the update (Settings → Online sync → setup SQL)':'key '+r.status); return r.json(); })
+  .then(function(r){ if(!r.ok) throw new Error(r.status===404?'the database needs the update (Settings → 👥 Users → Online sync → setup SQL)':'key '+r.status); return r.json(); })
   .then(function(k){ if(k) return k; return fetch(sbUrl('/functions/v1/push-reminders'),{method:'POST',headers:sbHeaders(),body:'{"init":true}'})
       .then(function(r){ if(!r.ok) throw new Error('the reminders server function is missing ('+r.status+')'); return r.json(); }).then(function(j){ if(!j||!j.pub) throw new Error('no key from the server'); return j.pub; }); }); }
 function pushEnsure(force){ if(!pushCan()||Notification.permission!=='granted') return Promise.resolve(false);
@@ -4771,11 +4833,24 @@ function diagLog(what,err,once){ try{ var now=Date.now(), day=today(), k=what+'|
     try{ c=JSON.parse(localStorage.getItem('wdiag')||'{}')||{}; }catch(e){ c={}; } if(c.d!==day) c={d:day,n:0,ok:{}}; c.ok=c.ok||{};
     if(once){ if(c.ok[what]) return; c.ok[what]=1; } else { if(DIAGT[k]&&now-DIAGT[k]<6e5) return; DIAGT[k]=now; }
     if(c.n>=30) return; c.n++; try{ localStorage.setItem('wdiag',JSON.stringify(c)); }catch(e){}
-    if(!(D.sb&&D.sb.url)||!SESS||typeof sbUrl!=='function') return;
-    var undo=function(){ try{ var c2=JSON.parse(localStorage.getItem('wdiag')||'{}')||{}; if(c2.d!==day) return; if(once&&c2.ok) delete c2.ok[what]; c2.n=Math.max(0,(c2.n||1)-1); localStorage.setItem('wdiag',JSON.stringify(c2)); }catch(x){} if(!once) delete DIAGT[k]; };
-    /* keepalive: the note still goes when the page is closed or reloaded right after; not sent → may be sent again later */
-    (typeof sbRefresh==='function'?sbRefresh():Promise.resolve()).then(function(){ return fetch(sbUrl('/rest/v1/app_diag'),{method:'POST',keepalive:true,headers:sbHeaders({Prefer:'return=minimal'}),body:JSON.stringify({role:String(S.role||'').slice(0,20),what:String(what).slice(0,40),err:String(err||'').slice(0,300),ua:String(navigator.userAgent||'').slice(0,300),mode:diagMode()})}); }).then(function(r){ if(!r.ok) undo(); },undo);
+    if(!(D.sb&&D.sb.url)) return;
+    /* kept on the phone until the server has it — a note is not lost when the app is closed, reloaded or offline right
+       after (one was: the phone asked the server, then the app reloaded before the note itself went) */
+    var q=diagQ(); q.push({id:now.toString(36)+Math.random().toString(36).slice(2,7),t:now,r:{role:String(S.role||'').slice(0,20),what:String(what).slice(0,40),err:String(err||'').slice(0,300),ua:String(navigator.userAgent||'').slice(0,300),mode:diagMode()}});
+    diagQSet(q); diagFlush();
   }catch(e){} }
+var DIAGF=0;
+function diagQ(){ try{ var q=JSON.parse(localStorage.getItem('wdiagq')||'[]'); return Array.isArray(q)?q:[]; }catch(e){ return []; } }
+function diagQSet(q){ try{ q=q.slice(-20); if(q.length) localStorage.setItem('wdiagq',JSON.stringify(q)); else localStorage.removeItem('wdiagq'); }catch(e){} }
+/* send the waiting notes in one go; keepalive only when the app is going away (hidden) */
+function diagFlush(){ try{ if(DIAGF||!(D.sb&&D.sb.url)||!SESS||typeof sbUrl!=='function'||navigator.onLine===false) return; var q=diagQ(); if(!q.length) return; DIAGF=1;
+  var now=Date.now(), rows=q.map(function(x){ var r=Object.assign({},x.r); if(x.t&&now-x.t>3e5) r.err=(r.err+' [noted '+new Date(x.t).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false})+']').slice(0,300); return r; });
+  var drop=function(){ var sent={}; q.forEach(function(x){ sent[x.id]=1; }); diagQSet(diagQ().filter(function(x){ return !sent[x.id]; })); };
+  (typeof sbRefresh==='function'?sbRefresh():Promise.resolve()).then(function(){ return fetch(sbUrl('/rest/v1/app_diag'),{method:'POST',keepalive:document.visibilityState==='hidden',headers:sbHeaders({Prefer:'return=minimal'}),body:JSON.stringify(rows)}); })
+    .then(function(r){ DIAGF=0; if(r.ok){ drop(); if(diagQ().length) setTimeout(diagFlush,1500); } else if(r.status>=400&&r.status<500&&[401,403,408,429].indexOf(r.status)<0) drop(); },function(){ DIAGF=0; }); }catch(e){ DIAGF=0; } }
+window.addEventListener('online',function(){ setTimeout(diagFlush,3000); });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') diagFlush(); });
+setTimeout(diagFlush,15000);
 /* the steps for this kind of phone */
 function helpSteps(k,extra){ var os=permOS(), A=os==='android', I=os==='ios';
   var chrome=function(x){ return 'Allow '+x+' for Chrome: phone <b>Settings → Apps → Chrome → Permissions → '+x+' → Allow</b>.'; };
@@ -5278,7 +5353,134 @@ function viewReports(){
    +'<div class="card"><h2>Money to collect — '+money(owing.reduce(function(a,o){return a+balance(o);},0)+bldPendAll())+'</h2><div class="olist">'+(owing.length||bldPendAll()>0.5?bldHomeRows()+owing.map(oRow).join(''):'<div class="empty">Nothing pending</div>')+'</div></div>'
    +'<div class="card"><h2>Export</h2><div class="row"><button class="btn" data-act="csv">Orders → Excel</button><button class="btn" data-act="csvitems">All windows & doors → Excel</button></div></div>';
 }
-function viewSettings(){
+/* ============================================================
+   ⚙ SETTINGS LIKE A SPREADSHEET
+   Asked: "All settings arange systematically, like excel sheet".
+   Six sheets along the top — 🏢 Company · 🪟 Windows · 🏭 Factory · 👥 Users · 📱 Phone · 💾 Backup — and on each
+   sheet every setting is one row: name | value, with grid lines. Rates, profile codes and cutting deductions are
+   plain grids: one row per window type / profile / deduction, one column per series (80 · 90 · 112).
+   viewSettings0 still draws the same boxes (same saving, same buttons); setSheet sorts them onto the sheets and
+   lays them out.
+   ============================================================ */
+var SETSH=[['co','🏢 Company'],['win','🪟 Windows'],['fac','🏭 Factory'],['usr','👥 Users'],['ph','📱 Phone'],['bak','💾 Backup']];
+/* every part of Settings by its title: [sheet, part, title] — in the order shown on the sheet */
+var SETSEC=[['co','co',/^Company/],['co','qb',/^Quotes & bills/],
+  ['win','wdef',/New windows and doors/],['win','brands',/^Brands$/],['win','rates',/window rates/],['win','doors',/doors, ₹ per door/],
+  ['fac','brand',/^Brand$/],['fac','pcodes',/profile codes/],['fac','cut',/cutting deductions/],['fac','hw',/^Hardware/],['fac','howcut',/^How we cut/],['fac','stock',/^Stock & capacity/],
+  ['usr','users',/^Users & roles/],['usr','pins',/^Logins/],['usr','sync',/^Online sync/],
+  ['ph','perm',/This phone/],['ph','push',/Morning reminders/],['ph','appv',/^App version/],
+  ['bak','bak',/^Backup/],['bak','snaps',/^Online copies/]];
+function setSecOf(c){ var h=c&&c.querySelector&&c.querySelector('h2'), t=h?h.textContent.replace(/\s+/g,' ').trim():'';
+  for(var i=0;i<SETSEC.length;i++) if(SETSEC[i][2].test(t)) return i; return SETSEC.length; }
+/* a reminder that says "Settings → Backup" (or App version …) opens that sheet */
+function setTabOf(txt){ txt=String(txt||''); return /App version|Space used|Shared data/.test(txt)?'ph':/Backup|backup|Automatic check/.test(txt)?'bak':/Online sync|Settings → Users/.test(txt)?'usr':''; }
+function viewSettings(){ return setSheet(viewSettings0()); }
+function setSheet(html){ var cur=S.stab; if(!SETSH.some(function(x){ return x[0]===cur; })) cur=S.stab='co';
+  var tpl=document.createElement('template'); tpl.innerHTML=html; var all=[];
+  [].slice.call(tpl.content.children).forEach(function(c){ setSplit(c).forEach(function(x){ all.push(x); }); });
+  if(D.brands.length>1) all.push(setBrandCard());
+  var mine=all.map(function(c,i){ return {c:c,k:setSecOf(c),i:i}; }).filter(function(x){ return (SETSEC[x.k]||['bak'])[0]===cur; })
+    .sort(function(a,b){ return a.k-b.k||a.i-b.i; });
+  var out=document.createElement('div'); out.className='xs';
+  out.innerHTML='<div class="subtabs osub xtabs" role="tablist" aria-label="Settings">'+SETSH.map(function(x){ return '<button type="button" role="tab" data-stab="'+x[0]+'" class="'+(x[0]===cur?'on':'')+'" aria-selected="'+(x[0]===cur)+'">'+x[1]+'</button>'; }).join('')+'</div>';
+  mine.forEach(function(x){ out.appendChild(setCard(x.c,SETSEC[x.k]?SETSEC[x.k][1]:'')); });
+  if(!mine.length) out.insertAdjacentHTML('beforeend','<div class="empty">Nothing here</div>');
+  return out.outerHTML; }
+/* Company → "Company" + "Quotes & bills"; Backup → "Backup" + "Online copies" */
+function setSplit(c){ var h=c.querySelector&&c.querySelector('h2'), t=h?h.textContent:'';
+  var pick=function(from,to,sels){ sels.forEach(function(sel){ var x=from.querySelector(sel), l=x&&x.closest('label.f'); if(l) to.appendChild(l); }); };
+  if(/^Company/.test(t)){ setFlat(c); var q=document.createElement('div'); q.className='card'; q.innerHTML='<h2>Quotes &amp; bills</h2>';
+    pick(c,q,['[data-d="advancePct"]','[data-d="gstPct"]','[data-c="invPre"]','[data-c="hsn"]','[data-c="bank"]','[data-c="terms"]']);
+    var nt=c.querySelector('p.faint'); if(nt){ nt.removeAttribute('style'); q.appendChild(nt); }
+    pick(c,c,['[data-c="name"]','[data-c="phone"]','[data-c="email"]','[data-c="address"]','[data-c="gst"]','[data-c="glassPh"]']);
+    return [c,q]; }
+  if(/^Backup/.test(t)){ var bo=[].slice.call(c.querySelectorAll('b')).filter(function(b){ return b.textContent==='Online copies'&&b.parentNode&&b.parentNode.classList.contains('row'); })[0];
+    if(bo){ var hr=bo.parentNode, blk=hr.parentNode, c2=document.createElement('div'), h2=document.createElement('h2'); c2.className='card'; h2.textContent='Online copies'; hr.replaceChild(h2,bo);
+      while(blk.firstChild) c2.appendChild(blk.firstChild); blk.parentNode.removeChild(blk); return [c,c2]; } }
+  return [c]; }
+/* Factory sheet: which brand the codes and deductions are for (only when there is more than one brand) */
+function setBrandCard(){ var bi=Math.min(S.bi||0,D.brands.length-1), c=document.createElement('div'); c.className='card';
+  c.innerHTML='<h2>Brand</h2><label class="f"><span>Profile codes and cutting deductions for</span><select id="bsel">'+D.brands.map(function(b,i){ return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>'; }).join('')+'</select></label>'; return c; }
+/* side-by-side boxes → one under the other; a box that sat in a row of buttons → its own row */
+function setFlat(c){ [].slice.call(c.querySelectorAll('.grid2,.grid3')).forEach(function(g){ if(!g.querySelector('label.f')) return; while(g.firstChild) g.parentNode.insertBefore(g.firstChild,g); g.parentNode.removeChild(g); });
+  [].slice.call(c.querySelectorAll('.row > label.f')).forEach(function(l){ var r=l.parentNode; r.parentNode.insertBefore(l,r); if(!r.children.length&&!r.textContent.trim()) r.parentNode.removeChild(r); }); }
+/* "GST % for builder flats (other orders …)" → the name, with the part in brackets in small letters under it */
+function setSmall(el){ if(!el||el.children.length) return; var m=el.textContent.match(/^(.*?)\s*(\(.+\))$/); if(!m) return; el.textContent=m[1]+' '; var sm=document.createElement('small'); sm.textContent=m[2]; el.appendChild(sm); }
+function setRows(c,before,html){ var tmp=document.createElement('div'); tmp.innerHTML=html; while(tmp.firstChild) c.insertBefore(tmp.firstChild,before||null); }
+/* a note above a grid goes to the foot of the part, so the figures come first */
+function setNotesDown(c){ var tb=c.querySelector(':scope > .tscroll, :scope > table'); if(!tb) return;
+  [].slice.call(c.querySelectorAll(':scope > p.faint')).forEach(function(p){ if(tb.compareDocumentPosition(p)&Node.DOCUMENT_POSITION_PRECEDING) c.appendChild(p); }); }
+function setCard(c,id){ c.classList.add('xsec'); setFlat(c);
+  /* the title bar (with its button) */
+  var f=c.firstElementChild;
+  if(f&&f.tagName==='H2'){ var hd=document.createElement('div'); hd.className='xh'; c.insertBefore(hd,f); hd.appendChild(f); }
+  else if(f&&f.classList.contains('row')&&f.querySelector('h2')){ f.classList.remove('row','between'); f.classList.add('xh'); f.removeAttribute('style'); }
+  setSmall(c.querySelector('.xh h2'));
+  if(id==='wdef'){ /* new windows and doors: each default its own row, changed right here */
+    var wb=c.querySelector('.xh [data-act="wdef"]'); if(wb) wb.parentNode.removeChild(wb);
+    var wf=c.querySelector(':scope > .faint'), d=wdef(), u=uNow(), bn=brandNames();
+    var sel=function(k,lab,list,v){ return '<label class="f"><span>'+lab+'</span><select data-wdk="'+k+'">'+list.map(function(x){ return '<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>'; }).join('')+'</select></label>'; };
+    setRows(c,wf,sel('type','Window type (track)',WTYPES.filter(function(t){ return t!=='Custom'; }),d.type)+sel('brand','Brand',bn,d.brand)+sel('series','Series',SERIES,d.series)+sel('glass','Glass',GLASS,d.glass)+sel('mesh','Mesh',MESH,d.mesh)
+      +sel('dtype','Door type',DTYPES,d.dtype)+sel('dbrand','Door brand',bn,d.dbrand)
+      +'<label class="f"><span>Sizes in (this phone)</span><select data-wdu="1">'+UNITS.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===u?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></label>'
+      +'<p class="faint">A new window starts with these — for everyone in the shop. In an order, brand, series, glass and mesh follow the last window.</p>');
+    if(wf) wf.parentNode.removeChild(wf); }
+  if(id==='brands'){ var bs=c.querySelector('#bsel'); if(bs&&bs.parentNode.classList.contains('row')){ var bl=document.createElement('label'); bl.className='f'; bl.innerHTML='<span>Brand (the rates below are for this one)</span>'; bs.parentNode.parentNode.insertBefore(bl,bs.parentNode); bs.removeAttribute('style'); bl.appendChild(bs); } }
+  if(id==='rates'){ var rt=c.querySelector('table'); if(rt&&rt.tHead){ var ns=SERIES.length;
+    rt.tHead.innerHTML='<tr><th rowspan="2">Type</th><th colspan="'+ns+'" class="xgh">Selling ₹ / sq ft</th><th colspan="'+ns+'" class="xgh xcost">Cost ₹ / sq ft</th></tr><tr>'+SERIES.concat(SERIES).map(function(s,i){ return '<th class="num'+(i===ns?' xcost':'')+'">'+esc(s)+'</th>'; }).join('')+'</tr>';
+    [].slice.call(rt.tBodies[0].rows).forEach(function(r){ if(r.cells[ns+1]) r.cells[ns+1].classList.add('xcost'); }); } }
+  if(id==='doors'){ var dr=[].slice.call(c.querySelectorAll('input[data-dr]')); if(dr.length){ var dt=document.createElement('table'); dt.className='xt';
+    dt.innerHTML='<thead><tr><th>Door</th><th class="num">Selling ₹</th><th class="num">Cost ₹</th></tr></thead><tbody></tbody>';
+    dr.forEach(function(x){ var k=x.getAttribute('data-dr'), cs=c.querySelector('input[data-dc="'+k+'"]'), tr=document.createElement('tr'); tr.innerHTML='<td class="xc">'+esc(k)+'</td><td class="num"></td><td class="num"></td>'; tr.cells[1].appendChild(x); if(cs) tr.cells[2].appendChild(cs); dt.tBodies[0].appendChild(tr); });
+    [].slice.call(c.querySelectorAll('label.f')).forEach(function(l){ if(!l.querySelector('input,select,textarea')) l.parentNode.removeChild(l); });
+    c.appendChild(dt); } }
+  if(id==='cut'){ var ct=c.querySelector('table'); if(ct&&ct.tHead&&ct.tBodies[0]){ /* one row per deduction, one column per series */
+    var hs=[].slice.call(ct.tHead.rows[0].cells).slice(1).map(function(x){ return x.textContent; }), rs=[].slice.call(ct.tBodies[0].rows);
+    var th='<thead><tr><th>Deduction</th>'+rs.map(function(r){ return '<th class="num">'+esc(r.cells[0].textContent)+'</th>'; }).join('')+'</tr></thead><tbody>';
+    hs.forEach(function(lab,j){ th+='<tr><td>'+esc(lab)+'</td>'+rs.map(function(r){ var cl=r.cells[j+1]; return '<td class="num">'+(cl?cl.innerHTML:'')+'</td>'; }).join('')+'</tr>'; });
+    ct.innerHTML=th+'</tbody>'; } }
+  if(id==='perm'){ var pf=c.querySelector(':scope > .faint'); if(pf&&pf.innerHTML.indexOf(' · ')>0){
+    setRows(c,pf,pf.innerHTML.split(' · ').map(function(p){ var i=p.indexOf(': '); return '<div class="xr"><span>'+(i<0?p:p.slice(0,i))+'</span><div>'+(i<0?'':p.slice(i+2))+'</div></div>'; }).join(''));
+    pf.parentNode.removeChild(pf); } }
+  if(id==='push'){ var pn=c.querySelector('#pushn'); if(pn){ var pr=pn.parentNode, prow=document.createElement('div'); prow.className='xr'; prow.innerHTML='<span>Phones signed up</span><div></div>';
+    pr.parentNode.insertBefore(prow,pr); prow.lastChild.appendChild(pn); pn.classList.remove('faint'); if(!pn.textContent) pn.textContent=PUSHN.txt||'—';
+    if(pr!==c&&!pr.children.length&&!pr.textContent.trim()) pr.parentNode.removeChild(pr); } }
+  if(id==='appv'){ var mu=c.querySelector(':scope > .muted'); if(mu){ var vr=document.createElement('div'); vr.className='xr'; vr.innerHTML='<span>Version</span>'; c.insertBefore(vr,mu); mu.className=''; vr.appendChild(mu); } }
+  if(/^(rates|pcodes|cut|hw|howcut)$/.test(id)) setNotesDown(c);
+  if(id==='brands') [].slice.call(c.querySelectorAll(':scope > p.faint')).forEach(function(p){ c.appendChild(p); });
+  var tk={rates:'xrate',doors:'xdoor',pcodes:'xpc',cut:'xcut',howcut:'xhc'}[id]; if(tk) [].slice.call(c.querySelectorAll('table')).forEach(function(t){ t.classList.add(tk); });
+  /* every box with a name → one row: name | value */
+  [].slice.call(c.querySelectorAll('label.f')).forEach(function(l){ l.classList.add('xr'); l.removeAttribute('style'); var sp=l.firstElementChild; if(sp&&sp.tagName==='SPAN') setSmall(sp); if(l.querySelector('textarea,[data-sb]')) l.classList.add('xw');
+    /* a long email or name: on a phone the box gets the whole row, so it is not cut off */
+    var ip=l.querySelector('input:not([type=number]):not([type=checkbox])'); if(ip&&String(ip.getAttribute('value')||'').length>18) l.classList.add('xlong'); });
+  /* tables → plain grids (not the stacked phone cards) */
+  [].slice.call(c.querySelectorAll('table')).forEach(function(t){ if(t.classList.contains('rt')||t.classList.contains('i3')) return;
+    if(t.classList.contains('hwt')) t.classList.add('xhw'); t.classList.remove('items','pcodes','hwt'); t.classList.add('xt');
+    [].slice.call(t.querySelectorAll('input,select')).forEach(function(x){ x.removeAttribute('style'); });
+    [].slice.call(t.querySelectorAll('td,th')).forEach(function(td){ td.removeAttribute('data-l'); td.classList.remove('c1','c2','c3','dl'); if(td.tagName==='TD'&&!td.querySelector('input,select,textarea,button')) td.classList.add('xc'); }); });
+  setGroup(c); return c; }
+/* the rows of a part → one grid; tables edge to edge; notes and buttons in a padded strip */
+function setGroup(c){
+  [].slice.call(c.querySelectorAll('.xr')).forEach(function(r){ var p=r.parentNode; if(p===c||p.classList.contains('xg')) return; var pv=r.previousElementSibling;
+    if(pv&&pv.classList.contains('xg')){ pv.appendChild(r); return; } var g=document.createElement('div'); g.className='xg'; p.insertBefore(g,r); g.appendChild(r); });
+  var blk=null, kind='';
+  [].slice.call(c.childNodes).forEach(function(n){
+    if(n.nodeType!==1){ if(!String(n.textContent).trim()){ c.removeChild(n); return; } }
+    else if(n.classList.contains('xh')){ blk=null; return; }
+    var k=n.nodeType===1&&n.classList.contains('xr')?'g':n.nodeType===1&&(n.classList.contains('tscroll')||n.classList.contains('xt')||n.classList.contains('xg'))?'t':'p';
+    if(k==='t'){ blk=null; return; }
+    if(!blk||kind!==k){ blk=document.createElement('div'); blk.className=k==='g'?'xg':'xp'; c.insertBefore(blk,n); kind=k; }
+    blk.appendChild(n); }); }
+/* the sheet tabs */
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-stab]'); if(!t||t.hasAttribute('data-go')) return;
+  S.stab=t.getAttribute('data-stab'); render(); window.scrollTo(0,0); });
+/* new windows and doors: changed right in its row */
+document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.closest||!t.closest('.xs')) return;
+  if(t.hasAttribute('data-wdk')){ if(!wdefCan()) return; var k=t.getAttribute('data-wdk'), nd=Object.assign({},wdef()); nd[k]=t.value; D.wdef=nd; save();
+    toast('⚙ Saved — new '+(k.charAt(0)==='d'?'doors: '+wdefSum(true):'windows: '+wdefSum(false))); return; }
+  if(t.hasAttribute('data-wdu')){ uSet(t.value); toast('Sizes in '+(UNITS.filter(function(x){ return x[0]===t.value; })[0]||['',''])[1]+' on this phone'); } });
+
+function viewSettings0(){
   var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Sell '+s+'"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH','sashW','sashH','sashG'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
   return '<div class="card"><h2>Company (shown on quotes and statements)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
@@ -5378,7 +5580,7 @@ function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOr
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
-  if(d.go){ go(d.go); return; }
+  if(d.go){ if(d.stab) S.stab=d.stab; go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
   if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':d.filter==='own'?'own':+d.filter; go('orders'); return; }
   if(d.sub){ S.sub=d.sub; render(); return; }
