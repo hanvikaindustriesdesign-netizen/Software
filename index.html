@@ -808,8 +808,10 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 /* 💰 price tab (order / flat) and project rates */
 .xs.xpr,.xs.xpjr{max-width:none}
 .xs table.xt td.xsp{background:#fff4d6} .xs table.xt td.xsp input{font-weight:700;color:#93370d}
-.xs table.xt td.xdf{background:#fff4d6} .xs table.xt td.xdf input{font-weight:650}
+.xs table.xt td.xno{background:#fff1f0} .xs table.xt td.xno input::placeholder{color:#d92d20}
 .xs table.xt td.xn0{padding:6px 10px;color:var(--soft)}
+.isr>span.isw{white-space:normal;min-width:0;overflow-wrap:anywhere;line-height:1.35}
+.xs table.xsr td.xc{white-space:normal;overflow-wrap:anywhere;max-width:44vw}
 .xs table.xcalc td{padding:7px 8px;height:auto;vertical-align:top}
 .xs table.xcalc td.num{white-space:nowrap}
 .xs table.xcalc td small{display:block;color:var(--faint);font-size:12px;font-weight:400;line-height:1.3;margin-top:1px}
@@ -817,7 +819,6 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .xs table.xcalc tfoot td{background:#f1f3f6;border-top:2px solid #cdd4dd;padding:8px}
 .xs .xr.xtot{background:#f6f8fa} .xs .xr.xtot>div{font-size:16.5px}
 .xs .xr>input:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1}
-.xdfk{background:#fff4d6;padding:0 4px;border-radius:3px}
 .sptag{display:block;color:#b54708;font-size:11.5px;font-weight:600;line-height:1.25}
 </style>
 </head>
@@ -873,7 +874,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='04 Nov 2026, 11:29';
+var APPV='04 Nov 2026, 15:41';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1485,7 +1486,7 @@ function subItems0(o){
     +(dr?'<td class="c-br"></td><td class="c-pr"></td>':'<td class="c-br"></td><td class="c-se"></td><td class="c-gl"></td><td class="c-me"></td><td class="num sq" id="tsqf">'+fmt(ts)+' ft²</td>')
     +'<td class="num amt" id="tsub2">'+money(st)+'</td><td class="dl"></td></tr>';
   var sum='<div class="isum"><div class="isr"><span>Subtotal</span><b id="tsub">'+money(st)+'</b></div>'
-    +'<div class="isr"><span>Discount ₹</span><input class="n" type="number" inputmode="decimal" id="disc" value="'+(o.discount||'')+'"></div>'+(n(o.extra)?'<div class="isr"><span>Extra'+(o.pnote?' · '+esc(o.pnote):'')+'</span><b>+ '+money(o.extra)+'</b></div>':'')+(spCount(o)?'<div class="isr"><span class="faint">✏ Special rate for this '+(o.proj?'flat':'order')+' — see 💰 Price</span></div>':'')
+    +'<div class="isr"><span>Discount ₹</span>'+(rateEd(o)?'<input class="n" type="number" inputmode="decimal" id="disc" value="'+(o.discount||'')+'">':'<b>'+(n(o.discount)?'− '+money(o.discount):'—')+'</b>')+'</div>'+(n(o.extra)?'<div class="isr"><span class="isw">Extra'+(o.pnote?' · '+esc(o.pnote):'')+'</span><b>+ '+money(o.extra)+'</b></div>':'')+(o.tpl?'':noRate(o).length?'<div class="isr"><span class="isw warnt">⚠ No rate yet for '+esc(noRate(o).map(function(c){ return c.t+' · '+c.s; }).join(', '))+' — set it in 💰 Price</span></div>':spCount(o)?'<div class="isr"><span class="isw faint">✏ This flat has its own rate — see 💰 Price</span></div>':'')
     +'<div class="isr"><span>'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</span><b id="tgst">'+money(gstAmt(o))+'</b></div>'
     +'<div class="isr tot"><span>Total</span><b id="ttot">'+money(orderTotal(o))+'</b></div></div>';
   return '<div class="card icard'+(na?' noamt':'')+'"><div class="sheetw"><table class="sheet '+(dr?'sd':'sw')+'"><thead>'+head+'</thead><tbody>'
@@ -2196,7 +2197,7 @@ function flatSort(a,b){ return (a.tower||'')<(b.tower||'')?-1:(a.tower||'')>(b.t
 function flatStatus(f){ return f.stage>=4?'Delivered':f.stage===3?'Production done':f.stage===2?'In production':f.stage===1?(paid(f)>0.5&&admin()?'Advance paid':'Confirmed'):f.measured?'Measured':'Not measured'; }
 var FSTC={'Not measured':'s0','Measured':'s1','Confirmed':'s1','Advance paid':'s1','In production':'s2','Production done':'s3','Ready':'s3','Delivered':'s4'};
 function projStats(p,fl){ var s={measured:0,paid:0,inprod:0,delivered:0,billed:0,received:0,windows:0}; fl.forEach(function(f){ if(f.measured||f.stage>=1) s.measured++; if(paid(f)>0.5) s.paid++; if(f.stage===2||f.stage===3) s.inprod++; if(f.stage>=4) s.delivered++; if(f.stage>=1&&!isBld(f)) s.billed+=orderTotal(f); s.received+=paid(f); s.windows+=qty(f); }); return s; }
-function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
+function newFlat(p,ty,tower,floor,unit){ var o={id:uid(),proj:p.id,rates:{},no:flatNo(tower,floor,unit),tower:tower,floor:floor,unit:unit,ftype:ty?ty.id:'',kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:ty?JSON.parse(JSON.stringify(ty.items||[])):[],payments:[],discount:0,created:today(),measured:false};
   o.items.forEach(function(it){ it.made=false; }); o.address='Flat '+o.no+', '+p.name+(p.site?', '+p.site:''); if(p.payer==='b') o.payer='b'; return o; }
 function batchById(id){ var ps=D.projects||[]; for(var i=0;i<ps.length;i++){ var b=(ps[i].batches||[]).filter(function(x){return x.id===id;})[0]; if(b) return {p:ps[i],b:b}; } return null; }
 function batchFlats(b){ return b.flats.map(flatById).filter(function(f){return f&&!f.del;}).sort(flatSort); }
@@ -2263,7 +2264,7 @@ function pjRow(f){ var ty=typeById(f.ftype), st=flatStatus(f), pd=paid(f), lp=la
   return '<div class="ftr'+((S.psel||{})[f.id]?' sel':'')+'"><input type="checkbox" class="fsel" data-fsel="'+f.id+'"'+((S.psel||{})[f.id]?' checked':'')+' aria-label="Select '+esc(f.no)+'"><button class="ftm" data-open="'+f.id+'"><b class="c-no">'+esc(f.no)+'</b><span class="c-ty">'+esc(ty?ty.name:'—')+'</span>'
    +'<span class="c-ow">'+(f.customer?esc(f.customer):isBld(f)?'':'<span class="faint">No owner yet</span>')+(f.phone?'<small>'+esc(f.phone)+'</small>':'')+(prod()?'':bldTag(f))+'</span>'
    +'<span class="c-st"><span class="stage '+(FSTC[st]||'s0')+'">'+st+'</span></span>'
-   +(!admin()?'<span class="c-bill" data-l="Windows">'+qty(f)+'</span><span class="c-rec"></span><span class="c-due"></span>':'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+(hasSpecial(f)?'<small class="sptag">✏ special price</small>':'')+'</span>'
+   +(!admin()?'<span class="c-bill" data-l="Windows">'+qty(f)+'</span><span class="c-rec"></span><span class="c-due"></span>':'<span class="c-bill" data-l="Bill">'+(meas?money(orderTotal(f)):'<span class="faint">'+qty(f)+' windows</span>')+(hasSpecial(f)?'<small class="sptag">✏ own price</small>':'')+'</span>'
    +'<span class="c-rec" data-l="Received">'+(pd>0.5?'<b class="goodt">'+money(pd)+'</b>'+(lp?'<small>'+dShort(lp.on)+' · '+esc(lp.mode||'Cash')+'</small>':''):'<span class="faint">—</span>')+'</span>'
    +'<span class="c-due" data-l="Due">'+(isBld(f)?'<span class="faint">🏗 builder</span>':f.stage>0||pd>0.5?(bal>0.5?'<b class="warnt">'+money(bal)+'</b>':'<span class="goodt">Paid</span>'):'<span class="faint">—</span>')+'</span>')+'</button>'
    +(prod()?'':'<button class="btn sm ghost fe" data-fedit="'+f.id+'" aria-label="Edit '+esc(f.no)+'" title="Edit flat">✎</button>')+'</div>'; }
@@ -2433,7 +2434,7 @@ function batchAddPop(r){ var b=r.b, cand=projFlats(r.p.id).filter(function(f){ r
 function pjAddFlats(p){ if(!FL.loaded){ toast('Loading flats… try again in a moment'); return; } var a=faRead(); if(!(p.types||[]).length){ toast('Make a flat type first'); return; }
   var tot=Math.max(0,a.f2-a.f1+1)*Math.max(0,a.n); if(!tot){ toast('Check floors and flats per floor'); return; } if(tot>400){ toast('Add up to 400 flats at a time'); return; }
   var ex={}; projFlats(p.id).forEach(function(f){ ex[f.no]=1; }); var added=0;
-  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ var no=flatNo(a.t,fl,a.u+u); if(ex[no]) continue; var nf=newFlat(p,faTypeAt(p,a,u),a.t,fl,a.u+u); if(admin()) setPayer(nf,faPayVal(p)); D.flats.push(nf); ex[no]=1; added++; }
+  for(var fl=a.f1;fl<=a.f2;fl++) for(var u=0;u<a.n;u++){ var no=flatNo(a.t,fl,a.u+u); if(ex[no]) continue; var nf=newFlat(p,faTypeAt(p,a,u),a.t,fl,a.u+u); if(admin()) setPayer(nf,faPayVal(p)); rateFill(nf); D.flats.push(nf); ex[no]=1; added++; }
   if((p.types||[]).length>1){ p.fplan=[]; for(var k=0;k<a.n;k++) p.fplan[k]=faTypeAt(p,a,k).id; S.fa_pt=p.fplan.slice(); }
   S.fa_t=a.t; S.fa_ty=a.ty; S.fa_f1=a.f2+1; S.fa_f2=a.f2+1+(a.f2-a.f1); S.fa_n=a.n; S.fa_u=a.u; S.padd=false; save(); render(); toast(added+' flats added'); }
 /* put flats into a batch: in production, material taken from stock once per flat */
@@ -2526,7 +2527,7 @@ document.addEventListener('click',function(e){ var t=e.target.closest('[data-pro
     var oldAddr=p4?pjAddr(f4.no,p4):'', tyId=pjV('fe_ty'), ty4=tyId?typeById(tyId):null;
     f4.no=no; f4.tower=pjV('fe_t').toUpperCase(); f4.floor=Math.round(n(pjV('fe_fl'))); var mu=no.match(/(\d{1,2})$/); if(mu) f4.unit=+mu[1];
     if(tyId!==(f4.ftype||'')){ f4.ftype=tyId; if(ty4&&($('#fe_cp')||{}).checked) copyItems(f4,ty4); }
-    f4.customer=pjV('fe_c'); f4.phone=pjV('fe_ph'); var pyN='', pyB=f4.payer||''; if(admin()&&$('#fe_pay')&&!setPayer(f4,pjV('fe_pay'))) pyN=' — it has owner payments, so its owner still pays'; if(admin()&&(f4.payer||'')!==pyB) payerReprice([f4]); if(admin()&&$('#fe_gst')&&n(pjV('fe_gst'))!==gstOf(f4)) gstSet(f4,pjV('fe_gst')); if(p4&&(!f4.address||f4.address===oldAddr)) f4.address=pjAddr(f4.no,p4);
+    f4.customer=pjV('fe_c'); f4.phone=pjV('fe_ph'); var pyN='', pyB=f4.payer||'', gEl=$('#fe_gst'), gCh=!!gEl&&[].slice.call(gEl.options).some(function(op){ return op.selected!==op.defaultSelected; }); if(admin()&&$('#fe_pay')&&!setPayer(f4,pjV('fe_pay'))) pyN=' — it has owner payments, so its owner still pays'; if(admin()&&gCh&&n(pjV('fe_gst'))!==gstOf(f4)) gstSet(f4,pjV('fe_gst')); if(admin()&&(f4.payer||'')!==pyB) payerReprice([f4]); if(p4&&(!f4.address||f4.address===oldAddr)) f4.address=pjAddr(f4.no,p4);
     pjPopX(); save(); render(); toast('Flat '+f4.no+' saved'+pyN); return; }
   if(a==='fedel'){ var f5=flatById(d.fid); if(f5&&!f5.del) pjDelete(f5); return; }
   if(a==='btaddshow'){ var rb=batchById(d.bid); if(rb&&!prod()) batchAddPop(rb); return; }
@@ -2556,89 +2557,126 @@ function nestRows(r){ return '<table><tbody>'+nestGroups(r).map(function(g){ var
 function nestGroups(r){ var gs=[], bi=0; r.nest.forEach(function(bar){ var key=(bar.off?"o"+bar.cap:"b")+"|"+bar.pieces.map(function(p){return p.len;}).join(","), g=gs[gs.length-1]; if(g&&g.key===key){ g.n++; bar.pieces.forEach(function(p){ var l=p.lab.split(" ")[0]; if(g.labs.indexOf(l)<0) g.labs.push(l); }); } else gs.push({key:key,bar:bar,n:1,labs:bar.pieces.map(function(p){return p.lab.split(" ")[0];}).filter(function(v,i,a){return a.indexOf(v)===i;})}); });
   gs.forEach(function(g){ if(g.bar.off){ g.name="Offcut "+g.bar.cap+(g.n>1?" ×"+g.n:""); return; } var a=bi+1, z=bi+g.n; g.name=r.two?(g.n>1?"Bars "+(2*a-1)+"–"+(2*z):"Bars "+(2*a-1)+"+"+(2*a)):(g.n>1?"Bars "+a+"–"+z:"Bar "+a); bi+=g.n; }); return gs; }
 /* ============================================================
-   💰 PRICES — three price lists and a special price per order / flat
-   Asked: "Provide separate price for projects owner n builder n order, also provide option to edit price per owner
-   based on requirement" (+ "create price tab for order", "provide option to edit").
-   · Orders use the shop rates (Settings → 🪟 Windows).
-   · Each apartment project has its own 🏗 builder rates and 👤 owner rates (project → 💰 Rates, admin); a new project
-     starts with a copy of the shop rates. A flat uses the list of whoever pays for it.
-   · Any order or flat can get its own rate per window type, a discount and an extra charge (order / flat → 💰 Price).
-   · Window price = sq ft (to 2 decimals) × rate, to the rupee, × qty — so a calculator gives the same figure.
-     Bills locked before this version keep the exact sq ft, so nothing confirmed changes by itself.
-   · A window added or changed after a job was confirmed is locked at that day's rate (before, it kept following the
-     rate list).
+   💰 PRICES — every order and every flat has its own rates
+   Asked: "Need better one, remove central rate system" → rates "per order, either flat owner or builder or order";
+   flats: "both" (the project's rate is copied into each flat, and each flat can be changed).
+   · No central selling-rate table any more (Settings keeps only material cost, for profit).
+   · Every order / flat stores its own rate per window type (brand · type · series) in o.rates:
+     - a new order starts with the rates of the latest order that has that window type;
+     - a new flat starts with its project's 👤 owner or 🏗 builder rates (project → 💰 Rates);
+     - a window type nobody has priced yet has no rate until it is typed (💰 Price).
+   · Rates change only in the order's / flat's 💰 Price tab, or with "Apply to flats" in the project's 💰 Rates
+     (flats not confirmed). Nothing central changes a bill by itself.
+   · Orders and flats made before this version keep exactly the rates they charged (moved into o.rates once).
+   · Window price = sq ft (2 decimals) × rate, to the rupee, × qty (bills locked before 4 Nov keep the exact sq ft).
    ============================================================ */
+function rTxt(v){ v=n(v); return Math.round(v)===v?nIN(v):v.toLocaleString('en-IN',{maximumFractionDigits:2}); }
 function sqft2(w,h){ return Math.round(n(w)*n(h)/929.03)/100; }
 function sqPrice(o,w,h){ return o&&o.rlock&&!o.rlock.v?sqft(w,h):sqft2(w,h); }
 function payKey(o){ return o&&o.proj?(isBld(o)?'b':'o'):'s'; }
 function payName(k){ return k==='b'?'builder':k==='o'?'owner':'shop'; }
-function listName(o){ var p=o&&o.proj&&projById(o.proj); return p?(isBld(o)?'🏗 Builder rates':'👤 Owner rates')+' · '+p.name:'Shop rates (Settings)'; }
-/* the rate a job gets from its price list today: the project's builder / owner list, else the shop rates */
-function listRate(o,brand,t,sr){ var p=o&&o.proj&&projById(o.proj), R=p&&p.rates&&p.rates[isBld(o)?'b':'o'], e=R&&R[brand||''], v=e&&e[t]?e[t][sr]:undefined;
-  if(v!=null&&v!=='') return n(v); var B=brandOf(brand); return ((B.rate||{})[t]||{})[sr]; }
-/* this order's / flat's own rate, when it has one */
-function spRate(o,brand,t,sr){ var e=o&&o.srates&&o.srates[brand||''], v=e&&e[t]?e[t][sr]:undefined; return v!=null&&v!==''?n(v):undefined; }
-/* the rate without the job's own rate: the locked one, else the list */
-function normRate(o,brand,t,sr){ var L=o&&o.rlock, e=L&&L.b&&L.b[brand||''], v=e&&e.rate&&e.rate[t]?e.rate[t][sr]:undefined; return v!=null?v:listRate(o,brand,t,sr); }
-/* selling rate: own rate → locked rate → price list. Costs as before. */
-function lkVal(o,brand,k,t,sr){ if(k!=='rate') return lkVal0(o,brand,k,t,sr); var sp=spRate(o,brand,t,sr); return sp!==undefined?sp:normRate(o,brand,t,sr); }
-function spCount(o){ var k=0; Object.keys(o&&o.srates||{}).forEach(function(b){ Object.keys(o.srates[b]||{}).forEach(function(t){ k+=Object.keys(o.srates[b][t]||{}).length; }); }); return k; }
-function hasSpecial(o){ return !!o&&(spCount(o)>0||n(o.extra)>0||n(o.discount)>0); }
-function spSet(o,brand,t,sr,v){ var nv=String(v==null?'':v).trim(), base=normRate(o,brand,t,sr);
-  o.srates=o.srates||{}; var e=o.srates[brand]=o.srates[brand]||{}, r=e[t]=e[t]||{};
-  if(nv===''||!(n(nv)>0)||(base!=null&&n(nv)===n(base))) delete r[sr]; else r[sr]=Math.round(n(nv)*100)/100;
-  if(!Object.keys(r).length) delete e[t]; if(!Object.keys(e).length) delete o.srates[brand]; if(!Object.keys(o.srates).length) delete o.srates; }
+function getR(R,b,t,s){ var e=R&&R[b||''], v=e&&e[t]?e[t][s]:undefined; return v!=null&&v!==''&&n(v)>0?n(v):undefined; }
+function setR(R,b,t,s,v){ var e=R[b||'']=R[b||'']||{}, r=e[t]=e[t]||{}; if(v==null){ delete r[s]; if(!Object.keys(r).length) delete e[t]; if(!Object.keys(e).length) delete R[b||'']; } else r[s]=Math.round(n(v)*100)/100; }
+function jobProj(o){ return o&&o.proj?projById(o.proj):null; }
+/* the project's rate for this flat: its owner list or its builder list */
+function projRate(o,b,t,s){ var p=jobProj(o); if(!p) return undefined; if(p.rates) return getR(p.rates[isBld(o)?'b':'o'],b,t,s);
+  /* a project from before its lists existed (they are made on the admin phone): the old shop rates, as it charged */
+  var B=brandOf(b), v=((B.rate||{})[t]||{})[s]; return n(v)>0?n(v):undefined; }
+/* the latest other order that has this window type */
+function lastOrderRate(o,b,t,s){ var best, bk=null; D.orders.forEach(function(x){ if(x===o||x.del||!x.rates) return; var v=getR(x.rates,b,t,s); if(v===undefined) return;
+    var k=(x.created||'')+'|'+('00000000'+(x.no||0)).slice(-8); if(bk===null||k>bk){ best=v; bk=k; } }); return best; }
+/* a door line's price: the last price used for this door (this order, else the latest door order); the old Settings price only if never sold */
+function doorPrice(o,b,t,skip){ var hit=function(x){ var v; (x.items||[]).forEach(function(it){ if(it!==skip&&it.brand===b&&it.type===t&&n(it.price)>0) v=n(it.price); }); return v; };
+  var v=o?hit(o):undefined; if(v!==undefined) return v; var best, bk=null;
+  D.orders.forEach(function(x){ if(x===o||x.del||x.kind!=='doors') return; var w=hit(x); if(w===undefined) return;
+    var k=(x.created||'')+'|'+('00000000'+(x.no||0)).slice(-8); if(bk===null||k>bk){ best=w; bk=k; } });
+  return best!==undefined?best:n(((brandOf(b)||{}).doorRate||{})[t]); }
+/* where a missing rate comes from: the project's list (flats and flat types), else the latest order */
+function srcRate(o,b,t,s){ return o&&o.proj?projRate(o,b,t,s):lastOrderRate(o,b,t,s); }
+/* what a job made before this version charged: its own rate → its locked rate → the project list → Settings */
+function oldRate(o,b,t,s){ var sp=o&&o.srates&&o.srates[b||'']&&o.srates[b||''][t]?o.srates[b||''][t][s]:undefined; if(sp!=null&&sp!==''&&n(sp)>0) return n(sp);
+  var L=o&&o.rlock, e=L&&L.b&&L.b[b||''], v=e&&e.rate&&e.rate[t]?e.rate[t][s]:undefined; if(v!=null) return v;
+  var pv=projRate(o,b,t,s); if(pv!==undefined) return pv; var B=brandOf(b); return ((B.rate||{})[t]||{})[s]; }
+/* selling rate: the job's own; until it is stored, where it would come from */
+/* a confirmed job's rate as it was when confirmed (its lock) */
+function lockRate(o,b,t,s){ var L=o&&o.rlock, e=L&&L.b&&L.b[b||''], r=e&&e.rate&&e.rate[t], v=r?r[s]:undefined; return v!=null&&v!==''?n(v):undefined; }
+/* a rate the job does not have yet: confirmed → only its lock (never today's rates); not confirmed → the copy an older app version
+   may have changed (o.srates), then the project list or the latest order */
+function fillRate(o,b,t,s){ var v; if(o.rlock){ v=lockRate(o,b,t,s); return v!==undefined?v:getR(o.srates,b,t,s); } v=getR(o.srates,b,t,s); return v!==undefined?v:srcRate(o,b,t,s); }
+/* phones still on the previous version price from o.srates: keep it the same as o.rates, so every phone shows the same bill */
+function srMirror(o){ if(!o||!o.rates) return 0; var a=JSON.stringify(o.rates); if(a===JSON.stringify(o.srates||{})) return 0; if(a==='{}') delete o.srates; else o.srates=JSON.parse(a); return 1; }
+function lkVal(o,b,k,t,s){ if(k!=='rate') return lkVal0(o,b,k,t,s); if(!o) return undefined; if(!o.rates) return oldRate(o,b,t,s); var v=getR(o.rates,b,t,s); return v!==undefined?v:fillRate(o,b,t,s); }
+/* lockRates keeps a copy of the rates a job was confirmed at (costs and GST still use the lock) */
+function listRate(o,b,t,s){ return lkVal(o,b,'rate',t,s); }
 /* the kinds of window in a job: brand · type · series (each part of a combination window counts) */
 function priceCombos(o){ var seen={}, out=[]; if(!o||o.kind==='doors') return out;
   (o.items||[]).forEach(function(it){ if(it.fixed!=null&&it.fixed!=='') return;
     (it.type==='Custom'?cellsOf(it).map(function(cl){ return cellType(cl.t); }):[it.type]).forEach(function(t){ var k=(it.brand||'')+'|'+t+'|'+it.series; if(seen[k]) return; seen[k]=1; out.push({b:it.brand||'',t:t,s:it.series}); }); });
   return out; }
-function lockFill(o){ var L=o&&o.rlock; if(!L||o.tpl||o.del||o.kind==='doors') return 0; L.b=L.b||{}; var k=0;
-  priceCombos(o).forEach(function(c){ var e=L.b[c.b]||(L.b[c.b]={}), r; e.rate=e.rate||{}; r=e.rate[c.t]||(e.rate[c.t]={}); if(r[c.s]==null){ var v=listRate(o,c.b,c.t,c.s); if(v!=null){ r[c.s]=v; k++; } } });
-  return k; }
-function lockFillCur(){ try{ if(S.tab==='order'){ var o=order(); if(o&&o.rlock) return lockFill(o); } }catch(e){} return 0; }
-/* a project's two lists start as a copy of the shop rates */
-function pjRatesNew(){ var R={b:{},o:{}}; D.brands.forEach(function(B){ ['b','o'].forEach(function(k){ var e=R[k][B.name]={};
-    WTYPES.forEach(function(t){ var r=(B.rate||{})[t]; if(t==='Custom'||!r) return; e[t]={}; SERIES.forEach(function(s){ if(r[s]!=null) e[t][s]=r[s]; }); }); }); }); return R; }
-/* admin phone, after loading: projects get their lists; locked jobs get the rates they were missing */
-function priceFix(){ if(!isAdm()) return 0; var k=0; (D.projects||[]).forEach(function(p){ if(!p.rates){ p.rates=pjRatesNew(); k++; } });
-  allJobs().forEach(function(o){ if(o.rlock&&!o.tpl&&lockFill(o)) k++; }); if(k) save(); return k; }
-/* a confirmed flat that moves between owner and builder: asked once whether to price it at the other list */
-function payerReprice(fl){ var ch=[], b0=0, b1=0;
-  (fl||[]).forEach(function(f){ if(!f||!f.rlock||f.tpl||f.del||f.kind==='doors') return; var a=orderTotal(f), keep=f.rlock; delete f.rlock; var z=orderTotal(f); f.rlock=keep;
-    if(Math.round(a)!==Math.round(z)){ ch.push(f); b0+=a; b1+=z; } });
-  if(!ch.length) return 0;
-  if(!confirm((ch.length===1?'Flat '+ch[0].no+' is confirmed.':ch.length+' of these flats are confirmed.')+'\nPrice '+(ch.length===1?'it':'them')+' at the '+payName(payKey(ch[0]))+' rates now?\n\nTotal '+money(b0)+' → '+money(b1)+'\n\n(Cancel keeps the price; you can do it later in 💰 Price → Use today\'s rates.)')) return 0;
-  ch.forEach(function(f){ lockRates(f,true); }); return ch.length; }
+/* stores a job's rates: once for a job made before this version (exactly what it charged), then each new window type */
+function rateFill(o){ if(!o||o.tpl||o.bat||o.del||o.kind==='doors') return 0; var k=0;
+  if(!o.rates){ var R={}, ch=!!o.srates; priceCombos(o).forEach(function(c){ var v=oldRate(o,c.b,c.t,c.s); if(n(v)>0) setR(R,c.b,c.t,c.s,n(v)); }); o.rates=R; srMirror(o); return ch||Object.keys(R).length?1:0; }
+  priceCombos(o).forEach(function(c){ if(getR(o.rates,c.b,c.t,c.s)===undefined){ var v=fillRate(o,c.b,c.t,c.s); if(n(v)>0){ setR(o.rates,c.b,c.t,c.s,n(v)); k++; } } });
+  return k+srMirror(o); }
+function lockFillCur(){ try{ if(S.tab==='order'&&!prod()){ var o=order(); if(o) return rateFill(o); } }catch(e){} return 0; }
+/* window types of a job that have no rate yet */
+function noRate(o){ return priceCombos(o).filter(function(c){ return !(n(lkVal(o,c.b,'rate',c.t,c.s))>0); }); }
+/* a flat's own rates that differ from its project's list */
+function spCount(o){ if(!o||!o.proj||!o.rates) return 0; return priceCombos(o).filter(function(c){ var a=getR(o.rates,c.b,c.t,c.s), b=projRate(o,c.b,c.t,c.s); return a!==undefined&&b!==undefined&&a!==b; }).length; }
+function hasSpecial(o){ return !!o&&(spCount(o)>0||n(o.extra)>0||n(o.discount)>0); }
+/* a new project starts with a copy of the latest project's lists */
+function pjRatesNew(p0){ var src=(D.projects||[]).filter(function(x){ return x!==p0&&x.rates; }).sort(function(a,b){ return String(b.created||'').localeCompare(String(a.created||'')); })[0];
+  return src?JSON.parse(JSON.stringify(src.rates)):pjRatesSet(); }
+/* the old Settings rates as owner and builder lists (what a project without lists charged) */
+function pjRatesSet(){ var R={b:{},o:{}}; D.brands.forEach(function(B){ ['b','o'].forEach(function(k){ WTYPES.forEach(function(t){ var r=(B.rate||{})[t]; if(t==='Custom'||!r) return; SERIES.forEach(function(s){ if(n(r[s])>0) setR(R[k],B.name,t,s,n(r[s])); }); }); }); }); return R; }
+/* admin phone, after loading: every order and flat gets its own rates (once), projects their lists */
+function priceFix(){ if(!isAdm()) return 0; var k=0; allJobs().forEach(function(o){ if(rateFill(o)) k++; });
+  (D.projects||[]).forEach(function(p){ if(!p.rates){ p.rates=pjRatesSet(); k++; } }); if(k) save(); return k; }
+/* a flat's rates from its project list (the window types the list has) */
+function projRatesFor(f){ var R=JSON.parse(JSON.stringify(f.rates||{})); priceCombos(f).forEach(function(c){ var v=projRate(f,c.b,c.t,c.s); if(v!==undefined) setR(R,c.b,c.t,c.s,v); }); return R; }
+/* flats that moved between owner and builder: not confirmed → the other list; confirmed → asked once */
+function payerReprice(fl){ var ask=[], b0=0, b1=0;
+  (fl||[]).forEach(function(f){ if(!f||f.tpl||f.del||f.kind==='doors'||!f.proj) return; if(!f.rates) rateFill(f); var R2=projRatesFor(f);
+    if(JSON.stringify(R2)===JSON.stringify(f.rates||{})) return; if(!(f.stage>=1)){ f.rates=R2; srMirror(f); return; }
+    var a=orderTotal(f), keep=f.rates; f.rates=R2; var z=orderTotal(f); f.rates=keep; if(Math.round(a)===Math.round(z)) return; ask.push({f:f,R:R2}); b0+=a; b1+=z; });
+  if(!ask.length) return 0;
+  if(!confirm((ask.length===1?'Flat '+ask[0].f.no+' is confirmed.':ask.length+' of these flats are confirmed.')+'\nUse the '+payName(payKey(ask[0].f))+' rates of the project?\n\nTotal '+money(b0)+' → '+money(b1)+'\n\n(Cancel keeps the price; change it later in the flat\'s 💰 Price.)')) return 0;
+  ask.forEach(function(x){ x.f.rates=x.R; srMirror(x.f); }); return ask.length; }
 function pjBrandsUsed(fl){ var c={}; (fl||[]).forEach(function(f){ (f.items||[]).forEach(function(it){ if(it.brand) c[it.brand]=(c[it.brand]||0)+n(it.qty||1); }); }); return Object.keys(c).sort(function(a,b){ return c[b]-c[a]; }); }
+/* a brand renamed / deleted: the jobs' rates and the project lists go with it */
+function prRename(a,b){ if(!a||!b||a===b) return; var mv=function(R){ if(R&&R[a]){ if(!R[b]) R[b]=R[a]; delete R[a]; } };
+  allJobs().forEach(function(x){ mv(x.rates); mv(x.srates); }); (D.projects||[]).forEach(function(p){ if(p.rates){ mv(p.rates.b); mv(p.rates.o); } });
+  if(D.wdef){ if(D.wdef.brand===a) D.wdef.brand=b; if(D.wdef.dbrand===a) D.wdef.dbrand=b; } }
+function prBrandGone(a,to){ var mg=function(R){ var e=R&&R[a]; if(!e) return; var t2=R[to]=R[to]||{}; Object.keys(e).forEach(function(t){ var r=t2[t]=t2[t]||{}; Object.keys(e[t]||{}).forEach(function(sr){ if(r[sr]==null) r[sr]=e[t][sr]; }); }); delete R[a]; };
+  allJobs().forEach(function(x){ mg(x.rates); mg(x.srates); }); (D.projects||[]).forEach(function(p){ ['b','o'].forEach(function(k){ if(p.rates&&p.rates[k]) delete p.rates[k][a]; }); }); }
+/* who may change a job's rates: admin; sales on an ordinary order that is not confirmed yet */
+function rateEd(o){ return !!o&&(admin()||(!o.proj&&!prod()&&!(o.stage>=1))); }
 
 /* ---------- order / flat → 💰 Price ---------- */
-function subPrice(o){ var ed=admin(), adj=!noAmt(o), dr=o.kind==='doors', L=o.rlock, p=o.proj&&projById(o.proj), cmb=priceCombos(o), mb=cmb.some(function(c){ return c.b!==cmb[0].b; }), wd=o.proj?'flat':'order';
-  var isum=o.items.reduce(function(a,it){ return a+itemPrice(o,it); },0), h='<div class="xs xpr">';
-  h+='<div class="card xsec"><div class="xh"><h2>💰 Price list</h2>'+(ed&&p?'<button class="btn sm" data-proj="'+p.id+'" data-psubgo="rates" data-prwgo="'+payKey(o)+'">'+(isBld(o)?'🏗':'👤')+' Project rates</button>':'')+'</div>'
-   +'<div class="xg"><div class="xr"><span>Rates from</span><div>'+esc(dr?'Price per door (on each line)':listName(o))+'</div></div>'
-   +(dr?'':'<div class="xr"><span>Locked</span><div>'+(L?'🔒 Rates of '+dShort(L.on)+' — later rate changes don\'t change this bill'+(ed?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':''):'Not yet — it follows the price list until it is confirmed')+'</div></div>')
-   +(!dr&&L&&L.src&&L.src!==payKey(o)?'<div class="xr"><span>⚠ Who pays</span><div class="warnt">Locked at the '+payName(L.src)+' rates, but the '+payName(payKey(o))+' pays now — tap “Use today\'s rates” to use the '+payName(payKey(o))+' rates.</div></div>':'')
-   +'</div></div>';
-  if(cmb.length){ var ns=spCount(o);
-    h+='<div class="card xsec"><div class="xh"><h2>Rate for this '+wd+' <small>(₹ per sq ft)</small></h2>'+(ed&&ns?'<button class="btn sm ghost" data-act="spclear">Back to normal rates</button>':'')+'</div>'
-     +'<div class="tscroll"><table class="xt xsr"><thead><tr><th>Window</th><th class="num">Normal</th><th class="num">This '+wd+'</th></tr></thead><tbody>'
-     +cmb.map(function(c){ var nr=normRate(o,c.b,c.t,c.s), sp=spRate(o,c.b,c.t,c.s), cur=sp!==undefined?sp:nr;
-        return '<tr><td class="xc">'+esc(c.t)+' · '+esc(c.s)+(mb?' · '+esc(c.b):'')+'</td><td class="num xn0">'+(nr!=null?nIN(nr):'—')+'</td><td class="num'+(sp!==undefined?' xsp':'')+'">'
-         +(ed?'<input class="n" type="number" inputmode="decimal" min="0" step="any" data-srate="'+esc(c.b)+'|'+esc(c.t)+'|'+esc(c.s)+'" value="'+(cur!=null?cur:'')+'" aria-label="Rate for '+esc(c.t)+' '+esc(c.s)+'">':(cur!=null?nIN(cur):'—'))+'</td></tr>'; }).join('')
-     +'</tbody></table></div>'
-     +'<div class="xp"><p class="faint">'+(ns?'✏ <b>Special rate</b> for this '+(o.proj?'owner':'customer')+' — it stays when the price list changes. ':'')+(ed?'Type a different rate only for this '+(o.proj?'flat':'order')+'; the same as Normal means the normal price.':'')+'</p></div></div>'; }
+function subPrice(o){ var ed=rateEd(o), adj=!noAmt(o)&&ed, dr=o.kind==='doors', p=jobProj(o), cmb=priceCombos(o), mb=cmb.some(function(c){ return c.b!==cmb[0].b; }), wd=o.proj?'flat':'order';
+  var isum=o.items.reduce(function(a,it){ return a+itemPrice(o,it); },0), nr=noRate(o), h='<div class="xs xpr">';
+  if(!dr){ var dif=spCount(o);
+    h+='<div class="card xsec"><div class="xh"><h2>Rates for this '+wd+' <small>(₹ per sq ft)</small></h2>'
+     +(p&&admin()?'<span class="row" style="gap:6px">'+(dif?'<button class="btn sm ghost" data-act="prproj">Use project rates</button>':'')+'<button class="btn sm" data-proj="'+p.id+'" data-psubgo="rates" data-prwgo="'+payKey(o)+'">'+(isBld(o)?'🏗':'👤')+' Project rates</button></span>':'')+'</div>'
+     +(cmb.length?'<div class="tscroll"><table class="xt xsr"><thead><tr><th>Window</th>'+(p?'<th class="num">Project</th>':'')+'<th class="num">This '+wd+'</th></tr></thead><tbody>'
+     +cmb.map(function(c){ var cur=lkVal(o,c.b,'rate',c.t,c.s), pv=p?projRate(o,c.b,c.t,c.s):undefined, df=p&&cur!=null&&pv!==undefined&&n(cur)!==pv, no=!(n(cur)>0);
+        return '<tr><td class="xc">'+esc(c.t)+' · '+esc(c.s)+(mb?' · '+esc(c.b):'')+'</td>'+(p?'<td class="num xn0">'+(pv!==undefined?rTxt(pv):'—')+'</td>':'')+'<td class="num'+(df?' xsp':'')+(no?' xno':'')+'">'
+         +(ed?'<input class="n" type="number" inputmode="decimal" min="0" step="any" data-jrate="'+esc(c.b)+'|'+esc(c.t)+'|'+esc(c.s)+'" value="'+(n(cur)>0?cur:'')+'" placeholder="rate" aria-label="Rate for '+esc(c.t)+' '+esc(c.s)+'">':(n(cur)>0?rTxt(cur):'<span class="warnt">no rate</span>'))+'</td></tr>'; }).join('')
+     +'</tbody></table></div>':'<div class="xp"><p class="faint">No windows yet.</p></div>')
+     +'<div class="xp"><p class="faint">'+(nr.length?'<b class="warnt">⚠ No rate yet for '+nr.map(function(c){ return c.t+' · '+c.s; }).join(', ')+'</b> — '+(ed?'type it here.':'ask the admin.')+' ':'')
+     +(o.proj?'Started from the project\'s '+(isBld(o)?'🏗 builder':'👤 owner')+' rates'+(dif?'; <b>yellow</b> = this owner\'s own rate':'')+'. A change here is only for this flat.':'A new order starts with the rates of the latest order. A change here is only for this order.')
+     +(!ed&&!o.proj?' Only the admin changes the rates of a confirmed order.':'')+'</p></div></div>'; }
   var rows='', tsq=0, tq=0;
   o.items.forEach(function(it,i){ var q=n(it.qty), amt=itemPrice(o,it), fx=it.fixed!=null&&it.fixed!=='', cu=it.type==='Custom'&&!fx, sq=dr?0:sqft2(it.w,it.h), rate=dr?n(it.price):fx||cu?null:lkVal(o,it.brand,'rate',it.type,it.series);
     var lab=(it.type==='Custom'?'Combination':it.type)+(dr?' door':it.series?' · '+it.series:''), sub=[it.loc,Math.round(n(it.w))+' × '+Math.round(n(it.h))].filter(Boolean).join(' · ')+(q!==1?' · × '+fmt(q):'');
     tsq+=sq*q; tq+=q;
-    rows+='<tr><td class="xc">'+(i+1)+'</td><td><b>'+esc(lab)+'</b><small>'+esc(sub)+'</small></td><td class="num">'+(dr?'—':sq.toFixed(2))+'</td><td class="num">'+(rate==null?(cu?'parts':'fixed'):nIN(rate))+'</td><td class="num"><b>'+nIN(amt)+'</b></td></tr>';
+    rows+='<tr><td class="xc">'+(i+1)+'</td><td><b>'+esc(lab)+'</b><small>'+esc(sub)+'</small></td><td class="num">'+(dr?'—':sq.toFixed(2))+'</td><td class="num">'+(fx?'fixed':cu?'parts':!(n(rate)>0)?'<span class="warnt">no rate</span>':rTxt(rate))+'</td><td class="num"><b>'+nIN(amt)+'</b></td></tr>';
     if(cu) cellsOf(it).forEach(function(cl){ var t=cellType(cl.t), r=lkVal(o,it.brand,'rate',t,it.series)||0;
-      rows+='<tr class="xpart"><td></td><td><small>↳ '+esc(partName(cl.t,cl.hinge))+' · '+Math.round(cl.w)+' × '+Math.round(cl.h)+'</small></td><td class="num"><small>'+sqft2(cl.w,cl.h).toFixed(2)+'</small></td><td class="num"><small>'+nIN(r)+'</small></td><td class="num"><small>'+nIN(Math.round(sqPrice(o,cl.w,cl.h)*r))+(q!==1?' × '+fmt(q):'')+'</small></td></tr>'; }); });
+      rows+='<tr class="xpart"><td></td><td><small>↳ '+esc(partName(cl.t,cl.hinge))+' · '+Math.round(cl.w)+' × '+Math.round(cl.h)+'</small></td><td class="num"><small>'+sqft2(cl.w,cl.h).toFixed(2)+'</small></td><td class="num"><small>'+(n(r)>0?rTxt(r):'<span class="warnt">no rate</span>')+'</small></td><td class="num"><small>'+nIN(Math.round(sqPrice(o,cl.w,cl.h)*r))+(q!==1?' × '+fmt(q):'')+'</small></td></tr>'; }); });
   h+='<div class="card xsec"><div class="xh"><h2>How the amount is worked out</h2></div><div class="tscroll"><table class="xt xcalc"><thead><tr><th>#</th><th>'+(dr?'Door':'Window')+'</th><th class="num">'+(dr?'':'Sq ft')+'</th><th class="num">'+(dr?'Price':'Rate')+'</th><th class="num">Amount</th></tr></thead><tbody>'
    +(rows||'<tr><td class="xc" colspan="5">No '+(dr?'doors':'windows')+' yet</td></tr>')+'</tbody>'
    +(o.items.length?'<tfoot><tr><td></td><td><b>Total</b><small>'+fmt(tq)+' '+(dr?'door':'window')+(tq===1?'':'s')+'</small></td><td class="num"><b>'+(dr?'':tsq.toFixed(2))+'</b></td><td></td><td class="num"><b>'+nIN(isum)+'</b></td></tr></tfoot>':'')+'</table></div>'
-   +'<div class="xp"><p class="faint">'+(dr?'Price per door × qty.':'Sq ft = width × height (mm) ÷ 92,903, to 2 decimals. Amount = sq ft × rate, to the rupee, × qty.')+(!dr&&L&&!L.v?' This bill was locked before 4 Nov and uses the exact sq ft, so it can differ from sq ft × rate by a rupee or two.':'')+'</p></div></div>';
+   +'<div class="xp"><p class="faint">'+(dr?'Price per door × qty (the price is on each door line).':'Sq ft = width × height (mm) ÷ 92,903, to 2 decimals. Amount = sq ft × rate, to the rupee, × qty.')+(!dr&&o.rlock&&!o.rlock.v?' This bill was confirmed before 4 Nov and uses the exact sq ft, so it can differ from sq ft × rate by a rupee or two.':'')+'</p></div></div>';
   h+='<div class="card xsec"><div class="xh"><h2>Discount and extra</h2></div><div class="xg">'
    +'<label class="f xr"><span>Discount ₹</span>'+(adj?'<input class="n" type="number" inputmode="decimal" min="0" step="any" data-padj="discount" value="'+(n(o.discount)||'')+'">':'<input type="text" disabled value="'+money(o.discount)+'">')+'</label>'
    +'<label class="f xr"><span>Extra charge ₹ <small>(extra work, transport…)</small></span>'+(adj?'<input class="n" type="number" inputmode="decimal" min="0" step="any" data-padj="extra" value="'+(n(o.extra)||'')+'">':'<input type="text" disabled value="'+money(o.extra)+'">')+'</label>'
@@ -2653,43 +2691,44 @@ function subPrice(o){ var ed=admin(), adj=!noAmt(o), dr=o.kind==='doors', L=o.rl
    +'<div class="xr xtot"><span>Total</span><div><b>'+money(orderTotal(o))+'</b></div></div></div></div>';
   return h+'</div>'; }
 
-/* ---------- project → 💰 Rates (admin) ---------- */
-function pjRatesView(p,fl){ if(!admin()) return ''; if(!p.rates){ p.rates=pjRatesNew(); setTimeout(save,0); }
-  var who=S.prw==='b'?'b':'o', bn=brandNames(), used=pjBrandsUsed(fl), br=bn.indexOf(S.prb)>=0?S.prb:(used.filter(function(x){ return bn.indexOf(x)>=0; })[0]||bn[0]), R=(p.rates[who]||{})[br]||{}, B=brandOf(br);
-  var mine=fl.filter(function(f){ return payKey(f)===who; }), open=mine.filter(function(f){ return !f.rlock; }).length;
+/* ---------- project → 💰 Rates (admin): the starting rates of its flats ---------- */
+function pjApplyList(p,who){ return projFlats(p.id).filter(function(f){ return payKey(f)===who&&!(f.stage>=1)&&f.kind!=='doors'; }).filter(function(f){ return JSON.stringify(projRatesFor(f))!==JSON.stringify(f.rates||{}); }); }
+function pjRatesView(p,fl){ if(!admin()) return '';
+  var who=S.prw==='b'?'b':'o', bn=brandNames(), used=pjBrandsUsed(fl), br=bn.indexOf(S.prb)>=0?S.prb:(used.filter(function(x){ return bn.indexOf(x)>=0; })[0]||bn[0]), R=((p.rates||{})[who]||{})[br]||{};
+  var mine=fl.filter(function(f){ return payKey(f)===who; }), open=mine.filter(function(f){ return !(f.stage>=1); }).length, ap=pjApplyList(p,who);
   return '<div class="xs xpjr"><div class="subtabs xtabs">'+[['o','👤 Owner rates'],['b','🏗 Builder rates']].map(function(x){ return '<button type="button" data-prw="'+x[0]+'" class="'+(who===x[0]?'on':'')+'">'+x[1]+'</button>'; }).join('')+'</div>'
-   +'<div class="card xsec"><div class="xh"><h2>'+(who==='b'?'🏗 Builder':'👤 Owner')+' rates — '+esc(p.name)+' <small>(₹ per sq ft)</small></h2><button class="btn sm ghost" data-act="prcopy">Copy from Settings</button></div>'
+   +'<div class="card xsec"><div class="xh"><h2>'+(who==='b'?'🏗 Builder':'👤 Owner')+' rates — '+esc(p.name)+' <small>(₹ per sq ft)</small></h2></div>'
    +'<div class="xg"><label class="f xr"><span>Brand</span><select data-prb="1">'+bn.map(function(x){ return '<option'+(x===br?' selected':'')+'>'+esc(x)+'</option>'; }).join('')+'</select></label></div>'
    +'<div class="tscroll"><table class="xt xpjt"><thead><tr><th>Type</th>'+SERIES.map(function(s){ return '<th class="num">'+esc(s)+'</th>'; }).join('')+'</tr></thead><tbody>'
-   +WTYPES.filter(function(t){ return t!=='Custom'; }).map(function(t){ return '<tr><td class="xc">'+esc(t)+'</td>'+SERIES.map(function(s){ var v=R[t]&&R[t][s]!=null&&R[t][s]!==''?R[t][s]:'', sv=((B.rate||{})[t]||{})[s], df=v!==''&&sv!=null&&n(v)!==n(sv);
-       return '<td class="num'+(df?' xdf':'')+'"><input class="n" type="number" inputmode="decimal" min="0" step="any" data-prate="'+who+'|'+esc(br)+'|'+esc(t)+'|'+esc(s)+'" value="'+v+'" placeholder="'+(sv!=null?sv:'')+'" aria-label="'+esc(t)+' '+esc(s)+'"></td>'; }).join('')+'</tr>'; }).join('')
+   +WTYPES.filter(function(t){ return t!=='Custom'; }).map(function(t){ return '<tr><td class="xc">'+esc(t)+'</td>'+SERIES.map(function(s){ var v=R[t]&&n(R[t][s])>0?R[t][s]:'';
+       return '<td class="num"><input class="n" type="number" inputmode="decimal" min="0" step="any" data-prate="'+who+'|'+esc(br)+'|'+esc(t)+'|'+esc(s)+'" value="'+v+'" aria-label="'+esc(t)+' '+esc(s)+'"></td>'; }).join('')+'</tr>'; }).join('')
    +'</tbody></table></div>'
-   +'<div class="xp"><p class="faint">'+mine.length+' flat'+(mine.length===1?'':'s')+(who==='b'?' the builder pays for':' paid by owners')+': <b>'+open+'</b> not confirmed use these rates now; <b>'+(mine.length-open)+'</b> confirmed keep the rates they were locked at (flat → 💰 Price → Use today\'s rates). '
-   +'<span class="xdfk">Yellow</span> = different from the shop rates in Settings; an empty box uses the Settings rate.</p></div></div></div>'; }
+   +'<div class="xp">'+(ap.length?'<button class="btn sm primary" data-act="prapply">Apply to '+ap.length+' flat'+(ap.length===1?'':'s')+' not confirmed</button>':'')
+   +'<p class="faint" style="margin-top:8px">New '+(who==='b'?'builder':'owner')+' flats get these rates. Each flat keeps its own copy — change one flat in its 💰 Price. '+mine.length+' flat'+(mine.length===1?'':'s')+(who==='b'?' the builder pays for':' paid by owners')+': '+open+' not confirmed'+(ap.length?' ('+ap.length+' with other rates)':'')+'; confirmed flats are never changed from here.</p></div></div></div>'; }
 
 /* ---------- events ---------- */
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-prwgo]'); if(t) S.prw=t.getAttribute('data-prwgo'); },true);
-document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-prw],[data-act="spclear"],[data-act="prcopy"]'); if(!t) return;
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-prw],[data-act="prproj"],[data-act="prapply"]'); if(!t) return;
   if(t.hasAttribute('data-prw')){ S.prw=t.getAttribute('data-prw'); render(); return; }
   if(!admin()) return; var a=t.getAttribute('data-act');
-  if(a==='spclear'){ var o=order(); if(!o) return; var b0=orderTotal(o); delete o.srates; save(); render(); toast('Back to normal rates · '+money(b0)+' → '+money(orderTotal(o))); return; }
-  if(a==='prcopy'){ var p=projById(S.pid); if(!p) return; var who=S.prw==='b'?'b':'o', fl=projFlats(p.id), bn=brandNames(), br=bn.indexOf(S.prb)>=0?S.prb:(pjBrandsUsed(fl).filter(function(x){ return bn.indexOf(x)>=0; })[0]||bn[0]);
-    if(!confirm('Set the '+payName(who)+' rates of '+p.name+' for '+br+' to the shop rates in Settings?')) return;
-    p.rates=p.rates||pjRatesNew(); var B=brandOf(br), e2=(p.rates[who]=p.rates[who]||{})[br]={}; WTYPES.forEach(function(ty){ var r=(B.rate||{})[ty]; if(ty==='Custom'||!r) return; e2[ty]={}; SERIES.forEach(function(s){ if(r[s]!=null) e2[ty][s]=r[s]; }); });
-    save(); render(); toast(br+' '+payName(who)+' rates = Settings'); } });
+  if(a==='prproj'){ var o=order(); if(!o||!o.proj) return; if(!o.rates) rateFill(o); var R2=projRatesFor(o), b0=orderTotal(o), keep=o.rates; o.rates=R2; var b1=orderTotal(o); o.rates=keep;
+    if(!confirm('Use the project\'s '+payName(payKey(o))+' rates for flat '+o.no+'?\n\nTotal '+money(b0)+' → '+money(b1))) return; o.rates=R2; srMirror(o); save(); render(); toast('Flat '+o.no+': '+money(b0)+' → '+money(b1)); return; }
+  if(a==='prapply'){ var p=projById(S.pid); if(!p) return; var who=S.prw==='b'?'b':'o', L=pjApplyList(p,who), a0=0, a1=0; if(!L.length) return;
+    var R2=L.map(function(f){ var r=projRatesFor(f), keep=f.rates; a0+=orderTotal(f); f.rates=r; a1+=orderTotal(f); f.rates=keep; return r; });
+    if(!confirm('Set the '+payName(who)+' rates on '+L.length+' flat'+(L.length===1?'':'s')+' not confirmed?\n\nTotal '+money(a0)+' → '+money(a1)+'\n\nConfirmed flats keep their price.')) return;
+    L.forEach(function(f,i){ f.rates=R2[i]; srMirror(f); }); save(); render(); toast(L.length+' flat'+(L.length===1?'':'s')+' · '+money(a0)+' → '+money(a1)); } });
 document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.closest) return;
   if(t.closest('.xpr')){ var o=order(); if(!o) return;
-    if(t.hasAttribute('data-srate')){ if(!admin()) return; var q=t.getAttribute('data-srate').split('|'), b0=orderTotal(o); spSet(o,q[0],q[1],q[2],t.value); save(); render(); var b1=orderTotal(o); if(Math.round(b1)!==Math.round(b0)) toast('💰 '+(o.proj?'Flat '+o.no:'#'+o.no)+': '+money(b0)+' → '+money(b1)); return; }
-    if(t.hasAttribute('data-padj')){ if(noAmt(o)) return; var k=t.getAttribute('data-padj');
+    if(t.hasAttribute('data-jrate')){ if(!rateEd(o)) return; if(!o.rates) rateFill(o); var q=t.getAttribute('data-jrate').split('|'), nv=String(t.value).trim(), b0=orderTotal(o);
+      setR(o.rates,q[0],q[1],q[2],nv===''||!(n(nv)>0)?null:n(nv)); srMirror(o); save(); render(); var b1=orderTotal(o); if(Math.round(b1)!==Math.round(b0)) toast('💰 '+(o.proj?'Flat '+o.no:'#'+o.no)+': '+money(b0)+' → '+money(b1)); return; }
+    if(t.hasAttribute('data-padj')){ if(noAmt(o)||!rateEd(o)) return; var k=t.getAttribute('data-padj');
       if(k==='pnote'){ o.pnote=String(t.value||'').trim().slice(0,80); if(!o.pnote) delete o.pnote; }
       else { var v=Math.max(0,Math.round(n(t.value)*100)/100); if(k==='extra'){ if(v) o.extra=v; else delete o.extra; } else o.discount=v; }
       save(); render(); return; } }
   if(t.closest('.xpjr')){ if(!admin()) return; var p=projById(S.pid); if(!p) return;
     if(t.hasAttribute('data-prb')){ S.prb=t.value; render(); return; }
-    if(t.hasAttribute('data-prate')){ var r=t.getAttribute('data-prate').split('|'), nv=String(t.value).trim(); p.rates=p.rates||pjRatesNew();
-      var L1=p.rates[r[0]]=p.rates[r[0]]||{}, L2=L1[r[1]]=L1[r[1]]||{}, L3=L2[r[2]]=L2[r[2]]||{};
-      if(nv===''||!(n(nv)>0)) delete L3[r[3]]; else L3[r[3]]=Math.round(n(nv)*100)/100;
-      save(); render(); } } });
+    if(t.hasAttribute('data-prate')){ var r=t.getAttribute('data-prate').split('|'), pv=String(t.value).trim(); p.rates=p.rates||{}; p.rates[r[0]]=p.rates[r[0]]||{};
+      setR(p.rates[r[0]],r[1],r[2],r[3],pv===''||!(n(pv)>0)?null:n(pv)); save(); render(); } } });
 
 function viewOrder(){ if(S.oid&&!byId(S.oid)&&typeof ORS!=='undefined'&&(!ORS.loaded||!FL.loaded)) return '<div class="card"><div class="faint">Loading…</div></div>'; var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
   var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o); var h=viewOrder0();
@@ -2736,13 +2775,13 @@ function lkVal0(o,brand,k,t,sr){ var L=o&&o.rlock, e, v; if(L&&k==='cost'&&D.loc
   e=L&&L.b&&L.b[brand||'']; v=e&&e[k]&&e[k][t]?e[k][t][sr]:undefined; if(v!=null) return v; var B=brandOf(brand); return ((B[k]||{})[t]||{})[sr]; }
 function lkDoor(o,brand,t){ var L=o&&o.rlock, e, v; if(L&&D.lockc&&o.id&&D.lockc[o.id]&&D.lockc[o.id].on===L.on){ e=(D.lockc[o.id].b||{})[brand||'']; v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; }
   e=L&&L.b&&L.b[brand||'']; v=e&&e.doorCost?e.doorCost[t]:undefined; if(v!=null) return v; return (brandOf(brand).doorCost||{})[t]; }
-function lockRates(o,force){ if(!o||o.tpl||o.del||(o.rlock&&!force)) return false; var b={};
+function lockRates(o,force){ if(!o||o.tpl||o.del||(o.rlock&&!force)) return false; var b={}, ol=o.rlock; if(ol) delete o.rlock; rateFill(o); if(ol) o.rlock=ol;
   (o.items||[]).forEach(function(it){ var nm=it.brand||'', B=brandOf(nm), e=b[nm]||(b[nm]={rate:{}}); if(o.kind==='doors') return;
     (it.type==='Custom'?cellsOf(it).map(function(cl){return cellType(cl.t);}):[it.type]).forEach(function(t){ (e.rate[t]=e.rate[t]||{})[it.series]=listRate(o,nm,t,it.series); }); });
   var L={on:today(),b:b,v:2,src:payKey(o)}; if(o.gstPct==null||o.gstPct===''||(o.rlock&&o.rlock.gst)){ o.gstPct=gstDef(o); L.gst=1; } o.rlock=L;
   if(isAdm()&&o.id){ D.lockc=D.lockc||{}; D.lockc[o.id]={on:L.on,b:lockSnap(o)}; } return true; }
 function unlockRates(o){ if(!o||!o.rlock) return; if(o.rlock.gst) delete o.gstPct; delete o.rlock; if(D.lockc&&o.id&&isAdm()) delete D.lockc[o.id]; }
-function lockLine(o){ if(!o||o.tpl||!o.rlock) return ''; return '<div class="lockl">🔒 Prices locked at the rates of <b>'+dShort(o.rlock.on)+'</b> — later rate changes don\'t change this bill.'+(admin()?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':'')+'</div>'; }
+function lockLine(o){ return ''; if(!o||o.tpl||!o.rlock) return ''; return '<div class="lockl">🔒 Prices locked at the rates of <b>'+dShort(o.rlock.on)+'</b> — later rate changes don\'t change this bill.'+(admin()?' <button class="btn sm ghost" data-act="relock">Use today\'s rates</button>':'')+'</div>'; }
 /* jobs confirmed before this version: lock them once, on one phone only (it claims the job through the shared record) */
 var RLDEV=(function(){ try{ var v=localStorage.getItem('wdev'); if(!v){ v=Math.random().toString(36).slice(2,10); localStorage.setItem('wdev',v); } return v; }catch(e){ return 'x'; } })();
 function lockOld(){ if(D.rlockv&&D.rlockv.done) return; if(!D.rlockv){ D.rlockv={by:RLDEV,on:today()}; save(); }
@@ -3301,7 +3340,7 @@ function oneFlatSave(p){ var no=pjV('of_no'), er=document.getElementById('of_err
   var mt=no.match(/^([A-Za-z]{1,2})\s*-\s*\d+$/), tw=pjV('of_t').toUpperCase()||(mt?mt[1].toUpperCase():''), flr=pjV('of_fl'), ty=typeById(pjV('of_ty')), dg=(no.match(/(\d+)\s*$/)||[])[1];
   /* blank tower / floor: taken from the flat number (A-1203 → tower A, floor 12) */
   var f=newFlat(p,ty,tw,flr!==''?Math.round(n(flr)):(dg&&dg.length>=3?+dg.slice(0,-2):''),dg?+dg.slice(-2):0); f.no=no; f.customer=pjV('of_c'); f.phone=pjV('of_ph'); f.address='Flat '+no+', '+p.name+(p.site?', '+p.site:'');
-  if(admin()&&document.getElementById('of_pay')) setPayer(f,pjV('of_pay'));
+  if(admin()&&document.getElementById('of_pay')) setPayer(f,pjV('of_pay')); rateFill(f);
   D.flats.push(f); pjPopX(); save(); render(); toast('Flat '+no+' added'+(ty?' ('+ty.name+')':'')+(isBld(f)?' · 🏗 builder pays':'')); }
 /* ---- the builder's payments and extra bills (admin-only data) ---- */
 function bldOf(p,make){ var B=D.bldr&&D.bldr[p.id]; if(!B&&make){ D.bldr=D.bldr||{}; B=D.bldr[p.id]={bills:[],pays:[]}; } if(B){ B.bills=B.bills||[]; B.pays=B.pays||[]; } return B||{bills:[],pays:[]}; }
@@ -3777,11 +3816,11 @@ function invHsn(){ return String((D.company||{}).hsn||'39252000').trim()||'39252
 function invItemTxt(o,it,no){ var L=qDesc(o,it,no).map(function(x){ return x.t.replace(/ · /g,', '); }); return L[0]+': '+L.slice(1).filter(Boolean).concat([Math.round(n(it.w))+' x '+Math.round(n(it.h))+' mm']).join(', '); }
 /* the invoice keeps its own copy of the bill, so it never changes by itself afterwards */
 function invSnap(o,f){ var hsn=invHsn(), lines=o.items.map(function(it,i){ return {d:invItemTxt(o,it,i+1),hsn:hsn,q:n(it.qty),sq:o.kind==='doors'?0:Math.round(sqft(it.w,it.h)*n(it.qty)*10)/10,amt:itemPrice(o,it)}; });
-  if(n(o.extra)) lines.push({d:'Extra'+(o.pnote?': '+o.pnote:''),hsn:hsn,q:1,sq:0,amt:n(o.extra)});
+  if(n(o.extra)) lines.push({d:'Extra'+(o.pnote?': '+o.pnote:''),hsn:hsn,q:0,x:1,sq:0,amt:n(o.extra)});
   var tax=gstAmt(o), pos=f.pos||myState(), intra=pos===myState();
   return {no:f.no,on:f.on,buyer:{name:f.name,gstin:f.gstin,addr:f.addr,phone:o.phone||''},site:o.address||'',pos:pos,kind:o.kind,lines:lines,disc:n(o.discount),taxable:subTotal(o),pct:gstOf(o),tax:tax,cgst:intra?tax/2:0,sgst:intra?tax/2:0,igst:intra?0:tax,total:subTotal(o)+tax,made:today()}; }
 function invPdf(iv,party){ var intra=!iv.igst&&iv.pos===myState();
-  var rows=(iv.lines||[]).map(function(l,i){ return {cells:[i+1,{t:l.d,s:8.3},l.hsn,l.q,l.sq?fmt(l.sq):'-'].concat(iv.multi?[l.pct+'%']:[]).concat([nIN(l.amt)])}; });
+  var rows=(iv.lines||[]).map(function(l,i){ return {cells:[i+1,{t:l.d,s:8.3},l.hsn,l.x?'-':l.q,l.sq?fmt(l.sq):'-'].concat(iv.multi?[l.pct+'%']:[]).concat([nIN(l.amt)])}; });
   if(iv.disc) rows.push({cells:['',{t:'Less: discount',b:true},'','',''].concat(iv.multi?['']:[]).concat(['- '+nIN(iv.disc)])});
   var cols=[{h:'#',w:24,a:'c'},{h:'Description of goods',w:246,wrap:true},{h:'HSN',w:56,a:'c'},{h:'Qty (Nos)',w:44,a:'r'},{h:'Sq ft',w:44,a:'r'}].concat(iv.multi?[{h:'GST',w:34,a:'r'}]:[]).concat([{h:'Taxable value (Rs.)',w:86,a:'r'}]);
   /* tax by rate */
@@ -5115,7 +5154,7 @@ function wdefSave(){ if(!wdefCan()) return; var g=function(id){ var e=document.g
   var nd={type:g('wd_type'),brand:g('wd_brand'),series:g('wd_series'),glass:g('wd_glass'),mesh:g('wd_mesh'),dtype:g('wd_dtype'),dbrand:g('wd_dbrand')}, ap=document.getElementById('wd_apply'), ch=0;
   D.wdef=nd; uSet(g('wd_unit')||uNow()); var d=wdef();
   var o=S.tab==='order'?order():null;
-  if(ap&&ap.checked&&o&&!o.bat){ snap(o); o.items.forEach(function(it){ if(o.kind==='doors'){ if(it.type!==d.dtype||it.brand!==d.dbrand){ it.type=d.dtype; it.brand=d.dbrand; it.price=brandOf(it.brand).doorRate[it.type]; } } else { it.brand=d.brand; it.series=d.series; it.glass=d.glass; it.mesh=d.mesh; } ch++; }); }
+  if(ap&&ap.checked&&o&&!o.bat){ snap(o); o.items.forEach(function(it){ if(o.kind==='doors'){ if(it.type!==d.dtype||it.brand!==d.dbrand){ it.type=d.dtype; it.brand=d.dbrand; it.price=doorPrice(o,it.brand,it.type,it); } } else { it.brand=d.brand; it.series=d.series; it.glass=d.glass; it.mesh=d.mesh; } ch++; }); }
   pjPopX(); save(); render(); toast('⚙ Saved — new windows: '+wdefSum(false)+(ch?' · '+ch+' changed in this order':'')); }
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="wdef"],[data-act="wdsave"]'); if(!t) return;
   if(t.dataset.act==='wdef') wdefPop(); else wdefSave(); });
@@ -5518,7 +5557,7 @@ function viewReports(){
 var SETSH=[['co','🏢 Company'],['win','🪟 Windows'],['fac','🏭 Factory'],['usr','👥 Users'],['ph','📱 Phone'],['bak','💾 Backup']];
 /* every part of Settings by its title: [sheet, part, title] — in the order shown on the sheet */
 var SETSEC=[['co','co',/^Company/],['co','qb',/^Quotes & bills/],
-  ['win','wdef',/New windows and doors/],['win','brands',/^Brands$/],['win','rates',/window rates/],['win','doors',/doors, ₹ per door/],
+  ['win','wdef',/New windows and doors/],['win','brands',/^Brands$/],['win','rates',/window rates|material cost/],['win','doors',/doors, ₹ per door|door cost/],
   ['fac','brand',/^Brand$/],['fac','pcodes',/profile codes/],['fac','cut',/cutting deductions/],['fac','hw',/^Hardware/],['fac','howcut',/^How we cut/],['fac','stock',/^Stock & capacity/],
   ['usr','users',/^Users & roles/],['usr','pins',/^Logins/],['usr','sync',/^Online sync/],
   ['ph','perm',/This phone/],['ph','push',/Morning reminders/],['ph','appv',/^App version/],
@@ -5578,13 +5617,13 @@ function setCard(c,id){ c.classList.add('xsec'); setFlat(c);
       +'<label class="f"><span>Sizes in (this phone)</span><select data-wdu="1">'+UNITS.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===u?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></label>'
       +'<p class="faint">A new window starts with these — for everyone in the shop. In an order, brand, series, glass and mesh follow the last window.</p>');
     if(wf) wf.parentNode.removeChild(wf); }
-  if(id==='brands'){ var bs=c.querySelector('#bsel'); if(bs&&bs.parentNode.classList.contains('row')){ var bl=document.createElement('label'); bl.className='f'; bl.innerHTML='<span>Brand (the rates below are for this one)</span>'; bs.parentNode.parentNode.insertBefore(bl,bs.parentNode); bs.removeAttribute('style'); bl.appendChild(bs); } }
-  if(id==='rates'){ var rt=c.querySelector('table'); if(rt&&rt.tHead){ var ns=SERIES.length;
-    rt.tHead.innerHTML='<tr><th rowspan="2">Type</th><th colspan="'+ns+'" class="xgh">Selling ₹ / sq ft</th><th colspan="'+ns+'" class="xgh xcost">Cost ₹ / sq ft</th></tr><tr>'+SERIES.concat(SERIES).map(function(s,i){ return '<th class="num'+(i===ns?' xcost':'')+'">'+esc(s)+'</th>'; }).join('')+'</tr>';
-    [].slice.call(rt.tBodies[0].rows).forEach(function(r){ if(r.cells[ns+1]) r.cells[ns+1].classList.add('xcost'); }); } }
-  if(id==='doors'){ var dr=[].slice.call(c.querySelectorAll('input[data-dr]')); if(dr.length){ var dt=document.createElement('table'); dt.className='xt';
-    dt.innerHTML='<thead><tr><th>Door</th><th class="num">Selling ₹</th><th class="num">Cost ₹</th></tr></thead><tbody></tbody>';
-    dr.forEach(function(x){ var k=x.getAttribute('data-dr'), cs=c.querySelector('input[data-dc="'+k+'"]'), tr=document.createElement('tr'); tr.innerHTML='<td class="xc">'+esc(k)+'</td><td class="num"></td><td class="num"></td>'; tr.cells[1].appendChild(x); if(cs) tr.cells[2].appendChild(cs); dt.tBodies[0].appendChild(tr); });
+  if(id==='brands'){ var bs=c.querySelector('#bsel'); if(bs&&bs.parentNode.classList.contains('row')){ var bl=document.createElement('label'); bl.className='f'; bl.innerHTML='<span>Brand (the costs below are for this one)</span>'; bs.parentNode.parentNode.insertBefore(bl,bs.parentNode); bs.removeAttribute('style'); bl.appendChild(bs); } }
+  if(id==='rates'){ var rt=c.querySelector('table'); if(rt&&rt.tHead&&rt.tBodies[0]){ var ns=SERIES.length, nc=rt.tBodies[0].rows[0]?rt.tBodies[0].rows[0].cells.length-1:ns, two=nc>=2*ns;
+    rt.tHead.innerHTML='<tr><th rowspan="2">Type</th>'+(two?'<th colspan="'+ns+'" class="xgh">Selling ₹ / sq ft</th><th colspan="'+ns+'" class="xgh xcost">Cost ₹ / sq ft</th>':'<th colspan="'+ns+'" class="xgh">Material cost ₹ / sq ft</th>')+'</tr><tr>'+(two?SERIES.concat(SERIES):SERIES).map(function(s,i){ return '<th class="num'+(two&&i===ns?' xcost':'')+'">'+esc(s)+'</th>'; }).join('')+'</tr>';
+    if(two) [].slice.call(rt.tBodies[0].rows).forEach(function(r){ if(r.cells[ns+1]) r.cells[ns+1].classList.add('xcost'); }); } }
+  if(id==='doors'){ var dr=[].slice.call(c.querySelectorAll('input[data-dr]')), dcs=[].slice.call(c.querySelectorAll('input[data-dc]')), sell=dr.length>0; if(sell||dcs.length){ var dt=document.createElement('table'); dt.className='xt';
+    dt.innerHTML='<thead><tr><th>Door</th>'+(sell?'<th class="num">Selling ₹</th>':'')+'<th class="num">Cost ₹</th></tr></thead><tbody></tbody>';
+    (sell?dr:dcs).forEach(function(x){ var k=x.getAttribute(sell?'data-dr':'data-dc'), cs=sell?c.querySelector('input[data-dc="'+k+'"]'):x, tr=document.createElement('tr'); tr.innerHTML='<td class="xc">'+esc(k)+'</td>'+(sell?'<td class="num"></td>':'')+'<td class="num"></td>'; if(sell) tr.cells[1].appendChild(x); if(cs) tr.cells[sell?2:1].appendChild(cs); dt.tBodies[0].appendChild(tr); });
     [].slice.call(c.querySelectorAll('label.f')).forEach(function(l){ if(!l.querySelector('input,select,textarea')) l.parentNode.removeChild(l); });
     c.appendChild(dt); } }
   if(id==='cut'){ var ct=c.querySelector('table'); if(ct&&ct.tHead&&ct.tBodies[0]){ /* one row per deduction, one column per series */
@@ -5634,14 +5673,14 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.closes
   if(t.hasAttribute('data-wdu')){ uSet(t.value); toast('Sizes in '+(UNITS.filter(function(x){ return x[0]===t.value; })[0]||['',''])[1]+' on this phone'); } });
 
 function viewSettings0(){
-  var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Sell '+s+'"><input class="n" type="number" data-rate="'+t+'|'+s+'" value="'+B.rate[t][s]+'"></td>';}).join('')+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
+  var bi=Math.min(S.bi||0,D.brands.length-1), B=D.brands[bi]; var rateRows=WTYPES.filter(function(t){return t!=='Custom';}).map(function(t){return '<tr><td class="c3"><b>'+t+'</b></td>'+SERIES.map(function(s){return '<td class="num" data-l="Cost '+s+'"><input class="n" type="number" data-cost="'+t+'|'+s+'" value="'+B.cost[t][s]+'"></td>';}).join('')+'</tr>';}).join('');
   var cutRows=SERIES.map(function(s){var c=B.cut[s];return '<tr><td>'+s+'</td>'+['shutW','shutH','overlap','glassW','glassH','meshW','meshH','sashW','sashH','sashG'].map(function(k){return '<td class="num"><input class="n" type="number" data-cut="'+s+'|'+k+'" value="'+c[k]+'"></td>';}).join('')+'</tr>';}).join('');
   return '<div class="card"><h2>Company (shown on quotes and statements)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
    +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><div class="grid2"><label class="f"><span>Email</span><input type="email" data-c="email" value="'+esc(D.company.email||'')+'"></label></div><label class="f"><span>Bank / UPI details for payment (printed on statements)</span><textarea data-c="bank" placeholder="Bank name · A/c no. · IFSC · UPI ID">'+esc(D.company.bank||'')+'</textarea></label><div class="grid2"><label class="f"><span>Tax invoice numbers start with</span><input type="text" data-c="invPre" maxlength="6" value="'+esc(D.company.invPre||'INV')+'"></label><label class="f"><span>HSN code (windows and doors)</span><input type="text" data-c="hsn" maxlength="8" inputmode="numeric" value="'+esc(D.company.hsn||'39252000')+'"></label><label class="f"><span>Glass supplier WhatsApp no.</span><input type="tel" data-c="glassPh" value="'+esc(D.company.glassPh||'')+'"></label></div><p class="faint" style="margin:-4px 0 10px">Tax invoice numbers go like '+esc((D.company.invPre||'INV')+'/'+invFY(today())+'/001')+' and start again from 001 every April. HSN 39252000 = plastic (uPVC) doors and windows, 18% GST.</p><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % for builder flats (other orders and owner flats: no GST unless you add it on the order)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
    +'<div class="card"><div class="row between"><h2>⚙ New windows and doors</h2><button class="btn sm" data-act="wdef">Change</button></div><div class="faint">Windows: <b>'+esc(wdefSum(false))+'</b> · Doors: <b>'+esc(wdefSum(true))+'</b> · Sizes on this phone in <b>'+uLab()+'</b></div></div>'
-   +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own prices, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
-   +'<div class="card"><h2>'+esc(B.name)+' — window rates, ₹ per sq ft</h2><p class="lockl">🔒 Confirmed orders and flats keep the rates they were confirmed at. Changing rates here changes only enquiries and new jobs. Apartment projects have their own builder and owner rates (project → 💰 Rates).</p><p class="faint">Selling rate is what the customer pays. Material cost is what it costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales.</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Sell '+s+'</th>';}).join('')+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
-   +'<div class="card"><h2>'+esc(B.name)+' — doors, ₹ per door</h2><div class="grid2"><label class="f"><span>PVC selling</span><input type="number" data-dr="PVC" value="'+B.doorRate.PVC+'"></label><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC selling</span><input type="number" data-dr="WPC" value="'+B.doorRate.WPC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
+   +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own costs, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
+   +'<div class="card"><h2>'+esc(B.name)+' — material cost, ₹ per sq ft</h2><p class="faint">What a window costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales. Selling rates are in each order and flat (💰 Price) and each project (💰 Rates).</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
+   +'<div class="card"><h2>'+esc(B.name)+' — door cost, ₹ per door</h2><p class="faint">What a door costs you — used only for profit. The selling price is on each door line of an order; a new line starts from the last price used for that door.</p><div class="grid2"><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — profile codes</h2><p class="faint">Supplier\'s code for each profile. Shown on the BOM and cutting list.</p><div class="tscroll"><table class="pcodes"><thead><tr><th>Profile</th>'+SERIES.map(function(x){return '<th>'+x+' series</th>';}).join('')+'</tr></thead><tbody>'
    +PROFS.map(function(p){return '<tr><td>'+p[1]+'</td>'+SERIES.map(function(x){return '<td><input type="text" style="min-height:36px;padding:4px 8px" data-prof="'+x+'|'+p[0]+'" value="'+esc(B.prof[x][p[0]])+'"></td>';}).join('')+'</tr>';}).join('')
    +'<tr><td>Door frame PVC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|PVC" value="'+esc(B.prof.door.PVC)+'"></td></tr><tr><td>Door frame WPC</td><td colspan="3"><input type="text" style="min-height:36px;padding:4px 8px;max-width:200px" data-prof="door|WPC" value="'+esc(B.prof.door.WPC)+'"></td></tr></tbody></table></div></div>'
@@ -5723,9 +5762,9 @@ function download(name,data,type){ var b=data instanceof Blob?data:new Blob(['\u
 /* ============================================================
    EVENTS
    ============================================================ */
-function newOrder(){ var o={id:uid(),no:nextOrderNo(),dev:RLDEV,ts:Date.now(),kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today()}; D.orders.push(o); save(); go('order',o.id); S.sub='customer'; render(); setTimeout(function(){var i=$('[data-o=customer]'); if(i) i.focus();},0); }
+function newOrder(){ var o={id:uid(),no:nextOrderNo(),dev:RLDEV,ts:Date.now(),kind:'windows',customer:'',phone:'',address:'',notes:'',due:'',stage:0,items:[],payments:[],discount:0,created:today(),rates:{}}; D.orders.push(o); save(); go('order',o.id); S.sub='customer'; render(); setTimeout(function(){var i=$('[data-o=customer]'); if(i) i.focus();},0); }
 function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
-  if(o.kind==='doors') return {loc:'',type:l?l.type:df.dtype,brand:l?l.brand:df.dbrand,w:l?l.w:900,h:l?l.h:2100,price:brandOf(l?l.brand:df.dbrand).doorRate[l?l.type:df.dtype],qty:1};
+  if(o.kind==='doors') return {loc:'',type:l?l.type:df.dtype,brand:l?l.brand:df.dbrand,w:l?l.w:900,h:l?l.h:2100,price:doorPrice(o,l?l.brand:df.dbrand,l?l.type:df.dtype),qty:1};
   it={loc:'',type:df.type,brand:l?l.brand:df.brand,series:l?l.series:df.series,w:l?l.w:1200,h:l?l.h:1200,glass:l?l.glass:df.glass,mesh:l?l.mesh:df.mesh,qty:1};
   if(it.type==='Openable') it.hinge='L'; if(it.type==='Ventilator') it.fan='No fan'; return it; }
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
@@ -5740,7 +5779,7 @@ document.addEventListener('click',function(e){
   if(d.esub){ S.esub=d.esub; render(); return; }
   if(d.act==='emon'){ S.em=d.m; render(); window.scrollTo(0,0); return; }
   if(d.adx){ var dmx=dismissed(); dmx[d.adx]=Date.now(); setDismissed(dmx); refreshAlerts(); return; }
-  if(d.qa&&o){ snap(o); var nit=newItem(o); if(o.kind==='doors'){ nit.type=d.qa; nit.price=brandOf(nit.brand).doorRate[nit.type]; } else { var q0=qaItem(d.qa==='Custom'?'Fixed':d.qa); nit.type=q0.type; nit.w=d.qa==='Custom'?1500:q0.w; nit.h=q0.h; if(q0.fan) nit.fan=q0.fan; if(nit.type==='Openable') nit.hinge='L'; delete nit.tree; delete nit.layout; }
+  if(d.qa&&o){ snap(o); var nit=newItem(o); if(o.kind==='doors'){ nit.type=d.qa; nit.price=doorPrice(o,nit.brand,nit.type,nit); } else { var q0=qaItem(d.qa==='Custom'?'Fixed':d.qa); nit.type=q0.type; nit.w=d.qa==='Custom'?1500:q0.w; nit.h=q0.h; if(q0.fan) nit.fan=q0.fan; if(nit.type==='Openable') nit.hinge='L'; delete nit.tree; delete nit.layout; }
     o.items.push(nit); S.di=o.items.length-1; save(); render(); if(d.qa==='Custom'){ dzOpen(); } else { var dpq=$('#dpanel'); if(dpq) dpq.scrollIntoView({block:'start'}); } toast((o.kind==='doors'?'Door':'Window')+' '+o.items.length+' added — type its size'); return; }
   if(d.ushare){ var us=d.ushare.split('|'); showShare(us[0],us[1]); return; }
   if(d.rudel){ if(confirm('Remove '+d.rudel+'? They will lose access.')) sbUserDel(d.rudel).then(function(){ toast('Removed'); loadUsers(); }).catch(function(e){ toast(e.message); }); return; }
@@ -5802,7 +5841,7 @@ document.addEventListener('click',function(e){
   if(a==='next'&&o){ if(prod()&&o.stage!==1&&o.stage!==2) return; if(o.stage===0&&!o.items.length){toast('Add items first');return;}
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
     if(o.stage===3&&balance(o)>0.5&&!confirm(noAmt(o)?'⚠ Payment is still pending.\nMark as delivered anyway?':'⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
-    if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if((o.stage===0||o.stage===1)&&!szAskOK(o,o.stage===0?'confirming':'starting production')) return; if(o.stage===0&&!o.customer&&!isBld(o)){toast(o.proj?'Enter the owner name first':'Enter the customer name first'); S.sub='customer'; render(); return;}
+    if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if((o.stage===0||o.stage===1)&&!szAskOK(o,o.stage===0?'confirming':'starting production')) return; if(o.stage===0&&!o.customer&&!isBld(o)){toast(o.proj?'Enter the owner name first':'Enter the customer name first'); S.sub='customer'; render(); return;} if(o.stage===0&&!noAmt(o)){ var nr0=noRate(o); if(nr0.length&&!confirm('⚠ No rate yet for '+nr0.map(function(c){ return c.t+' · '+c.s; }).join(', ')+' — ₹0 on the bill.\n\nConfirm anyway?')){ S.sub='price'; render(); return; } }
     o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
@@ -5825,8 +5864,8 @@ document.addEventListener('click',function(e){
   if(a==='xlsx'&&o) cutXlsx(o);
   if(a==='printcut'&&o) printDoc(cutPrintHtml(o),'landscape');
   if(a==='baddb'){ var nm=prompt('Brand name'); if(nm&&nm.trim()){ var src=D.brands[S.bi||0]; D.brands.push(JSON.parse(JSON.stringify(Object.assign({},src,{name:nm.trim()})))); S.bi=D.brands.length-1; save(); render(); } }
-  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ var nn2=nn.trim(); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn2; }); if(x.rlock&&x.rlock.b&&x.rlock.b[B0.name]&&!x.rlock.b[nn2]){ x.rlock.b[nn2]=x.rlock.b[B0.name]; delete x.rlock.b[B0.name]; } }); if(D.lockc) Object.keys(D.lockc).forEach(function(id){ var lb=D.lockc[id].b; if(lb&&lb[B0.name]&&!lb[nn2]){ lb[nn2]=lb[B0.name]; delete lb[B0.name]; } }); B0.name=nn2; save(); render(); } }
-  if(a==='bdel'&&D.brands.length>1){ var Bd=D.brands[S.bi||0]; if(confirm('Delete brand '+Bd.name+'? Windows using it will switch to '+(D.brands[0]===Bd?D.brands[1]:D.brands[0]).name+'.')){ D.brands.splice(S.bi||0,1); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand!==Bd.name) return; if(x.rlock&&!x.tpl&&x.kind!=='doors'&&n(it.qty)){ it.fixed=Math.round(itemPrice(x,it)/n(it.qty)); } it.brand=D.brands[0].name; }); }); S.bi=0; save(); render(); } }
+  if(a==='bren'){ var B0=D.brands[S.bi||0], nn=prompt('Rename brand',B0.name); if(nn&&nn.trim()&&nn.trim()!==B0.name){ var nn2=nn.trim(); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand===B0.name) it.brand=nn2; }); if(x.rlock&&x.rlock.b&&x.rlock.b[B0.name]&&!x.rlock.b[nn2]){ x.rlock.b[nn2]=x.rlock.b[B0.name]; delete x.rlock.b[B0.name]; } }); if(D.lockc) Object.keys(D.lockc).forEach(function(id){ var lb=D.lockc[id].b; if(lb&&lb[B0.name]&&!lb[nn2]){ lb[nn2]=lb[B0.name]; delete lb[B0.name]; } }); prRename(B0.name,nn2); B0.name=nn2; save(); render(); } }
+  if(a==='bdel'&&D.brands.length>1){ var Bd=D.brands[S.bi||0]; if(confirm('Delete brand '+Bd.name+'? Windows using it will switch to '+(D.brands[0]===Bd?D.brands[1]:D.brands[0]).name+'.')){ D.brands.splice(S.bi||0,1); allJobs().forEach(function(x){ x.items.forEach(function(it){ if(it.brand!==Bd.name) return; if(x.rlock&&!x.tpl&&x.kind!=='doors'&&n(it.qty)){ it.fixed=Math.round(itemPrice(x,it)/n(it.qty)); } it.brand=D.brands[0].name; }); }); prBrandGone(Bd.name,D.brands[0].name); S.bi=0; save(); render(); } }
   if(a==='holadd'){ var hv=$('#holadd').value; if(hv){ D.holidays=D.holidays||[]; if(D.holidays.indexOf(hv)<0) D.holidays.push(hv); save(); render(); } }
   if(a==='ocadd'){ var oc=$('#ocCode').value, ol=n($('#ocLen').value), oq=n($('#ocQty').value)||1; if(!ol){toast('Enter length');return;} offAdd(oc,ol,oq); save(); render(); toast('Offcut added'); }
   if(a==='invadd'){ var nm=prompt('Item name'); if(nm&&nm.trim()){ var un=prompt('Unit (pcs / m / kg / sq ft)','pcs')||'pcs'; D.inv['X:'+nm.trim()]={name:nm.trim(),unit:un,qty:0,min:0}; save(); render(); } }
@@ -5863,15 +5902,15 @@ function onInput(e){
   if(d.hk){ var hi=+t.closest('tr').dataset.hi; D.hw[hi][d.hk]=t.type==='number'?n(t.value):t.value; save(); return; }
   if(d.sk){ var si=+t.closest('tr').dataset.si; D.staff[si][d.sk]=t.type==='number'?n(t.value):t.value; save(); return; }
   if(d.k&&o){ snap(o,true); var tr=t.closest('tr'), it=o.items[+tr.dataset.i]; if(t.dataset.u&&(d.k==='w'||d.k==='h')){ var umm=uParse(t.value); if(!(umm>0)) return; it[d.k]=Math.round(umm); } else it[d.k]=t.type==='number'?n(t.value):t.value;
-    if((d.k==='type'||d.k==='brand')&&o.kind==='doors'){ it.price=brandOf(it.brand).doorRate[it.type]; tr.querySelector('[data-k=price]').value=it.price; }
+    if((d.k==='type'||d.k==='brand')&&o.kind==='doors'){ it.price=doorPrice(o,it.brand,it.type,it); tr.querySelector('[data-k=price]').value=it.price; }
     if(d.k==='type'&&o.kind!=='doors'){ render(); return; }
     save(); var am=tr.querySelector('.amt'), sq=tr.querySelector('.sq'); if(am) am.textContent=money(itemPrice(o,it)); if(sq) sq.textContent=fmt(sqft(it.w,it.h)*n(it.qty))+' ft²'; refreshTotals(o); return; }
   if(d.dk&&o&&S.di!=null){ snap(o,true); var it2=o.items[S.di];
     if((d.dk==='w'||d.dk==='h')&&t.dataset.u&&!(uParse(t.value)>0)) return;
     if(d.dk==='w'||d.dk==='h'){ var L3=it2.layout; if(L3&&L3.rc){ var nv=t.dataset.u?Math.round(uParse(t.value)):n(t.value); if(nv>0){ if(d.dk==='h'){ var oh=L3.rows.reduce(function(a,b){return a+b;},0); if(oh>0) L3.rows=L3.rows.map(function(v){return v*nv/oh;}); } else L3.rc=L3.rc.map(function(row){ var ow=row.reduce(function(a,b){return a+b;},0); return ow>0?row.map(function(v){return v*nv/ow;}):row; }); } } }
-    it2[d.dk]=t.dataset.u&&(d.dk==='w'||d.dk==='h')?Math.round(uParse(t.value)):t.type==='number'?n(t.value):t.value; if(d.dk==='type'&&o.kind==='doors') it2.price=brandOf(it2.brand).doorRate[it2.type]; save();
+    it2[d.dk]=t.dataset.u&&(d.dk==='w'||d.dk==='h')?Math.round(uParse(t.value)):t.type==='number'?n(t.value):t.value; if(d.dk==='type'&&o.kind==='doors') it2.price=doorPrice(o,it2.brand,it2.type,it2); save();
     if(t.tagName==='SELECT'||d.dk==='loc') render(); else { $('#bigsk').innerHTML=bigSketch(o,it2); var tr2=document.querySelector('tr[data-i="'+S.di+'"]'); if(tr2){ var ii=tr2.querySelector('[data-k='+d.dk+']'); if(ii&&ii!==document.activeElement) ii.value=ii.dataset.u?uShow(it2[d.dk]):it2[d.dk]; var dmm=t.parentNode&&t.parentNode.querySelector('.dkmm'); if(dmm) dmm.textContent=Math.round(n(it2[d.dk]))+' mm'; var am2=tr2.querySelector('.amt'), sq2=tr2.querySelector('.sq'); if(am2) am2.textContent=money(itemPrice(o,it2)); if(sq2) sq2.textContent=fmt(sqft(it2.w,it2.h)*n(it2.qty))+' ft²'; } var ms=$('#dsum'); if(ms) ms.innerHTML=noAmt(o)?(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft'):(o.kind==='doors'?'':fmt(sqft(it2.w,it2.h))+' sq ft · ')+'<b>'+money(itemPrice(o,it2))+'</b>'; refreshTotals(o); } return; }
-  if(t.id==='disc'&&o){ o.discount=n(t.value); save(); refreshTotals(o); return; }
+  if(t.id==='disc'&&o){ if(!rateEd(o)) return; o.discount=n(t.value); save(); refreshTotals(o); return; }
   if(d.o&&o){ o[d.o]=t.value; save(); if(d.o==='remind') render(); if(d.o==='customer'){ $('#oh').textContent='#'+o.no+' · '+(o.customer||'New order'); } if(d.o==='kind') render(); return; }
   if(d.c){ D.company[d.c]=t.value; save(); if(d.c==='name') $('.top h1').textContent=t.value; }
   if(d.rate){ var p=d.rate.split('|'); D.brands[S.bi||0].rate[p[0]][p[1]]=n(t.value); save(); }
