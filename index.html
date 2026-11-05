@@ -874,7 +874,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='04 Nov 2026, 15:41';
+var APPV='05 Nov 2026, 07:20';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1432,7 +1432,7 @@ function viewOrder0(){
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
    +'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
   var subs=[['items',o.kind==='doors'?'Doors':'Windows'],['customer','Customer'],['price','💰 Price'],['quote','Quote'],['payments','Payments'],['cutting','Cutting list'],['production','Production']];
-  if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'&&x[0]!=='price'; }); if(S.sub==='quote'||S.sub==='payments'||S.sub==='price') S.sub='items'; }
+  if(!admin()){ subs=subs.filter(function(x){ return x[0]!=='price'; }); if(S.sub==='price') S.sub='items'; } if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'&&x[0]!=='price'; }); if(S.sub==='quote'||S.sub==='payments'||S.sub==='price') S.sub='items'; }
   else if(isBld(o)&&paid(o)<0.5){ subs=subs.filter(function(x){ return x[0]!=='payments'; }); if(S.sub==='payments') S.sub='items'; }
   var tabs='<div class="subtabs osub">'+subs.map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
   return head+tabs+({items:subItems,customer:subCustomer,price:subPrice,quote:subQuote,payments:function(x){ return subPayments(x)+ordStmtCard(x); },cutting:subCutting,production:subProduction}[S.sub])(o);
@@ -1486,7 +1486,7 @@ function subItems0(o){
     +(dr?'<td class="c-br"></td><td class="c-pr"></td>':'<td class="c-br"></td><td class="c-se"></td><td class="c-gl"></td><td class="c-me"></td><td class="num sq" id="tsqf">'+fmt(ts)+' ft²</td>')
     +'<td class="num amt" id="tsub2">'+money(st)+'</td><td class="dl"></td></tr>';
   var sum='<div class="isum"><div class="isr"><span>Subtotal</span><b id="tsub">'+money(st)+'</b></div>'
-    +'<div class="isr"><span>Discount ₹</span>'+(rateEd(o)?'<input class="n" type="number" inputmode="decimal" id="disc" value="'+(o.discount||'')+'">':'<b>'+(n(o.discount)?'− '+money(o.discount):'—')+'</b>')+'</div>'+(n(o.extra)?'<div class="isr"><span class="isw">Extra'+(o.pnote?' · '+esc(o.pnote):'')+'</span><b>+ '+money(o.extra)+'</b></div>':'')+(o.tpl?'':noRate(o).length?'<div class="isr"><span class="isw warnt">⚠ No rate yet for '+esc(noRate(o).map(function(c){ return c.t+' · '+c.s; }).join(', '))+' — set it in 💰 Price</span></div>':spCount(o)?'<div class="isr"><span class="isw faint">✏ This flat has its own rate — see 💰 Price</span></div>':'')
+    +'<div class="isr"><span>Discount ₹</span>'+(rateEd(o)?'<input class="n" type="number" inputmode="decimal" id="disc" value="'+(o.discount||'')+'">':'<b>'+(n(o.discount)?'− '+money(o.discount):'—')+'</b>')+'</div>'+(n(o.extra)?'<div class="isr"><span class="isw">Extra'+(o.pnote?' · '+esc(o.pnote):'')+'</span><b>+ '+money(o.extra)+'</b></div>':'')+(o.tpl?'':noRate(o).length?'<div class="isr"><span class="isw warnt">⚠ No rate yet for '+esc(noRate(o).map(function(c){ return c.t+' · '+c.s; }).join(', '))+(admin()?' — set it in 💰 Price':' — ask the admin')+'</span></div>':spCount(o)?(admin()?'<div class="isr"><span class="isw faint">✏ This flat has its own rate — see 💰 Price</span></div>':''):'')
     +'<div class="isr"><span>'+(o.tpl?'GST '+gstOf(o)+'%':'GST <select id="ogst" class="gsel" aria-label="GST %">'+gstOpts(gstOf(o))+'</select>')+'</span><b id="tgst">'+money(gstAmt(o))+'</b></div>'
     +'<div class="isr tot"><span>Total</span><b id="ttot">'+money(orderTotal(o))+'</b></div></div>';
   return '<div class="card icard'+(na?' noamt':'')+'"><div class="sheetw"><table class="sheet '+(dr?'sd':'sw')+'"><thead>'+head+'</thead><tbody>'
@@ -2649,11 +2649,11 @@ function prRename(a,b){ if(!a||!b||a===b) return; var mv=function(R){ if(R&&R[a]
   if(D.wdef){ if(D.wdef.brand===a) D.wdef.brand=b; if(D.wdef.dbrand===a) D.wdef.dbrand=b; } }
 function prBrandGone(a,to){ var mg=function(R){ var e=R&&R[a]; if(!e) return; var t2=R[to]=R[to]||{}; Object.keys(e).forEach(function(t){ var r=t2[t]=t2[t]||{}; Object.keys(e[t]||{}).forEach(function(sr){ if(r[sr]==null) r[sr]=e[t][sr]; }); }); delete R[a]; };
   allJobs().forEach(function(x){ mg(x.rates); mg(x.srates); }); (D.projects||[]).forEach(function(p){ ['b','o'].forEach(function(k){ if(p.rates&&p.rates[k]) delete p.rates[k][a]; }); }); }
-/* who may change a job's rates: admin; sales on an ordinary order that is not confirmed yet */
-function rateEd(o){ return !!o&&(admin()||(!o.proj&&!prod()&&!(o.stage>=1))); }
+/* who may see and change a job's rates, discount and extra: the admin only */
+function rateEd(o){ return !!o&&admin(); }
 
 /* ---------- order / flat → 💰 Price ---------- */
-function subPrice(o){ var ed=rateEd(o), adj=!noAmt(o)&&ed, dr=o.kind==='doors', p=jobProj(o), cmb=priceCombos(o), mb=cmb.some(function(c){ return c.b!==cmb[0].b; }), wd=o.proj?'flat':'order';
+function subPrice(o){ if(!admin()) return ''; var ed=rateEd(o), adj=!noAmt(o)&&ed, dr=o.kind==='doors', p=jobProj(o), cmb=priceCombos(o), mb=cmb.some(function(c){ return c.b!==cmb[0].b; }), wd=o.proj?'flat':'order';
   var isum=o.items.reduce(function(a,it){ return a+itemPrice(o,it); },0), nr=noRate(o), h='<div class="xs xpr">';
   if(!dr){ var dif=spCount(o);
     h+='<div class="card xsec"><div class="xh"><h2>Rates for this '+wd+' <small>(₹ per sq ft)</small></h2>'
@@ -2665,7 +2665,7 @@ function subPrice(o){ var ed=rateEd(o), adj=!noAmt(o)&&ed, dr=o.kind==='doors', 
      +'</tbody></table></div>':'<div class="xp"><p class="faint">No windows yet.</p></div>')
      +'<div class="xp"><p class="faint">'+(nr.length?'<b class="warnt">⚠ No rate yet for '+nr.map(function(c){ return c.t+' · '+c.s; }).join(', ')+'</b> — '+(ed?'type it here.':'ask the admin.')+' ':'')
      +(o.proj?'Started from the project\'s '+(isBld(o)?'🏗 builder':'👤 owner')+' rates'+(dif?'; <b>yellow</b> = this owner\'s own rate':'')+'. A change here is only for this flat.':'A new order starts with the rates of the latest order. A change here is only for this order.')
-     +(!ed&&!o.proj?' Only the admin changes the rates of a confirmed order.':'')+'</p></div></div>'; }
+     +'</p></div></div>'; }
   var rows='', tsq=0, tq=0;
   o.items.forEach(function(it,i){ var q=n(it.qty), amt=itemPrice(o,it), fx=it.fixed!=null&&it.fixed!=='', cu=it.type==='Custom'&&!fx, sq=dr?0:sqft2(it.w,it.h), rate=dr?n(it.price):fx||cu?null:lkVal(o,it.brand,'rate',it.type,it.series);
     var lab=(it.type==='Custom'?'Combination':it.type)+(dr?' door':it.series?' · '+it.series:''), sub=[it.loc,Math.round(n(it.w))+' × '+Math.round(n(it.h))].filter(Boolean).join(' · ')+(q!==1?' · × '+fmt(q):'');
@@ -5841,7 +5841,7 @@ document.addEventListener('click',function(e){
   if(a==='next'&&o){ if(prod()&&o.stage!==1&&o.stage!==2) return; if(o.stage===0&&!o.items.length){toast('Add items first');return;}
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
     if(o.stage===3&&balance(o)>0.5&&!confirm(noAmt(o)?'⚠ Payment is still pending.\nMark as delivered anyway?':'⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
-    if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if((o.stage===0||o.stage===1)&&!szAskOK(o,o.stage===0?'confirming':'starting production')) return; if(o.stage===0&&!o.customer&&!isBld(o)){toast(o.proj?'Enter the owner name first':'Enter the customer name first'); S.sub='customer'; render(); return;} if(o.stage===0&&!noAmt(o)){ var nr0=noRate(o); if(nr0.length&&!confirm('⚠ No rate yet for '+nr0.map(function(c){ return c.t+' · '+c.s; }).join(', ')+' — ₹0 on the bill.\n\nConfirm anyway?')){ S.sub='price'; render(); return; } }
+    if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if((o.stage===0||o.stage===1)&&!szAskOK(o,o.stage===0?'confirming':'starting production')) return; if(o.stage===0&&!o.customer&&!isBld(o)){toast(o.proj?'Enter the owner name first':'Enter the customer name first'); S.sub='customer'; render(); return;} if(o.stage===0&&!noAmt(o)){ var nr0=noRate(o); if(nr0.length&&!confirm('⚠ No rate yet for '+nr0.map(function(c){ return c.t+' · '+c.s; }).join(', ')+' — ₹0 on the bill.'+(admin()?'':' Ask the admin to set it.')+'\n\nConfirm anyway?')){ if(admin()){ S.sub='price'; render(); } return; } }
     o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
