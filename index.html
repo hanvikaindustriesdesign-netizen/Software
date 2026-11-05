@@ -854,11 +854,21 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"><div id="boot" style="max-width:420px;margin:28vh auto 0;padding:0 24px;text-align:center;font:16px/1.5 system-ui,sans-serif;color:#444"><div style="font-size:22px;font-weight:700;color:#111;margin-bottom:6px">Hanvika Industries</div>Loading the app…<br><small style="color:#888">The first time can take a minute on a slow connection.</small><div id="bootslow"></div></div></div>
 <nav class="bottom" id="nav"></nav>
 <div class="toast" id="toast"></div>
 <div class="doc" id="doc"></div>
 
+<script>
+/* before the app: if it cannot start on this phone, say so instead of a blank page */
+window.__booted=false;
+window.addEventListener('error',function(e){ if(window.__booted) return; var a=document.getElementById('app'); if(!a) return;
+  var msg=String((e&&e.message)||'unknown error'), where=(e&&e.lineno)?' (line '+e.lineno+')':'';
+  a.innerHTML='<div style="max-width:460px;margin:40px auto;padding:0 20px;font:15px/1.5 system-ui,sans-serif;color:#222"><div style="font-size:20px;font-weight:700;margin-bottom:8px">⚠ The app could not start on this phone</div>'
+   +'<p>Please try, in this order:</p><ol style="padding-left:20px"><li>Open the link in <b>Chrome</b> (not inside WhatsApp — tap ⋮ → Open in Chrome).</li><li>Update Chrome from the Play Store, then open the link again.</li><li>Send a photo of this screen to the admin.</li></ol>'
+   +'<p style="font-size:12px;color:#777;word-break:break-all">Error: '+msg.replace(/</g,'&lt;')+where+'<br>Browser: '+String(navigator.userAgent||'').replace(/</g,'&lt;')+'</p><p><button onclick="location.reload()" style="font:inherit;padding:10px 18px;border-radius:10px;border:1px solid #bbb;background:#fff">Try again</button></p></div>'; });
+setTimeout(function(){ if(!window.__booted){ var b=document.getElementById('bootslow'); if(b) b.innerHTML='<br><b style="color:#b45309">Still loading…</b><br><small>Check the internet connection, or try again on Wi-Fi.</small>'; } },20000);
+</script>
 <script>
 /* ============================================================
    DATA — one object. Saved in this browser; optionally mirrored to Supabase.
@@ -905,7 +915,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='05 Nov 2026, 09:44';
+var APPV='05 Nov 2026, 12:00';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1292,7 +1302,7 @@ var I={home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v
  people:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-5-6.3"/></svg>',
  cog:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'};
 
-function render(){
+function render(){ window.__booted=true;
   var app=$('#app'), nav=$('#nav');
   if(!S.role){ nav.innerHTML=''; document.body.setAttribute('data-tab','login'); app.innerHTML=viewLogin(); return; }
   if(S.tab==='txn'&&!admin()) S.tab='home';
