@@ -851,6 +851,15 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .hpj b{font-size:16px;font-weight:650} .hpjd{font-size:12.5px;color:var(--soft);line-height:1.35}
 .hleg{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:11.5px;margin:8px 0 0} .hleg i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:-1px}
 @media(max-width:420px){ .htiles{grid-template-columns:repeat(3,minmax(0,1fr))} .pipe{grid-template-columns:repeat(5,minmax(0,1fr))} .pipe button small{font-size:10px} }
+
+.pwwrap{position:relative;display:block}
+.pwwrap input{width:100%;padding-right:46px}
+.pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);min-height:36px;width:40px;border:0;background:transparent;font-size:20px;line-height:1;color:var(--soft);border-radius:8px;cursor:pointer}
+.pweye.on{color:var(--ink);background:#eef2f7}
+.pin .pwwrap{display:inline-block;width:auto}
+
+.setlock{max-width:460px;margin:12px auto} .setlock h2{margin-top:0}
+.setlk{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 2px 8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -860,6 +869,8 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 <div class="doc" id="doc"></div>
 
 <script>
+document.addEventListener('click',function(e){ var b=e.target&&e.target.closest&&e.target.closest('[data-eye]'); if(!b) return; var i=document.getElementById(b.getAttribute('data-eye')); if(!i) return;
+  var show=i.type==='password'; i.type=show?'text':'password'; b.classList.toggle('on',show); b.setAttribute('aria-label',(show?'Hide ':'Show ')+(i.id==='pin'?'PIN':'password')); b.title=b.getAttribute('aria-label'); i.focus(); });
 /* before the app: if it cannot start on this phone, say so instead of a blank page */
 window.__booted=false;
 window.addEventListener('error',function(e){ if(window.__booted) return; var a=document.getElementById('app'); if(!a) return;
@@ -915,7 +926,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='05 Nov 2026, 12:00';
+var APPV='05 Nov 2026, 16:04';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1329,8 +1340,8 @@ function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){
    ============================================================ */
 function pinOK(){ try{ return localStorage.getItem('pinok')==='1'||localStorage.getItem('sbrole')==='admin'; }catch(e){ return false; } }
 function wrongCopy(){ return !BAKED.url&&/^https?:$/.test(location.protocol)&&window.top===window&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!/claude|anthropic/.test(location.hostname); }
-function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><input type="password" id="lpass" autocomplete="current-password"></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px">'+esc(S.lnote||'')+'</div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
-  return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
+function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><span class="pwwrap"><input type="password" id="lpass" autocomplete="current-password"><button type="button" class="pweye" data-eye="lpass" aria-label="Show password" title="Show password">👁</button></span></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px">'+esc(S.lnote||'')+'</div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
+  return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><span class="pwwrap"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus><button type="button" class="pweye" data-eye="pin" aria-label="Show PIN" title="Show PIN">👁</button></span></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
   open.forEach(function(o){ var p=P[o.id]; if(salesR()&&o.proj) return;
@@ -3322,7 +3333,7 @@ function privEmpty(d){ return !d||!((d.expenses||[]).length||(d.staff||[]).lengt
 var PRIVKEPT=false;
 function privKeepIfEmpty(cur){ PRIVKEPT=false; if(!isAdm()||privEmpty(cur)||!privEmpty(D)) return false; privJoin(cur); PRIVKEPT=true; return true; }
 /* log out: admin changes are sent first; when they are online, the phone keeps no admin data */
-function logoutGo(){ pushOff(); NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
+function logoutGo(){ setRelock(); pushOff(); NAVSTACK=[]; navKeep(); try{ history.replaceState(null,''); }catch(err){} S.role=''; sessionStorage.removeItem('role'); localStorage.removeItem('sbrole'); sbLogout(); S.ru=null; S.tab='home'; render(); }
 function logoutAsk(){ var adm=isAdm()&&sbOn()&&!!SESS;
   var go=function(){ var unl=unsentN()+PHQ.length, pd=adm&&!!localStorage.getItem('wpdirty');
     if(pd&&!confirm('Accounts / staff changes are not sent online yet. If someone else signs in on this phone before you sign in again, they are lost.\n\nLog out anyway?')) return;
@@ -5681,7 +5692,31 @@ function setSecOf(c){ var h=c&&c.querySelector&&c.querySelector('h2'), t=h?h.tex
   for(var i=0;i<SETSEC.length;i++) if(SETSEC[i][2].test(t)) return i; return SETSEC.length; }
 /* a reminder that says "Settings → Backup" (or App version …) opens that sheet */
 function setTabOf(txt){ txt=String(txt||''); return /App version|Space used|Shared data/.test(txt)?'ph':/Backup|backup|Automatic check/.test(txt)?'bak':/Online sync|Settings → Users/.test(txt)?'usr':''; }
-function viewSettings(){ return setSheet(viewSettings0()); }
+/* ---------- Settings lock: the admin's password (or PIN) is asked before Settings can be changed
+   (asked: "Setting changes required password, set accordingly"). Unlocked for 15 minutes on this phone, then asked again. ---------- */
+var SETLOCK_MS=15*60*1000;
+function setUnlocked(){ try{ var t=+sessionStorage.getItem('setok')||0; if(t&&Date.now()-t<SETLOCK_MS) return true; }catch(e){} return false; }
+function setUnlock(){ try{ sessionStorage.setItem('setok',String(Date.now())); }catch(e){} }
+function setRelock(){ try{ sessionStorage.removeItem('setok'); }catch(e){} }
+function setPinMode(){ return !(sbOn()&&SESS&&SESS.email); }
+function viewSetLock(){ var pin=setPinMode();
+  return '<div class="card setlock"><h2>🔒 Settings are protected</h2><p class="muted">Enter your '+(pin?'admin PIN':'password')+' to change settings. Nothing is changed until you unlock.</p>'
+   +'<label class="f"><span>'+(pin?'Admin PIN':'Your password'+(SESS&&SESS.email?' <small class="faint">('+esc(SESS.email)+')</small>':''))+'</span><span class="pwwrap"><input type="password" id="setpw" '+(pin?'inputmode="numeric" maxlength="6"':'autocomplete="current-password"')+' autofocus><button type="button" class="pweye" data-eye="setpw" aria-label="Show" title="Show">👁</button></span></label>'
+   +'<div class="row"><button class="btn primary" data-act="setunlock">Unlock settings</button></div><div id="seterr" class="warnt" style="margin-top:8px;font-size:13px"></div>'
+   +'<p class="faint" style="margin-top:10px">Stays unlocked for 15 minutes on this phone.</p></div>'; }
+function setVerify(pw){ if(setPinMode()) return Promise.resolve(pw===String(D.pins.admin));
+  if(navigator.onLine===false) return Promise.reject(new Error('You are offline — connect to the internet to unlock settings'));
+  return fetch(sbUrl('/auth/v1/token?grant_type=password'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({email:SESS.email,password:pw})})
+    .then(function(r){ if(r.ok) return true; if(r.status===400||r.status===401||r.status===422) return false; throw new Error('Could not check the password ('+r.status+') — try again'); },function(){ throw new Error('No connection — try again'); }); }
+function setTryUnlock(){ var i=document.getElementById('setpw'), e=document.getElementById('seterr'), b=document.querySelector('[data-act="setunlock"]'); if(!i) return; var pw=i.value; if(!pw){ i.focus(); return; }
+  if(b) b.disabled=true; if(e) e.textContent='';
+  setVerify(pw).then(function(okk){ if(okk){ setUnlock(); render(); toast('Settings unlocked for 15 minutes'); } else { if(b) b.disabled=false; if(e) e.textContent=setPinMode()?'Wrong PIN':'Wrong password'; i.value=''; i.focus(); } },
+    function(err){ if(b) b.disabled=false; if(e) e.textContent=err.message||'Could not check'; }); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="setunlock"],[data-act="setlock"]'); if(!t) return;
+  if(t.getAttribute('data-act')==='setlock'){ setRelock(); render(); toast('Settings locked'); return; } setTryUnlock(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target&&e.target.id==='setpw'){ e.preventDefault(); setTryUnlock(); } });
+
+function viewSettings(){ if(!setUnlocked()) return viewSetLock(); return setSheet(viewSettings0()).replace('<div class="xs">','<div class="xs"><div class="setlk"><span class="faint">🔓 Settings unlocked</span><button class="btn ghost sm" data-act="setlock">Lock now</button></div>'); }
 function setSheet(html){ var cur=S.stab; if(!SETSH.some(function(x){ return x[0]===cur; })) cur=S.stab='co';
   var tpl=document.createElement('template'); tpl.innerHTML=html; var all=[];
   [].slice.call(tpl.content.children).forEach(function(c){ setSplit(c).forEach(function(x){ all.push(x); }); });
@@ -5936,7 +5971,7 @@ document.addEventListener('click',function(e){
   if(d.att){ var pa=d.att.split('|'), aa=attOf(S.am||today().slice(0,7),pa[0]), cur=aa.d[pa[1]]||'', nx=ATT[(ATT.indexOf(cur)+1)%ATT.length]; if(nx) aa.d[pa[1]]=nx; else { delete aa.d[pa[1]]; delete aa.ot[pa[1]]; } save(); render(); return; }
   if(d.made!==undefined&&o){ o.items[+d.made].made=!o.items[+d.made].made; save(); render(); return; }
   var a=d.act;
-  if(a==='login'){ var p=$('#pin').value; if(p===D.pins.admin) S.role='admin'; else if(p===D.pins.sales) S.role='sales'; else if(p===D.pins.production) S.role='production'; else { toast('Wrong PIN'); return; } sessionStorage.setItem('role',S.role); render(); cloudPull(); if(alertSets().live.length&&!prod()){ setTimeout(showReminders,300); } }
+  if(a==='login'){ var p=$('#pin').value; if(p===D.pins.admin){ S.role='admin'; setUnlock(); } else if(p===D.pins.sales) S.role='sales'; else if(p===D.pins.production) S.role='production'; else { toast('Wrong PIN'); return; } sessionStorage.setItem('role',S.role); render(); cloudPull(); if(alertSets().live.length&&!prod()){ setTimeout(showReminders,300); } }
   if(a==='bell') showReminders();
   if(a==='dzopen') dzOpen();
   if(a==='aclear'){ var dma=dismissed(); alerts().forEach(function(x){ dma[alertKey(x)]=Date.now(); }); setDismissed(dma); refreshAlerts(); toast('Alerts cleared — they come back if something changes'); }
@@ -5947,7 +5982,7 @@ document.addEventListener('click',function(e){
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
-  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; S.sdead=false; S.lnote=''; localStorage.removeItem('sbdead'); localStorage.setItem('sbrole',role); if(role!=='admin') privStaffNow(); if(role==='admin') localStorage.setItem('pinok','1'); sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
+  if(a==='sblogin'){ var em=$('#lemail').value.trim(), pw=$('#lpass').value; if(!em||!pw){ $('#lerr').textContent='Enter email and password'; return; } $('#lerr').textContent='Signing in…'; sbLogin(em,pw).then(function(j){ localStorage.setItem('lastEmail',em); return sbRole(j.email); }).then(function(role){ if(!role){ sbLogout(); throw new Error('This email is not on the allowed list yet. Ask the admin to add it in Settings → Users.'); } S.role=role; S.sdead=false; S.lnote=''; localStorage.removeItem('sbdead'); localStorage.setItem('sbrole',role); if(role!=='admin') privStaffNow(); if(role==='admin'){ localStorage.setItem('pinok','1'); setUnlock(); } sessionStorage.setItem('role',role); S.ru=null; render(); setSync('Signed in'); return cloudPull(true); }).then(function(){ render(); if(alertSets().live.length&&!prod()) setTimeout(showReminders,300); }).catch(function(e){ var el=$('#lerr'); if(el) el.textContent=e.message||'Login failed'; }); }
   if(a==='logout'){ logoutAsk(); }
   if(a==='new') newOrder();
   if(a==='undo'&&o) undo(o,false); if(a==='redo'&&o) undo(o,true);
