@@ -820,6 +820,37 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .xs .xr.xtot{background:#f6f8fa} .xs .xr.xtot>div{font-size:16.5px}
 .xs .xr>input:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1}
 .sptag{display:block;color:#b54708;font-size:11.5px;font-weight:600;line-height:1.25}
+
+/* home dashboard */
+.hgreet{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 2px 12px}
+.hgreet b{display:block;font-size:20px;font-weight:700;letter-spacing:-.2px}
+.hgreet span{display:block;font-size:13.5px;color:var(--soft);margin-top:1px}
+.hoff{font-size:12px;color:#93370d;background:#fff4d6;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.kpi{position:relative;overflow:hidden;border-left:4px solid #c7cdd6}
+.kpi.good{border-left-color:#1a7f37} .kpi.warn{border-left-color:#d4590d}
+.kpi b{font-size:22px;letter-spacing:-.3px}
+.kpi i.hcmp{margin-top:3px;font-weight:600;color:var(--soft)} .kpi i.hcmp.up{color:#1a7f37} .kpi i.hcmp.dn{color:#b42318}
+.hhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.hhead h2{margin:0} .hhead h2 em{font-style:normal;font-size:12px;font-weight:700;color:#fff;background:#d4590d;border-radius:999px;padding:1px 7px;vertical-align:middle;margin-left:4px}
+.htiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.htile{background:#f7f8fa;border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center;min-width:0}
+.htile b{display:block;font-size:22px;font-weight:700;line-height:1.1} .htile span{display:block;font-size:11px;color:var(--soft);line-height:1.2;margin-top:3px}
+.htile.good b{color:#1a7f37} .htile.warn b{color:#d4590d} .htile.bad b{color:#b42318} .htile.bad{background:#fff5f4;border-color:#f3c5c0}
+.hbar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#eceff3;gap:2px;margin:4px 0 10px}
+.hbar.sm{height:7px;margin:6px 0 5px}
+.hbar i,.hleg i{display:block;background:#c7cdd6}
+.hbar i.s0,.hleg i.s0{background:#c7cdd6} .hbar i.s0m,.hleg i.s0m{background:#8fa3b8} .hbar i.s1,.hleg i.s1{background:#2f6fed} .hbar i.s2,.hleg i.s2{background:#d4a017} .hbar i.s3,.hleg i.s3{background:#38a169} .hbar i.s4,.hleg i.s4{background:#1a7f37}
+.h-td{order:0} .h-pj{order:5} .h-ch{order:6}
+.pipe button small{display:block;font-size:11px;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipe button span{display:block}
+.hchart{width:100%;height:auto;display:block;margin-top:4px}
+.hchart rect{fill:#c7d7f7} .hchart rect.now{fill:#2f6fed}
+.hchart text.v{font-size:10px;fill:var(--soft);font-weight:600} .hchart text.l{font-size:10.5px;fill:var(--soft)}
+.hnote{margin:6px 0 0;font-size:12.5px}
+.hpjl .hpj{display:block;width:100%;text-align:left;padding:10px 0;border-bottom:1px solid var(--line)} .hpjl .hpj:last-child{border-bottom:0}
+.hpj b{font-size:16px;font-weight:650} .hpjd{font-size:12.5px;color:var(--soft);line-height:1.35}
+.hleg{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:11.5px;margin:8px 0 0} .hleg i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:-1px}
+@media(max-width:420px){ .htiles{grid-template-columns:repeat(3,minmax(0,1fr))} .pipe{grid-template-columns:repeat(5,minmax(0,1fr))} .pipe button small{font-size:10px} }
 </style>
 </head>
 <body>
@@ -874,7 +905,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='05 Nov 2026, 07:20';
+var APPV='05 Nov 2026, 09:44';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1341,8 +1372,82 @@ function alertBtn(a){ return '<div class="arow"><button class="alert" '+(a.id?'d
 function remHtml(){ var AS=alertSets(), al=AS.live; return '<div class="row between"><h2>🔔 Reminders'+(al.length?' ('+al.length+')':'')+'</h2><span class="row" style="gap:4px">'+alertTools(AS)+'<button class="btn sm" id="remclose">Close</button></span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">Nothing pending — all good 👍</div>'); }
 function refreshAlerts(){ var rc=document.getElementById('remcard'); if(rc) rc.innerHTML=remHtml(); render(); }
 function showReminders(){ var v=document.createElement('div'); v.className='viewer'; v.style.alignItems='flex-start'; v.style.paddingTop='60px'; v.innerHTML='<div class="card" id="remcard" style="max-width:520px;width:92vw;max-height:80vh;overflow:auto">'+remHtml()+'</div>'; v.addEventListener('click',function(e){ if(e.target===v||e.target.id==='remclose') v.remove(); else if(e.target.closest('[data-open],[data-go]')) v.remove(); }); document.body.appendChild(v); }
+/* ---------- Home = dashboard (asked: "Home screen make it more usefull like dash board, easy to understand n readable
+   n presentable professional"). Same cards as before (totals, needs attention, orders, payment pending, production plan)
+   plus: a greeting with the date, "Today" counters, each total compared with last month, a value under each order stage,
+   a 6-month sales chart and an apartment-projects card. ---------- */
+function hGreet(){ var h=new Date().getHours(), g=h<12?'Good morning':h<17?'Good afternoon':'Good evening', d=new Date();
+  return '<div class="hgreet"><div><b>'+g+'</b><span>'+d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})+'</span></div>'+(navigator.onLine===false?'<span class="hoff">Offline — saved on this phone</span>':'')+'</div>'; }
+function hMonth(m){ var mo=moneyOrders().filter(function(o){ return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m; }), xb=bldBillsIn(m);
+  var inn=moneyOrders().reduce(function(a,o){ return a+(o.payments||[]).filter(function(p){ return (p.on||'').slice(0,7)===m; }).reduce(function(x,p){ return x+n(p.amt); },0); },0)+bldIn(m);
+  return {n:mo.length, sales:mo.reduce(function(a,o){ return a+subTotal(o); },0)+xb, xb:xb, prof:mo.reduce(function(a,o){ return a+profit(o); },0)+xb, exp:monthExp(m), inn:inn}; }
+function hPrevM(m){ var y=+m.slice(0,4), k=+m.slice(5,7)-1; if(k<1){ k=12; y--; } return y+'-'+(k<10?'0':'')+k; }
+function hMonName(m){ return new Date(m+'-01T00:00').toLocaleDateString('en-IN',{month:'short'}); }
+/* "↑ 12% vs Oct" — nothing when last month had nothing */
+function hCmp(now,prev,m){ if(!(prev>0)) return ''; var p=Math.round((now-prev)/prev*100); if(!p) return '<i class="hcmp">same as '+hMonName(hPrevM(m))+'</i>';
+  return '<i class="hcmp '+(p>0?'up':'dn')+'">'+(p>0?'▲ ':'▼ ')+Math.abs(p)+'% vs '+hMonName(hPrevM(m))+'</i>'; }
+function hKpis(open,m,due){ var M=hMonth(m), L=hMonth(hPrevM(m)), net=M.prof-M.exp, netL=L.prof-L.exp, dueN=open.filter(function(o){ return o.stage>0&&balance(o)>0.5&&!noAmt(o); }).length;
+  var mk=function(cls,attr,label,val,sub){ return '<div class="kpi tx'+cls+'"'+attr+'><span>'+label+'</span><b>'+val+'</b>'+(sub||'')+'</div>'; };
+  return '<div class="kpis">'
+   +mk('',txAttr('sales',m,'','','home'),'Sales this month',money(M.sales),'<i>'+pl(M.n,'order')+' confirmed'+(M.xb?' + builder extra bills '+money(M.xb):'')+'</i>'+hCmp(M.sales,L.sales,m))
+   +mk(' good',txAttr('in',m,'','','home'),'Received this month',money(M.inn),hCmp(M.inn,L.inn,m))
+   +mk(due>0?' warn':'',txAttr('due','','','','home'),'To collect',money(due),'<i>'+(dueN?'from '+pl(dueN,'order'):'nothing pending')+'</i>')
+   +(admin()?mk(net<0?' warn':' good',txAttr('month',m,'','','home'),'Profit this month',money(net),'<i>after '+money(M.exp)+' expenses'+(M.sales>0?' · '+Math.round(net/M.sales*100)+'% margin':'')+'</i>'+hCmp(net,netL,m))
+     :'<div class="kpi"><span>Windows to make</span><b>'+open.filter(function(o){ return o.stage>0&&o.stage<3; }).reduce(function(a,o){ return a+leftQty(o); },0)+'</b></div>')
+   +'</div>'; }
+/* today: what needs doing now */
+function hToday(open,al){ var t=today(), late=open.filter(function(o){ return o.stage>=1&&o.stage<4&&o.due&&o.due<t; }).length, dueT=open.filter(function(o){ return o.stage>=1&&o.stage<4&&o.due===t; }).length;
+  var mk=open.filter(function(o){ return o.stage>0&&o.stage<3; }).reduce(function(a,o){ return a+leftQty(o); },0), ready=open.filter(function(o){ return o.stage===3; }).length, low=admin()?lowStock().length:0;
+  var tile=function(attr,v,l,cls){ return '<button class="htile'+(cls||'')+'" '+attr+'><b>'+v+'</b><span>'+l+'</span></button>'; };
+  return '<div class="card h-td"><div class="hhead"><h2>Today</h2><span class="faint">'+dShort(t)+'</span></div><div class="htiles">'
+   +tile('data-go="planning"',late||dueT,late?'delivery overdue'+(dueT?' + '+dueT+' today':''):'delivery due today',late?' bad':dueT?' warn':'')
+   +tile('data-go="planning"',mk,'windows to make')
+   +tile('data-filter="3"',ready,'ready to deliver',ready?' good':'')
+   +tile('data-act="hgo-al"',al.length,'to follow up',al.length?' warn':'')
+   +(admin()?tile('data-go="inventory"',low,'stock items low',low?' bad':''):'')
+   +'</div></div>'; }
+/* orders by stage: a count and the value of each, and a bar */
+function hPipe(by){ var vals=by.map(function(L){ return L.filter(function(o){ return !noAmt(o); }).reduce(function(a,o){ return a+orderTotal(o); },0); }), tot=by.reduce(function(a,L){ return a+L.length; },0);
+  return '<div class="card h-pi"><div class="hhead"><h2>Orders</h2><button class="btn ghost sm" data-go="orders">All orders ›</button></div>'
+   +(tot?'<div class="hbar">'+STAGES.map(function(s,i){ return by[i].length?'<i class="s'+i+'" style="flex:'+by[i].length+'" title="'+s+'"></i>':''; }).join('')+'</div>':'')
+   +'<div class="pipe">'+STAGES.map(function(s,i){ return '<button data-filter="'+i+'"><b>'+by[i].length+'</b><span>'+s+'</span><small>'+(vals[i]?money(vals[i]):'')+'</small></button>'; }).join('')+'</div></div>'; }
+/* the last 6 months of sales as bars */
+function hChart(m){ var ms=[], x=m; for(var i=0;i<6;i++){ ms.unshift(x); x=hPrevM(x); } var V=ms.map(function(k){ return hMonth(k); }), mx=Math.max.apply(null,V.map(function(v){ return v.sales; }).concat([1]));
+  var W=300, H=120, bw=W/6, bars=ms.map(function(k,i){ var h=Math.round(V[i].sales/mx*84), y=100-h, cx=i*bw+bw/2;
+    return '<rect x="'+(i*bw+8)+'" y="'+y+'" width="'+(bw-16)+'" height="'+h+'" rx="4" class="'+(i===5?'now':'')+'"/>'+(V[i].sales>0?'<text x="'+cx+'" y="'+(y-4)+'" text-anchor="middle" class="v">'+moneyK(V[i].sales)+'</text>':'')+'<text x="'+cx+'" y="116" text-anchor="middle" class="l">'+hMonName(k)+'</text>'; }).join('');
+  var tot=V.reduce(function(a,v){ return a+v.sales; },0);
+  return '<div class="card h-ch"><div class="hhead"><h2>Sales — last 6 months</h2>'+(admin()?'<button class="btn ghost sm" data-go="reports">Reports ›</button>':'')+'</div>'
+   +(tot?'<svg class="hchart" viewBox="0 0 '+W+' '+H+'" aria-label="Sales by month">'+bars+'</svg><p class="faint hnote">'+money(tot)+' in 6 months · average '+money(tot/6)+' a month</p>':'<div class="empty">No confirmed orders yet</div>')+'</div>'; }
+function moneyK(v){ v=n(v); if(v>=1e7) return '₹'+(Math.round(v/1e5)/100)+' Cr'; if(v>=1e5) return '₹'+(Math.round(v/1e4)/10)+' L'; if(v>=1e3) return '₹'+Math.round(v/1e3)+'k'; return '₹'+Math.round(v); }
+/* apartment projects: where each one stands */
+function hProjects(){ if(!admin()) return ''; var L=(D.projects||[]).filter(function(p){ return !p.archived&&!p.del; }); if(!L.length) return '';
+  var rows=L.map(function(p){ var fl=projFlats(p.id), s=pjStmt(p), n0=fl.length, done=fl.filter(function(f){ return f.stage>=4; }).length, ready=fl.filter(function(f){ return f.stage===3; }).length, work=fl.filter(function(f){ return f.stage===2; }).length, conf=fl.filter(function(f){ return f.stage===1; }).length, meas=fl.filter(function(f){ return f.stage<1&&f.measured; }).length, todo=n0-done-ready-work-conf-meas;
+    var seg=function(k,c){ return k?'<i class="'+c+'" style="flex:'+k+'"></i>':''; };
+    return '<button class="hpj" data-proj="'+p.id+'"><div class="row between"><b>'+esc(p.name)+'</b><span class="faint">'+pl(n0,'flat')+'</span></div>'
+     +(n0?'<div class="hbar sm">'+seg(done,'s4')+seg(ready,'s3')+seg(work,'s2')+seg(conf,'s1')+seg(meas,'s0m')+seg(todo,'s0')+'</div>':'')
+     +'<div class="hpjd">'+[done?done+' delivered':'',ready?ready+' ready':'',work?work+' in production':'',conf?conf+' confirmed':'',meas?meas+' measured':'',todo?todo+' to measure':''].filter(Boolean).join(' · ')
+     +(s.pend>0.5?'<span class="warnt"> · '+money(s.pend)+' to collect</span>':'')+'</div></button>'; }).join('');
+  return '<div class="card h-pj"><div class="hhead"><h2>Apartment projects</h2><button class="btn ghost sm" data-go="orders">All ›</button></div><div class="hpjl">'+rows+'</div>'
+   +'<p class="faint hleg"><i class="s4"></i>delivered <i class="s3"></i>ready <i class="s2"></i>production <i class="s1"></i>confirmed <i class="s0m"></i>measured <i class="s0"></i>to measure</p></div>'; }
+function homeAdmin(){ var open=openOrders(), by=STAGES.map(function(s,i){ return open.filter(function(o){ return o.stage===i; }); }), P=plan(), m=today().slice(0,7);
+  var due=open.filter(function(o){ return !noAmt(o); }).reduce(function(a,o){ return a+(o.stage>0?Math.max(0,balance(o)):0); },0)+bldPendAll();
+  var AS=alertSets(), al=AS.live;
+  var alertsCard='<div class="card h-al"><div class="hhead"><h2>Needs attention'+(al.length?' <em>'+al.length+'</em>':'')+'</h2><span class="row" style="gap:4px">'+alertTools(AS)+'</span></div>'+(al.length?al.map(alertBtn).join(''):'<div class="empty">All good 👍</div>')+'</div>';
+  var q=queue(), QN=6;
+  var work='<div class="card h-wk"><div class="hhead"><h2>Production plan</h2><button class="btn ghost sm" data-go="planning">Open plan ›</button></div>'
+   +(q.length?'<table class="hwkt"><thead><tr><th>Order</th><th>Left</th><th>Make</th><th>Due</th></tr></thead><tbody>'+q.slice(0,QN).map(function(o){ var p=P[o.id]; return '<tr><td><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+'</div></td><td>'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.start)+' → '+dShort(p.finish)+'</td><td class="'+(o.due&&o.due<today()?'warnt':'')+'">'+dShort(o.due)+'</td></tr>'; }).join('')+'</tbody></table>'
+     +(q.length>QN?'<div class="hmore"><button class="btn ghost sm" data-go="planning">All '+q.length+' ›</button></div>':''):'<div class="empty">Nothing confirmed yet</div>')+'</div>';
+  var pend=open.filter(function(o){ return o.stage>0&&balance(o)>0.5&&!noAmt(o); }).sort(function(a,b){ return b.stage-a.stage||balance(b)-balance(a); }), PN=6;
+  var BH=bldHomeRows(), payCard='<div class="card h-pa"><div class="hhead"><h2>Payment pending</h2><span class="faint">'+(pend.length?money(pend.reduce(function(a,o){ return a+balance(o); },0))+' from '+pl(pend.length,'order'):'')+'</span></div><div class="olist">'+BH
+   +(pend.length?pend.slice(0,PN).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
+   +(pend.length>PN?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):(BH?'':'<div class="empty">Nothing pending 👍</div>'))+'</div></div>';
+  return installCard()+swCard()+permCard()+hGreet()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button>'+hKpis(open,m,due)+hToday(open,al)
+   +'<div class="hgrid"><div class="hcol">'+alertsCard+payCard+hProjects()+'</div><div class="hcol">'+hPipe(by)+work+hChart(m)+'</div></div>'; }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="hgo-al"]'); if(!t) return; var c=document.querySelector('.h-al'); if(c) c.scrollIntoView({behavior:'smooth',block:'start'}); });
+
 function viewHome(){
-  if(prod()) return homeProd(); if(salesR()) return homeSales();
+  if(prod()) return homeProd(); if(salesR()) return homeSales(); return homeAdmin();
+  /* the old home below is kept for reference */
   var open=openOrders(), by=STAGES.map(function(s,i){return open.filter(function(o){return o.stage===i;});}), P=plan(), m=today().slice(0,7), t=today();
   var due=open.filter(function(o){return !noAmt(o);}).reduce(function(a,o){return a+(o.stage>0?Math.max(0,balance(o)):0);},0)+bldPendAll();
   var mo=moneyOrders().filter(function(o){return o.stage>=1&&(o.confirmedOn||'').slice(0,7)===m;});
@@ -1370,7 +1475,7 @@ function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; 
   var pay='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?pl(pend.length,'order'):'')+'</span></div><div class="olist">'
    +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
      +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
-  return installCard()+swCard()+permCard()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
+  return installCard()+swCard()+permCard()+hGreet()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div>'; }
 /* ============================================================
    GST — builder flats get GST (the shop's GST %, or the project's builder %). Owner flats and other orders
    have no GST unless it is added: on the order / flat, for ticked flats, or for a project's owner flats.
