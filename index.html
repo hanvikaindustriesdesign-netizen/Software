@@ -926,7 +926,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='05 Nov 2026, 16:04';
+var APPV='05 Nov 2026, 16:46';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1340,7 +1340,39 @@ function fixChips(){ document.querySelectorAll('.subtabs').forEach(function(st){
    ============================================================ */
 function pinOK(){ try{ return localStorage.getItem('pinok')==='1'||localStorage.getItem('sbrole')==='admin'; }catch(e){ return false; } }
 function wrongCopy(){ return !BAKED.url&&/^https?:$/.test(location.protocol)&&window.top===window&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&!/claude|anthropic/.test(location.hostname); }
-function viewLogin(){ if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><span class="pwwrap"><input type="password" id="lpass" autocomplete="current-password"><button type="button" class="pweye" data-eye="lpass" aria-label="Show password" title="Show password">👁</button></span></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px">'+esc(S.lnote||'')+'</div><p class="faint" style="margin-top:14px">Forgot your password? Ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
+/* ---------- Forgot password: a reset link by email, then a "new password" screen from that link
+   (asked: "Also provide option to rest password"). Uses the sign-in server's own recovery email. ---------- */
+function pwrHash(){ var h=location.hash||''; if(/type=recovery/.test(h)&&/access_token=/.test(h)){ var q={}; h.replace(/^#/,'').split('&').forEach(function(kv){ var p=kv.split('='); q[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); });
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} return q; } return null; }
+var PWR=pwrHash();
+/* the link tapped while the app is already open in this tab */
+window.addEventListener('hashchange',function(){ var q=pwrHash(); if(q){ PWR=q; S.role=''; render(); } });
+function pwrLink(){ return (typeof appLink==='function'&&appLink())||(location.origin+location.pathname); }
+function pwrSend(email){ email=String(email||'').trim().toLowerCase(); if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return Promise.reject(new Error('Enter your email first'));
+  if(navigator.onLine===false) return Promise.reject(new Error('You are offline — connect to the internet first'));
+  return fetch(sbUrl('/auth/v1/recover'),{method:'POST',headers:{apikey:D.sb.key,'Content-Type':'application/json'},body:JSON.stringify({email:email,gotrue_meta_security:{},redirect_to:pwrLink()})})
+    .then(function(r){ if(r.ok) return true; return r.json().catch(function(){ return {}; }).then(function(j){ var m=j.error_description||j.msg||j.message||j.error||''; if(r.status===429||/rate|limit/i.test(m)) throw new Error('Too many emails just now — try again in an hour'); throw new Error(m||'Could not send ('+r.status+')'); }); },
+      function(){ throw new Error('No connection — try again'); }); }
+function viewPwReset(){ return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Set a new password</p>'
+   +'<label class="f" style="text-align:left"><span>New password (at least 8 letters or numbers)</span><span class="pwwrap"><input type="password" id="npw1" autocomplete="new-password"><button type="button" class="pweye" data-eye="npw1" aria-label="Show password" title="Show password">👁</button></span></label>'
+   +'<label class="f" style="text-align:left"><span>Type it again</span><span class="pwwrap"><input type="password" id="npw2" autocomplete="new-password"><button type="button" class="pweye" data-eye="npw2" aria-label="Show password" title="Show password">👁</button></span></label>'
+   +'<button class="btn primary big" data-act="pwrset">Save new password</button><div id="npwerr" class="warnt" style="margin-top:10px;font-size:13px"></div>'
+   +'<p class="faint" style="margin-top:14px"><button class="btn ghost sm" data-act="pwrcancel">Cancel — back to sign in</button></p></div>'; }
+function pwrSet(){ var a=$('#npw1'), b2=$('#npw2'), e=$('#npwerr'), btn=document.querySelector('[data-act="pwrset"]'); if(!a) return; var pw=a.value;
+  if(pw.length<8||pw.length>72){ e.textContent='The password must be 8 to 72 characters'; a.focus(); return; } if(pw!==b2.value){ e.textContent='The two passwords are not the same'; b2.focus(); return; }
+  e.textContent='Saving…'; if(btn) btn.disabled=true;
+  fetch(sbUrl('/auth/v1/user'),{method:'PUT',headers:{apikey:D.sb.key,Authorization:'Bearer '+PWR.access_token,'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
+   .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error_description||j.msg||j.message||'Could not save ('+r.status+')'); return j; }); })
+   .then(function(u){ PWR=null; S.lnote='✓ Password changed — sign in with the new one.'; if(u&&u.email) localStorage.setItem('lastEmail',u.email); render(); toast('Password changed'); },
+     function(err){ if(btn) btn.disabled=false; e.textContent=/expired|invalid|JWT|token/i.test(err.message)?'This reset link has expired — ask for a new one from the sign-in screen':err.message; }); }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="pwrset"],[data-act="pwrcancel"],[data-act="pwforgot"]'); if(!t) return; var a=t.getAttribute('data-act');
+  if(a==='pwrset'){ pwrSet(); return; } if(a==='pwrcancel'){ PWR=null; render(); return; }
+  var em=($('#lemail')||{}).value||(SESS&&SESS.email)||localStorage.getItem('lastEmail')||'', msg=$('#lerr')||$('#seterr'); if(!String(em).trim()){ if(msg) msg.textContent='Type your email above, then tap Forgot password'; var le=$('#lemail'); if(le) le.focus(); return; }
+  if(msg) msg.textContent='Sending…'; t.disabled=true;
+  pwrSend(em).then(function(){ t.disabled=false; if(msg) msg.textContent='✓ A reset link was sent to '+String(em).trim()+'. Open it on this phone (check Spam too) — it works for 1 hour.'; },
+    function(err){ t.disabled=false; if(msg) msg.textContent=err.message; }); });
+
+function viewLogin(){ if(sbOn()&&PWR) return viewPwReset(); if(sbOn()&&!S.pinMode) return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Sign in</p><label class="f" style="text-align:left"><span>Email</span><input type="email" id="lemail" autocomplete="username" value="'+esc(localStorage.getItem('lastEmail')||'')+'"></label><label class="f" style="text-align:left"><span>Password</span><span class="pwwrap"><input type="password" id="lpass" autocomplete="current-password"><button type="button" class="pweye" data-eye="lpass" aria-label="Show password" title="Show password">👁</button></span></label><button class="btn primary big" data-act="sblogin">Sign in</button><div id="lerr" class="warnt" style="margin-top:10px;font-size:13px">'+esc(S.lnote||'')+'</div><p class="faint" style="margin-top:14px"><button class="btn ghost sm" data-act="pwforgot">Forgot password? Email me a reset link</button><br>or ask your admin for a new one (Settings → Users → 🔑).</p><p class="faint">Your role (Admin / Sales / Production) is set by the admin in Settings → Users.</p>'+(pinOK()?'<button class="btn ghost sm" data-act="pinmode">Offline — use PIN instead</button>':'')+'</div>';
   return '<div class="login card"><h1>'+esc(D.company.name)+'</h1><p class="muted">Enter your PIN</p><div class="pin"><span class="pwwrap"><input type="password" inputmode="numeric" id="pin" maxlength="6" autofocus><button type="button" class="pweye" data-eye="pin" aria-label="Show PIN" title="Show PIN">👁</button></span></div><button class="btn primary big" data-act="login">Open</button><p class="faint" style="margin-top:14px">Admin sees everything and is the only one who can delete. Sales sees orders. Production sees only the floor work.</p>'+(sbOn()?'<button class="btn ghost sm" data-act="emailmode">Sign in with email instead</button>':'')+'</div>'; }
 
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
@@ -5702,7 +5734,7 @@ function setPinMode(){ return !(sbOn()&&SESS&&SESS.email); }
 function viewSetLock(){ var pin=setPinMode();
   return '<div class="card setlock"><h2>🔒 Settings are protected</h2><p class="muted">Enter your '+(pin?'admin PIN':'password')+' to change settings. Nothing is changed until you unlock.</p>'
    +'<label class="f"><span>'+(pin?'Admin PIN':'Your password'+(SESS&&SESS.email?' <small class="faint">('+esc(SESS.email)+')</small>':''))+'</span><span class="pwwrap"><input type="password" id="setpw" '+(pin?'inputmode="numeric" maxlength="6"':'autocomplete="current-password"')+' autofocus><button type="button" class="pweye" data-eye="setpw" aria-label="Show" title="Show">👁</button></span></label>'
-   +'<div class="row"><button class="btn primary" data-act="setunlock">Unlock settings</button></div><div id="seterr" class="warnt" style="margin-top:8px;font-size:13px"></div>'
+   +'<div class="row"><button class="btn primary" data-act="setunlock">Unlock settings</button>'+(pin?'':'<button class="btn ghost sm" data-act="pwforgot">Forgot password?</button>')+'</div><div id="seterr" class="warnt" style="margin-top:8px;font-size:13px"></div>'
    +'<p class="faint" style="margin-top:10px">Stays unlocked for 15 minutes on this phone.</p></div>'; }
 function setVerify(pw){ if(setPinMode()) return Promise.resolve(pw===String(D.pins.admin));
   if(navigator.onLine===false) return Promise.reject(new Error('You are offline — connect to the internet to unlock settings'));
@@ -6112,7 +6144,7 @@ document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&(e.k
 function refreshTotals(o){ sheetTotals(o); var s=$('#tsub'),g=$('#tgst'),t=$('#ttot'),h=$('#otot'),p=$('#oprof'); if(s) s.textContent=money(o.items.reduce(function(a,it){return a+itemPrice(o,it);},0)); if(g) g.textContent=money(gstAmt(o)); if(t) t.textContent=money(orderTotal(o)); if(h) h.textContent=money(orderTotal(o)); if(p) p.textContent='Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')'; }
 
 if(localStorage.getItem('sbrole')==='admin') localStorage.setItem('pinok','1');
-if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); if(r!=='admin') privStaffNow(); render(); if(r==='admin') cloudPull(true); } }).catch(function(){}); }
+if(sbOn()&&PWR){ S.role=''; } else if(sbOn()&&SESS&&SESS.email){ if(!S.role) S.role=localStorage.getItem('sbrole')||'sales'; sbRole(SESS.email).then(function(r){ if(!r){ sbLogout(); S.role=''; sessionStorage.removeItem('role'); render(); toast('Your access was removed'); } else if(r!==S.role){ S.role=r; localStorage.setItem('sbrole',r); sessionStorage.setItem('role',r); if(r!=='admin') privStaffNow(); render(); if(r==='admin') cloudPull(true); } }).catch(function(){}); }
 if(wrongCopy()){ (function(){ var wb=document.createElement('div'); wb.className='wrongcopy'; wb.innerHTML='⚠ <b>Wrong file on the website.</b> This is the <b>preview copy</b> — new phones get a PIN screen and can\'t sign in with email, and updates won\'t show. Upload the <b>index.html</b> that was sent as an attachment (not the preview).'; document.body.insertBefore(wb,document.body.firstChild); })(); }
 /* ---- app install (PWA) ---- */
 var INSTALL=null, isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent), isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
