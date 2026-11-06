@@ -940,6 +940,35 @@ h2>.icw .ico,h1>.icw .ico{width:1em;height:1em;vertical-align:-.12em;color:var(-
 @media(max-width:430px){ .flow .fs b{font-size:9.5px} .flow .fd{width:26px;height:26px;font-size:12px} .flow .fl{margin-bottom:26px} }
 
 .flow .fs.can{cursor:pointer;border-radius:10px} .flow .fs.can:hover .fd,.flow .fs.can:focus .fd{box-shadow:0 0 0 3px #bfdbfe;border-color:#2563eb}
+
+/* spreadsheet-style plan */
+.xwrap{overflow:auto;max-height:70vh;margin:0 -4px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;-webkit-overflow-scrolling:touch}
+table.xl{border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:100%;font-variant-numeric:tabular-nums}
+table.xl th,table.xl td{border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:6px 8px;white-space:nowrap;background:#fff;text-align:left;vertical-align:middle}
+table.xl thead th{position:sticky;top:0;z-index:3;background:#f1f5f9;font-weight:700;color:#334155;font-size:11.5px;text-transform:uppercase;letter-spacing:.02em;border-bottom:2px solid #cbd5e1}
+table.xl th.xd,table.xl td.xd{text-align:center;min-width:44px;padding:4px 2px}
+table.xl th.xd span{display:block;font-size:10px;font-weight:600;color:#64748b;text-transform:none} table.xl th.xd b{display:block;font-size:14px;line-height:1.1} table.xl th.xd small{display:block;font-size:9.5px;color:#64748b;font-weight:500;text-transform:none}
+table.xl th.xd.today{background:#dbeafe;color:#1e3a8a} table.xl th.xd.today span,table.xl th.xd.today small{color:#1e3a8a}
+table.xl td.xd.today{background:#f0f6ff} table.xl td.xd.on{background:#bfdbfe;color:#1e3a8a;font-weight:700} table.xl td.xd.late{background:#fde68a;color:#78350f;font-weight:700}
+table.xl td.xd.due{box-shadow:inset 0 0 0 2px #ea580c} table.xl td.xd.due:empty::after{content:'📅';font-size:11px}
+table.xl td.xd.full{background:#dcfce7;color:#166534;font-weight:700} table.xl td.xd.part{background:#f0fdf4;color:#166534}
+table.xl .xc{width:30px;min-width:30px;max-width:30px;box-sizing:border-box;padding:4px!important;text-align:center;color:#94a3b8} table.xl .xo{min-width:170px}
+table.xl th.xc,table.xl td.xc{position:sticky;left:0;z-index:2} table.xl th.xo,table.xl td.xo{position:sticky;left:30px;z-index:2;box-shadow:2px 0 0 #e2e8f0}
+table.xl thead th.xc,table.xl thead th.xo{z-index:4}
+table.xl tbody tr:nth-child(even) td{background:#fafafa} table.xl tbody tr:nth-child(even) td.xd.on{background:#bfdbfe} table.xl tbody tr:nth-child(even) td.xd.late{background:#fde68a} table.xl tbody tr:nth-child(even) td.xd.today{background:#f0f6ff}
+@media(hover:hover){ table.xl tbody tr:hover td{background:#fff7ed} table.xl tbody tr:hover td.xd.on{background:#93c5fd} table.xl tbody tr:hover td.xd.late{background:#fcd34d} }
+table.xl tr.xurg td.xo .xlink{background:#fef2f2}
+table.xl .xt{background:#eef2ff!important;font-weight:700} table.xl tfoot td{background:#f8fafc;font-weight:700;color:#334155;border-top:2px solid #cbd5e1;position:sticky;bottom:0;z-index:3}
+table.xl tfoot td small,table.xl td.num small{font-weight:500;color:#64748b;font-size:10.5px}
+table.xl td.num{text-align:right} table.xl th.num{text-align:right} table.xl td.full{color:#166534}
+.xlink{display:block;width:100%;text-align:left;background:none;border:0;padding:3px 8px;font:inherit;color:inherit;cursor:pointer;border-radius:4px;line-height:1.25} .xlink small{display:block;font-size:10.5px;color:#64748b}
+.xdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.xleg{margin-top:8px;font-size:12px} .xsq{display:inline-block;width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px;vertical-align:middle;margin-right:3px;background:#fff} .xsq.on{background:#bfdbfe} .xsq.late{background:#fde68a} .xsq.due{box-shadow:inset 0 0 0 2px #ea580c} .xsq.today{background:#dbeafe}
+table.xday td.xdate{white-space:nowrap} table.xday tr.today td{background:#f0f6ff} table.xday td.xjobs{white-space:normal;min-width:220px}
+.xnow{font-size:10px;background:#2563eb;color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px;font-weight:700}
+.xchip{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border:1px solid #e2e8f0;border-left:4px solid #2563eb;border-radius:6px;background:#fff;font:inherit;font-size:12px;cursor:pointer} .xchip b{color:#1e3a8a}
+@media print{ .xwrap{max-height:none;overflow:visible} }
+@media(max-width:600px){ .xwrap table.xl th,.xwrap table.xl td{padding:5px 6px!important;font-size:12px;line-height:1.25} .xwrap table.xl td.xd,.xwrap table.xl th.xd{padding:4px 2px!important;min-width:40px} .xwrap table.xl th.xo,.xwrap table.xl td.xo{min-width:140px} }
 </style>
 </head>
 <body>
@@ -1009,7 +1038,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 15:38';
+var APPV='06 Nov 2026, 16:24';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5863,6 +5892,31 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
 /* "Cutting list" / "Open order" buttons on the board open that tab of the order */
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-open][data-osub]'); if(!t) return; var sub=t.getAttribute('data-osub'); setTimeout(function(){ if(S.tab==='order'&&S.oid===t.getAttribute('data-open')&&S.sub!==sub){ S.sub=sub; render(); } },0); },true);
 
+/* ---- Planning as spreadsheet-style grids (asked: "Planning part make better like excel sheet views for easy understanding") ---- */
+function xlDay(ds){ var d=new Date(ds+'T00:00'); return {dow:d.toLocaleDateString('en-IN',{weekday:'short'}),dm:d.getDate(),mon:d.toLocaleDateString('en-IN',{month:'short'})}; }
+function xlSum(arr,kind){ return arr.filter(function(x){ return !kind||x.kind===kind; }).reduce(function(a,x){ return a+x.qty; },0); }
+/* Sheet 1: one row per order, one column per working day — like a Gantt sheet in Excel */
+function planSheet(P,q,dayList){ var t=today(), cw=D.perDay.windows||1, cd=D.perDay.doors||1;
+  var head='<tr><th class="xc">#</th><th class="xo">Order</th><th>Priority</th><th class="num">Left</th><th>Start</th><th>Finish</th><th>Due</th>'
+   +dayList.map(function(ds){ var x=xlDay(ds), hol=(D.holidays||[]).indexOf(ds)>=0; return '<th class="xd'+(ds===t?' today':'')+'"><span>'+x.dow+'</span><b>'+x.dm+'</b><small>'+x.mon+'</small></th>'; }).join('')+'<th class="num xt">Total</th></tr>';
+  var rows=q.map(function(o,i){ var p=P[o.id]||{}, tot=0, cells=dayList.map(function(ds){ var k=(P._days[ds]||[]).filter(function(x){ return x.id===o.id; })[0]; var qty=k?k.qty:0; tot+=qty; var due=o.due===ds;
+      return '<td class="xd'+(qty?(p.late?' late':' on'):'')+(due?' due':'')+(ds===t?' today':'')+'" title="'+(qty?qty+(o.kind==='doors'?' door':' window')+(qty===1?'':'s')+' on ':'')+dShort(ds)+(due?' · due date':'')+'">'+(qty||'')+'</td>'; }).join('');
+    return '<tr'+(plev(o)==='Urgent'?' class="xurg"':'')+'><td class="xc">'+(i+1)+'</td><td class="xo"><button class="xlink" data-open="'+o.id+'" data-osub="production" style="border-left:4px solid '+PBCOL[plev(o)]+'"><b>#'+o.no+'</b> '+esc(o.customer||'')+'<small>'+(o.kind==='doors'?'Doors':'Windows')+' · '+madeCount(o)+'/'+o.items.length+' made</small></button></td>'
+     +'<td><span class="xdot" style="background:'+PBCOL[plev(o)]+'"></span>'+plev(o)+'</td><td class="num">'+leftQty(o)+'</td><td>'+dShort(p.start)+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(o.due)+'</td>'+cells+'<td class="num xt">'+tot+'</td></tr>'; }).join('');
+  var totW=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'windows'); }), totD=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'doors'); });
+  var foot='<tr class="xsum"><td colspan="7">Windows planned / capacity</td>'+totW.map(function(w,i){ return '<td class="xd'+(w>=cw?' full':w?' part':'')+'">'+(w?w+'<small>/'+cw+'</small>':'<small>'+cw+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+totW.reduce(function(a,b){return a+b;},0)+'</td></tr>'
+   +'<tr class="xsum"><td colspan="7">Doors planned / capacity</td>'+totD.map(function(d,i){ return '<td class="xd'+(d>=cd?' full':d?' part':'')+'">'+(d?d+'<small>/'+cd+'</small>':'<small>'+cd+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+totD.reduce(function(a,b){return a+b;},0)+'</td></tr>';
+  return '<div class="card"><div class="hhead"><h2>Plan sheet — next 14 working days</h2><span class="faint">'+q.length+' order'+(q.length===1?'':'s')+' · '+cw+' windows · '+cd+' doors a day</span></div>'
+   +(q.length?'<div class="xwrap"><table class="xl">'+'<thead>'+head+'</thead><tbody>'+rows+'</tbody><tfoot>'+foot+'</tfoot></table></div>'
+   +'<p class="faint xleg"><i class="xsq on"></i> pieces made that day &nbsp; <i class="xsq late"></i> finishes after due date &nbsp; <i class="xsq due"></i> due date &nbsp; <i class="xsq today"></i> today &nbsp; · tap an order to open its production tab</p>':'<div class="empty">Nothing in the queue — confirmed orders appear here</div>')+'</div>'; }
+/* Sheet 2: one row per working day — what is made, how much capacity is free */
+function daySheet(P,dayList){ var t=today(), cw=D.perDay.windows||1, cd=D.perDay.doors||1;
+  var rows=dayList.map(function(ds){ var arr=P._days[ds]||[], w=xlSum(arr,'windows'), d=xlSum(arr,'doors'), x=xlDay(ds), seen={}, names=[];
+    arr.forEach(function(k){ if(seen[k.id]) return; seen[k.id]=1; var o=byId(k.id); names.push('<button class="xchip" data-open="'+k.id+'" data-osub="production" style="border-left-color:'+PBCOL[o?plev(o):'Normal']+'">#'+k.no+' '+esc(k.customer||'')+' <b>'+k.qty+'</b></button>'); });
+    return '<tr'+(ds===t?' class="today"':'')+'><td class="xdate"><b>'+x.dow+'</b> '+x.dm+' '+x.mon+(ds===t?' <span class="xnow">today</span>':'')+'</td><td class="num'+(w>=cw?' full':'')+'">'+w+'<small>/'+cw+'</small></td><td class="num'+(d>=cd?' full':'')+'">'+d+'<small>/'+cd+'</small></td><td class="num '+(cw-w+cd-d>0?'goodt':'faint')+'">'+(cw-w)+' w · '+(cd-d)+' d</td><td class="xjobs">'+(names.length?names.join(''):'<span class="faint">free</span>')+'</td>'+(admin()?'<td><button class="btn sm" data-hol="'+ds+'">Holiday</button></td>':'')+'</tr>'; }).join('');
+  return '<div class="card"><div class="hhead"><h2>Day sheet</h2><span class="faint">what the floor makes each day</span></div><div class="xwrap"><table class="xl xday"><thead><tr><th>Day</th><th class="num">Windows</th><th class="num">Doors</th><th class="num">Free</th><th>Orders (pieces)</th>'+(admin()?'<th></th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+   +(admin()?'<div style="margin-top:10px"><span class="faint">Holidays: </span>'+((D.holidays||[]).length?(D.holidays||[]).sort().map(function(h){return '<span class="stage">'+dShort(h)+' <button class="del" style="padding:0 2px;font-size:14px" data-holdel="'+h+'">×</button></span> ';}).join(''):'<span class="faint">none</span>')+' <input type="date" id="holadd" style="width:150px;display:inline-block;min-height:32px"> <button class="btn sm" data-act="holadd">Add holiday</button></div>':'')+'</div>'; }
+
 function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(function(o){return (o.stage===1||o.stage===2)&&o.hold;}), t=today(), canEdit=!prod();
   // next 14 working days
   var dayList=[], d=nextWork(t); for(var i=0;i<14;i++){ dayList.push(d); var dd=new Date(d+'T00:00'); dd.setDate(dd.getDate()+1); d=nextWork(ymd(dd)); }
@@ -5877,7 +5931,7 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   // day by day list
   var dl='<div class="card"><h2>Day by day</h2>'+dayList.slice(0,10).map(function(ds){ var arr=P._days[ds]||[]; return '<div class="hday" style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><div style="min-width:70px"><b>'+dShort(ds)+'</b><div class="faint">'+new Date(ds+'T00:00').toLocaleDateString('en-IN',{weekday:'short'})+'</div></div><div class="grow">'+(arr.length?arr.map(function(x){return '<div>'+x.qty+' '+(x.kind==='doors'?'door':'window')+(x.qty>1?'s':'')+' — <button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+x.id+'">#'+x.no+' '+esc(x.customer)+'</button></div>';}).join(''):'<span class="faint">free</span>')+'</div>'+(admin()?'<button class="btn sm" data-hol="'+ds+'">Holiday</button>':'')+'</div>'; }).join('')
    +(admin()?'<div style="margin-top:10px"><span class="faint">Holidays: </span>'+((D.holidays||[]).length?(D.holidays||[]).sort().map(function(h){return '<span class="stage">'+dShort(h)+' <button class="del" style="padding:0 2px;font-size:14px" data-holdel="'+h+'">×</button></span> ';}).join(''):'<span class="faint">none</span>')+' <input type="date" id="holadd" style="width:150px;display:inline-block;min-height:32px"> <button class="btn sm" data-act="holadd">Add holiday</button></div>':'')+'</div>';
-  return pbBoard()+cap+tl+dl; }
+  return pbBoard()+cap+planSheet(P,q,dayList)+daySheet(P,dayList); }
 /* ---- inventory ---- */
 /* how many brands use a profile code */
 function codeBrands(code){ var m={}; D.brands.forEach(function(B){ var hit=false; SERIES.forEach(function(sr){ PROFS.forEach(function(p){ if(B.prof[sr][p[0]]===code) hit=true; }); }); ['PVC','WPC'].forEach(function(d){ if(B.prof.door[d]===code) hit=true; }); if(hit) m[B.name]=1; }); return Object.keys(m); }
