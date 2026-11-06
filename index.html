@@ -1064,7 +1064,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 16:51';
+var APPV='06 Nov 2026, 17:10';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5902,7 +5902,7 @@ function pbJob(o,take,big){ var p=plev(o), left=pbItemsLeft(o), tot=(o.items||[]
    +'<span class="pbpl" style="background:'+PBCOL[p]+'">'+p+'</span></div>'
    +'<div class="pbmeta"><span>'+(take?'<b>'+take+'</b> '+(o.kind==='doors'?'door':'window')+(take===1?'':'s')+' today':'')+'</span><span class="faint">'+made+' of '+tot+' made'+(o.due?' · due '+dShort(o.due):'')+'</span></div>'
    +'<div class="pbbar"><i style="width:'+pct+'%"></i></div>'
-   +pbTypes(o)+pbToday(o,take)
+   +pbTypes(o)
    +'<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">✂ Cutting list</button><button class="btn sm ghost" data-open="'+o.id+'" data-osub="production">Open order ›</button>'+(prod()?'':'<span class="grow"></span><select data-plev="'+o.id+'" class="plsel" style="background-color:'+PBCOL[p]+'22">'+opts(PLEV,p)+'</select>'+emergBtn(o))+'</div></div>'; }
 function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t0]||[], cw=D.perDay.windows||1, cd=D.perDay.doors||1;
   var w=todayArr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dr=todayArr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0);
