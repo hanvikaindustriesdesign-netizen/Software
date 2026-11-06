@@ -905,6 +905,8 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 @media print{ .gshs{grid-template-columns:1fr 1fr} .gsc{break-inside:avoid} }
 
 .ibrand{max-width:150px;flex:0 0 auto}
+
+.btn.emg{border-color:#fca5a5;background:#fef2f2;color:#b91c1c;font-weight:700} .plsel{min-height:34px;padding:4px 26px 4px 8px;width:100px;font-size:13px}
 </style>
 </head>
 <body>
@@ -945,6 +947,9 @@ var ECATS=['Material','Salary','Rent','Electricity','Transport','Machine / tools
 var MODES=['Cash','Bank','UPI'];
 var ATT=['','P','H','A'];
 var PLEV=['Urgent','High','Normal','Low']; var PLCOL={Urgent:'#fee2e2;color:#991b1b',High:'#ffedd5;color:#9a3412',Normal:'#eef1f5;color:#5b6472',Low:'#e0f2fe;color:#075985'};
+/* 🚨 Make first: the order becomes Urgent and goes to the front of the queue; the plan starts it today */
+function makeFirst(id){ var o=byId(id); if(!o) return; var ids=queue().map(function(x){ return x.id; }).filter(function(x){ return x!==id; }); ids.unshift(id); o.plevel='Urgent'; o.hold=false; ids.forEach(function(x,i){ var y=byId(x); if(y) y.prio=i; }); save(); render(); toast('🚨 '+oTitle(o)+' is first now'); }
+function emergBtn(o){ if(prod()||!o||!(o.stage===1||o.stage===2)) return ''; var first=queue()[0]; return first&&first.id===o.id?'<span class="stage" style="background:#dc2626">🚨 First in production</span>':'<button class="btn sm emg" data-mkfirst="'+o.id+'">🚨 Make first</button>'; }
 function plev(o){ return o.plevel||'Normal'; } function plBadge(o){ return plev(o)==='Normal'?'':'<span class="stage" style="background:'+PLCOL[plev(o)]+'">'+plev(o)+'</span>'; }
 var BASIS={window:'per window / door',slider:'per sliding window',gshutter:'per glass shutter',mshutter:'per mesh shutter / frame',fixed:'per fixed pane',vent:'per ventilator',sash:'per openable sash',fan:'per exhaust fan',door:'per door',frameM:'per metre of outer frame',shutterM:'per metre of shutter',profM:'per metre of all profile',beadM:'per metre of glass bead'};
 
@@ -971,7 +976,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 10:16';
+var APPV='06 Nov 2026, 11:16';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5545,7 +5550,7 @@ function subCustomer(o){
    +'<div class="f geoaddr"><div class="row between" style="margin-bottom:4px;gap:8px"><span>Site address</span><button class="btn sm" data-act="geoaddr" title="Fill the address and PIN from where this phone is now">📍 Use my location</button></div><textarea data-o="address">'+esc(o.address)+'</textarea>'+(o.pin||o.geoSrc==='osm'?'<div class="faint" style="font-size:12px;margin-top:3px">'+(o.pin?'PIN <b>'+esc(o.pin)+'</b>':'')+(o.pin&&o.geoSrc==='osm'?' · ':'')+(o.geoSrc==='osm'?'address © OpenStreetMap contributors':'')+'</div>':'')+'</div>'
    +'<div class="grid2"><label class="f"><span>Order type</span><select data-o="kind"'+(o.items.length?' disabled':'')+'><option value="windows"'+(o.kind==='windows'?' selected':'')+'>Windows</option><option value="doors"'+(o.kind==='doors'?' selected':'')+'>Doors</option></select></label>'
    +'<label class="f"><span>Delivery date</span><input type="date" data-o="due" value="'+esc(o.due||'')+'"></label></div>'
-   +'<div class="grid2"><label class="f"><span>Priority</span><select data-o="plevel">'+opts(PLEV,plev(o))+'</select></label><label class="f"><span>🔔 Remind me on</span><input type="date" data-o="remind" value="'+esc(o.remind||'')+'"></label></div>'
+   +'<div class="grid2"><label class="f"><span>Priority</span><select data-o="plevel">'+opts(PLEV,plev(o))+'</select><div style="margin-top:6px">'+emergBtn(o)+'</div></label><label class="f"><span>🔔 Remind me on</span><input type="date" data-o="remind" value="'+esc(o.remind||'')+'"></label></div>'
    +(o.remind?'<label class="f"><span>Reminder note</span><input type="text" data-o="remindNote" value="'+esc(o.remindNote||'')+'" placeholder="Call customer about quote / collect balance…"></label>':'')
    +'<label class="f"><span>Notes (site, floor, colour…)</span><textarea data-o="notes">'+esc(o.notes||'')+'</textarea></label>'
    +'<div class="f"><span style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:4px">Site location</span><div class="row"><input type="text" class="grow" data-o="maplink" value="'+esc(o.maplink||'')+'" placeholder="Paste Google Maps link"><button class="btn sm" data-act="locate">📍 Locate</button>'+(o.maplink?'<a class="btn sm" href="'+esc(o.maplink)+'" target="_blank" rel="noopener">Open map</a>':'')+'</div>'+(o.geo?'<div class="faint" style="margin-top:4px">GPS '+o.geo+'</div>':'')+'</div>'
@@ -5633,6 +5638,7 @@ function cutXlsx(o){ var M=material(o);
 function subProduction(o){
   var p=plan()[o.id], days=Math.ceil(leftQty(o)/(D.perDay[o.kind]||1));
   return '<div class="card"><div class="row between"><h2>Production</h2><span class="muted">'+madeCount(o)+' of '+o.items.length+' made · '+(p?dShort(p.start)+' → '+dShort(p.finish):pl(days,'day'))+'</span></div>'
+   +(prod()||!(o.stage===1||o.stage===2)?'':'<div class="row" style="gap:8px;margin:4px 0 8px;flex-wrap:wrap;align-items:center"><span class="faint">Priority</span><select data-plev="'+o.id+'" class="plsel" style="background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>'+emergBtn(o)+'</div>')
    +'<p class="faint">Tick each item when it is welded, beaded and glazed. When all are ticked, press "Mark ready" at the top.</p>'
    +o.items.map(function(it,i){return '<button class="check'+(it.made?' done':'')+'" data-made="'+i+'"><i>'+(it.made?'✓':'')+'</i>'+sketch(o,it,34)+'<span>'+(i+1)+'. '+esc(it.loc||'—')+' · '+esc(it.type)+' · '+it.w+' × '+it.h+' × '+it.qty+(o.kind!=='doors'&&splitOn(it)?'<br><small class="faint">'+splitParts(it,i+1).map(function(q){return q.label+' '+esc(partName(q.t,q.hinge))+' '+q.w+' × '+q.h;}).join(' · ')+'</small>':'')+'</span></button>';}).join('')
    +(o.items.length?'<div class="row" style="margin-top:10px"><button class="btn sm" data-act="allmade">Tick all</button></div>':'<div class="empty">No items</div>')+'</div>';
@@ -5683,7 +5689,7 @@ function pbJob(o,take,big){ var p=plev(o), left=pbItemsLeft(o), tot=(o.items||[]
    +'<div class="pbmeta"><span>'+(take?'<b>'+take+'</b> '+(o.kind==='doors'?'door':'window')+(take===1?'':'s')+' today':'')+'</span><span class="faint">'+made+' of '+tot+' made'+(o.due?' · due '+dShort(o.due):'')+'</span></div>'
    +'<div class="pbbar"><i style="width:'+pct+'%"></i></div>'
    +'<div class="pbwins">'+(o.items||[]).map(function(it,i){ return pbWin(o,{it:it,i:i},big); }).join('')+'</div>'
-   +'<div class="row" style="gap:6px;margin-top:8px"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">✂ Cutting list</button><button class="btn sm ghost" data-open="'+o.id+'" data-osub="production">Open order ›</button></div></div>'; }
+   +'<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">✂ Cutting list</button><button class="btn sm ghost" data-open="'+o.id+'" data-osub="production">Open order ›</button>'+(prod()?'':'<span class="grow"></span><select data-plev="'+o.id+'" class="plsel" style="background-color:'+PBCOL[p]+'22">'+opts(PLEV,p)+'</select>'+emergBtn(o))+'</div></div>'; }
 function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t0]||[], cw=D.perDay.windows||1, cd=D.perDay.doors||1;
   var w=todayArr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dr=todayArr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0);
   var boxes=function(k,cap,cls){ var s=''; for(var i=0;i<cap;i++) s+='<i class="'+(i<k?'on '+cls:'')+'"></i>'; return '<span class="pbbox">'+s+'</span>'; };
@@ -5711,7 +5717,7 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   var dayList=[], d=nextWork(t); for(var i=0;i<14;i++){ dayList.push(d); var dd=new Date(d+'T00:00'); dd.setDate(dd.getDate()+1); d=nextWork(ymd(dd)); }
   var cap='<div class="card"><div class="row between"><h2>Production plan</h2><span class="row">'+(admin()?'<label class="f" style="margin:0;max-width:120px"><span>Windows / day</span><input type="number" data-pd="windows" value="'+D.perDay.windows+'"></label><label class="f" style="margin:0;max-width:110px"><span>Doors / day</span><input type="number" data-pd="doors" value="'+D.perDay.doors+'"></label>':'<span class="faint">'+D.perDay.windows+' windows · '+D.perDay.doors+' doors a day</span>')+'</span></div>'
    +'<p class="faint">Urgent orders go first, then High, Normal, Low; within a level use ▲ ▼ to fine-tune. Sundays and holidays are skipped.</p>'+(q.length?'<div class="row" style="margin:-2px 0 10px"><button class="btn sm" data-act="bzglass">🪟 Glass order list</button><span class="faint">glass sizes of many orders in one list for the supplier</span></div>':'')
-   +(q.length?'<table class="rt"><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td class="rx">'+(i+1)+'</td><td class="rg"><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 26px 4px 8px;width:110px;background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num" data-l="Left">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'" data-l="Make">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td data-l="Due">'+dShort(o.due)+'</td>'+(canEdit?'<td class="right ra" style="white-space:nowrap"><button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
+   +(q.length?'<table class="rt"><thead><tr><th>#</th><th>Order</th><th>Priority</th><th class="num">Left</th><th>Make</th><th>Due</th>'+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+q.map(function(o,i){var p=P[o.id];return '<tr><td class="rx">'+(i+1)+'</td><td class="rg"><button class="btn ghost sm" style="padding:0" data-open="'+o.id+'">'+oTitle(o)+'</button><div class="faint">'+STAGES[o.stage]+' · '+madeCount(o)+'/'+o.items.length+' made</div></td><td>'+(canEdit?'<select data-plev="'+o.id+'" style="min-height:34px;padding:4px 26px 4px 8px;width:110px;background-color:'+PLCOL[plev(o)].split(';')[0]+'">'+opts(PLEV,plev(o))+'</select>':plBadge(o)||'Normal')+'</td><td class="num" data-l="Left">'+leftQty(o)+' '+(o.kind==='doors'?'doors':'win')+'</td><td class="'+(p.late?'warnt':'')+'" data-l="Make">'+dShort(p.start)+' → '+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td data-l="Due">'+dShort(o.due)+'</td>'+(canEdit?'<td class="right ra" style="white-space:nowrap">'+(i?'<button class="btn sm emg" data-mkfirst="'+o.id+'" title="Emergency — make this first">🚨</button> ':'')+'<button class="btn sm" data-pmv="'+o.id+'|-1" title="Earlier">▲</button> <button class="btn sm" data-pmv="'+o.id+'|1" title="Later">▼</button> <button class="btn sm" data-phold="'+o.id+'">Hold</button></td>':'')+'</tr>';}).join('')+'</tbody></table>':'<div class="empty">Nothing confirmed to plan</div>')
    +(held.length?'<div style="margin-top:10px"><b>On hold:</b> '+held.map(function(o){return '<span class="stage">'+oTitle(o)+(canEdit?' <button class="btn ghost sm" style="min-height:0;padding:0 4px" data-phold="'+o.id+'">release</button>':'')+'</span> ';}).join('')+'</div>':'')+'</div>';
   // timeline
   var tl='<div class="card"><h2>Timeline — next 14 working days</h2><div class="tscroll"><table class="tl"><thead><tr><th style="min-width:140px">Order</th>'+dayList.map(function(ds){var dd=new Date(ds+'T00:00');return '<th class="num" style="padding:4px 3px;font-size:11px">'+dd.toLocaleDateString('en-IN',{weekday:'short'}).slice(0,2)+'<br>'+dd.getDate()+'</th>';}).join('')+'</tr></thead><tbody>'
@@ -6116,7 +6122,7 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.go){ if(d.stab) S.stab=d.stab; go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
@@ -6157,6 +6163,7 @@ document.addEventListener('click',function(e){
   if(d.iadj){ var qa=prompt('Counted quantity ('+D.inv[d.iadj].unit+')',D.inv[d.iadj].qty); if(qa!=null&&qa!==''){ var diff=Math.round((n(qa)-D.inv[d.iadj].qty)*10)/10; D.inv[d.iadj].qty=n(qa); D.lastCount=today(); if(diff) D.invLog.push({id:uid(),on:today(),key:d.iadj,qty:diff,by:S.role,note:'Stock count'}); save(); render(); } return; }
   if(d.ocdel){ var pc=d.ocdel.split('|'); D.offcuts[pc[0]].splice(+pc[1],1); save(); render(); return; }
   if(d.idel){ if(confirm('Remove '+D.inv[d.idel].name+' from stock list?')){ delete D.inv[d.idel]; save(); render(); } return; }
+  if(d.mkfirst){ makeFirst(d.mkfirst); return; }
   if(d.pmv){ var pm=d.pmv.split('|'), qq=queue(), ids=qq.map(function(x){return x.id;}), ix=ids.indexOf(pm[0]), nx=ix+(+pm[1]); if(ix<0||nx<0||nx>=ids.length) return; ids.splice(ix,1); ids.splice(nx,0,pm[0]); ids.forEach(function(id,i){ byId(id).prio=i; }); save(); render(); return; }
   if(d.phold){ var oh=byId(d.phold); oh.hold=!oh.hold; save(); render(); toast(oh.hold?'On hold':'Back in the plan'); return; }
   if(d.hol){ D.holidays=D.holidays||[]; if(D.holidays.indexOf(d.hol)<0) D.holidays.push(d.hol); save(); render(); return; }
