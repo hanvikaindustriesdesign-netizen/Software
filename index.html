@@ -862,8 +862,12 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .setlk{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 2px 8px;font-size:13px}
 
 /* plan board */
-.pb .hhead h2{font-size:19px}
-.pbcap{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 12px;font-size:14px} .pbcap>div{display:flex;align-items:center;gap:8px} .pbcap b{font-size:15px}
+.pb{box-shadow:0 1px 3px rgba(15,23,42,.06)} .pb .hhead h2{font-size:19px}
+.pbtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px} .pbtop h2{margin:0;font-size:20px;letter-spacing:-.2px}
+.pbk{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.8px;color:#2563eb;background:#eff6ff;border-radius:999px;padding:2px 9px;margin-bottom:4px}
+.pbsum{display:flex;gap:6px} .pbsum>div{min-width:58px;text-align:center;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:5px 8px} .pbsum b{display:block;font-size:20px;line-height:1.1} .pbsum span{font-size:11px;color:var(--soft)} .pbsum .urg{background:#fef2f2;border-color:#fecaca} .pbsum .urg b{color:#dc2626}
+.pbjob{box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.pbcap{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 12px;font-size:14px;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--line)} .pbcap>div{display:flex;align-items:center;gap:8px} .pbcap b{font-size:15px}
 .pbbox{display:inline-flex;gap:3px} .pbbox i,.pbsq{display:inline-block;width:14px;height:14px;border-radius:3px;background:#e5e9ef;border:1px solid #d3d9e1} .pbbox i.on.w,.pbsq.on.w{background:#2563eb;border-color:#2563eb} .pbbox i.on.d,.pbsq.on.d{background:#b45309;border-color:#b45309}
 .pbjob{border:1px solid var(--line);border-left:6px solid #2563eb;border-radius:12px;padding:10px 12px;margin:0 0 10px;background:#fff}
 .pbh{display:flex;justify-content:space-between;align-items:center;gap:8px} .pbh b{font-size:18px}
@@ -891,6 +895,14 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .tyg{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:520px){ .tyg{grid-template-columns:1fr} }
 .tyl h3{margin:0 0 4px;font-size:14px} .tyt td{padding:6px 8px} .tyt .del{min-height:0;padding:0 6px;font-size:18px}
 .tyadd{margin-top:6px} .tyadd input{flex:1;min-width:0}
+
+.gshs{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:6px}
+.gsc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+.gsh{width:100%;height:auto;display:block;margin:6px 0} .gsh .gbg{fill:#f1f5f9;stroke:#94a3b8;stroke-width:6} .gsh .gpc{fill:#dbeafe;stroke:#1d4ed8;stroke-width:5} .gsh .gshp{fill:#fde68a;stroke:#b45309}
+.gsh .gl1{font-weight:700;fill:#1e3a8a} .gsh .gl2{fill:#334155}
+.gsr{font-size:12px;line-height:1.4} .gsr span{display:block}
+.gnt h3{margin:12px 0 4px}
+@media print{ .gshs{grid-template-columns:1fr 1fr} .gsc{break-inside:avoid} }
 </style>
 </head>
 <body>
@@ -957,7 +969,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 06:29';
+var APPV='06 Nov 2026, 07:56';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -4075,6 +4087,48 @@ function bldInvMake(p,f){ var todo=bldToInv(p), hsn=invHsn(), pos=f.pos||myState
   return {id:uid(),no:f.no,on:f.on,buyer:{name:f.name,gstin:f.gstin,addr:f.addr,phone:p.bphone||''},site:[p.name].concat(String(p.site||'').split('\n')).filter(Boolean).join('\n'),pos:pos,lines:lines,multi:pcts.length>1,pct:pcts[0]||0,disc:0,taxable:taxable,tax:tax,cgst:intra?tax/2:0,sgst:intra?tax/2:0,igst:intra?0:tax,total:taxable+tax,made:today()}; }
 
 /* ============================================================ 3. GLASS ORDER ============================================================ */
+/* ---------- Glass nesting: the glass pieces of an order laid out on standard sheets, sheet by sheet
+   (asked: "Add Glass nesting in cuttinging list"). Sheet size and cutting gap are in Settings → Factory → Stock & capacity. ---------- */
+function gSheet(){ return {w:n(D.glassW)>0?n(D.glassW):2440, h:n(D.glassH)>0?n(D.glassH):1830, gap:n(D.glassGap)>=0&&D.glassGap!==undefined?n(D.glassGap):5}; }
+/* rows ("shelves") across the sheet: pieces sorted big first, each put in the first row it fits, turned if that fits better */
+function glassNest(pieces,sh){ sh=sh||gSheet(); var W=sh.w, H=sh.h, G=sh.gap, list=[];
+  pieces.forEach(function(g){ for(var k=0;k<(g.cnt||1);k++){ var w=Math.round(g.w), h=Math.round(g.h); list.push({w:w,h:h,lab:g.lab,g:g}); } });
+  var big=list.filter(function(p){ return Math.min(p.w,p.h)>Math.min(W,H)||Math.max(p.w,p.h)>Math.max(W,H); }), fit=list.filter(function(p){ return big.indexOf(p)<0; });
+  /* three orders are tried (longest side, shortest side, area) and the one needing the fewest sheets wins */
+  var orders=[function(a,b){ return Math.max(b.w,b.h)-Math.max(a.w,a.h)||Math.min(b.w,b.h)-Math.min(a.w,a.h); },function(a,b){ return Math.min(b.w,b.h)-Math.min(a.w,a.h)||Math.max(b.w,b.h)-Math.max(a.w,a.h); },function(a,b){ return b.w*b.h-a.w*a.h; }], best=null;
+  orders.forEach(function(srt){ var L=fit.slice().sort(srt), sheets=gPack(L,W,H,G); if(!best||sheets.length<best.length||(sheets.length===best.length&&gLastPct(sheets)<gLastPct(best))) best=sheets; });
+  var sheets=best||[];
+  sheets.forEach(function(s){ var used=0; s.rows.forEach(function(r){ r.items.forEach(function(it){ used+=it.w*it.h; }); }); s.used=used; s.pct=Math.round(used/(W*H)*100); s.n=s.rows.reduce(function(a,r){ return a+r.items.length; },0); });
+  return {sheets:sheets,big:big,W:W,H:H,gap:G,n:fit.length}; }
+function gLastPct(sheets){ if(!sheets.length) return 0; var s=sheets[sheets.length-1], u=0; s.rows.forEach(function(r){ r.items.forEach(function(it){ u+=it.w*it.h; }); }); return u; }
+function gPack(fit,W,H,G){ var sheets=[];
+  fit.forEach(function(p){ var placed=false;
+    for(var si=0;si<sheets.length&&!placed;si++){ var s=sheets[si];
+      for(var ri=0;ri<s.rows.length&&!placed;ri++){ var r=s.rows[ri], free=W-r.x; var o=null;
+        if(p.h<=r.h&&p.w<=free) o={w:p.w,h:p.h,rot:0}; else if(p.w<=r.h&&p.h<=free) o={w:p.h,h:p.w,rot:1};
+        if(o){ r.items.push({x:r.x,y:r.y,w:o.w,h:o.h,rot:o.rot,p:p}); r.x+=o.w+G; placed=true; } }
+      if(!placed){ var y=s.rows.length?s.rows[s.rows.length-1].y+s.rows[s.rows.length-1].h+G:0, lo=Math.min(p.w,p.h), hi=Math.max(p.w,p.h), o2=null;
+        if(lo<=H-y&&hi<=W) o2={w:hi,h:lo,rot:p.w<p.h?1:0}; else if(hi<=H-y&&lo<=W) o2={w:lo,h:hi,rot:p.w>p.h?1:0};
+        if(o2){ s.rows.push({y:y,h:o2.h,x:o2.w+G,items:[{x:0,y:y,w:o2.w,h:o2.h,rot:o2.rot,p:p}]}); placed=true; } } }
+    if(!placed){ var lo2=Math.min(p.w,p.h), hi2=Math.max(p.w,p.h), o3=hi2<=W&&lo2<=H?{w:hi2,h:lo2,rot:p.w<p.h?1:0}:{w:lo2,h:hi2,rot:p.w>p.h?1:0};
+      sheets.push({rows:[{y:0,h:o3.h,x:o3.w+G,items:[{x:0,y:0,w:o3.w,h:o3.h,rot:o3.rot,p:p}]}]}); } });
+  return sheets; }
+function gSheetSvg(s,W,H,i){ var sc=Math.max(W,H), vw=W, vh=H;
+  return '<svg class="gsh" viewBox="-2 -2 '+(vw+4)+' '+(vh+4)+'" preserveAspectRatio="xMidYMid meet" aria-label="Sheet '+(i+1)+'"><rect x="0" y="0" width="'+W+'" height="'+H+'" class="gbg"/>'
+   +s.rows.map(function(r){ return r.items.map(function(it){ var fs=Math.max(26,Math.min(it.w,it.h)/6), lab=it.p.lab, size=(it.rot?it.h+'×'+it.w:it.w+'×'+it.h);
+     return '<g><rect x="'+it.x+'" y="'+it.y+'" width="'+it.w+'" height="'+it.h+'" class="gpc'+(it.p.g.shaped?' gshp':'')+'"/>'
+      +(it.w>120&&it.h>60?'<text x="'+(it.x+it.w/2)+'" y="'+(it.y+it.h/2-fs*0.1)+'" text-anchor="middle" font-size="'+fs+'" class="gl1">'+esc(lab)+'</text><text x="'+(it.x+it.w/2)+'" y="'+(it.y+it.h/2+fs*0.95)+'" text-anchor="middle" font-size="'+(fs*0.85)+'" class="gl2">'+size+(it.rot?' ↻':'')+'</text>':'')+'</g>'; }).join(''); }).join('')
+   +'<text x="'+(W-20)+'" y="'+(H-20)+'" text-anchor="end" font-size="'+(sc/40)+'" class="gl2">'+W+' × '+H+'</text></svg>'; }
+function glassNestHtml(o,forPrint){ var M=material(o); if(!M.glass.length) return ''; var sh=gSheet(), by={};
+  M.glass.forEach(function(g){ var k=g.g||'Glass'; (by[k]=by[k]||[]).push({w:g.w,h:g.h,cnt:g.cnt,lab:'W'+g.i,shaped:g.shaped,fan:g.fan}); });
+  var types=Object.keys(by), tot=0, out=types.map(function(k){ var N=glassNest(by[k],sh); tot+=N.sheets.length; var sq=N.sheets.length*sh.w*sh.h/92903, usedSq=N.sheets.reduce(function(a,s){ return a+s.used; },0)/92903;
+    return '<div class="pg gnt"><h3>'+esc(k)+' — '+N.sheets.length+' sheet'+(N.sheets.length===1?'':'s')+' <span class="faint" style="font-weight:400;text-transform:none;letter-spacing:0">· '+N.n+' pieces · '+fmt(usedSq)+' of '+fmt(sq)+' sq ft used ('+(sq?Math.round(usedSq/sq*100):0)+'%)</span></h3>'
+     +(N.big.length?'<p class="warnt">⚠ '+N.big.length+' piece'+(N.big.length===1?'':'s')+' bigger than the sheet: '+N.big.map(function(p){ return p.lab+' '+p.w+'×'+p.h; }).join(', ')+' — order cut to size</p>':'')
+     +'<div class="gshs">'+N.sheets.map(function(s,i){ return '<div class="gsc"><div class="row between"><b>Sheet '+(i+1)+'</b><span class="faint">'+s.n+' pieces · '+s.pct+'% used</span></div>'+gSheetSvg(s,sh.w,sh.h,i)
+       +'<div class="gsr faint">'+s.rows.map(function(r,ri){ return '<span>Row '+(ri+1)+' (h '+r.h+'): '+r.items.map(function(it){ return it.p.lab+' '+it.w+'×'+it.h; }).join(', ')+'</span>'; }).join('')+'</div></div>'; }).join('')+'</div></div>'; }).join('');
+  return '<div class="card gnest"><div class="row between"><h2>Glass nesting — sheet by sheet</h2><span class="faint">sheet '+sh.w+' × '+sh.h+' mm · '+sh.gap+' mm cut gap</span></div>'
+   +'<p class="faint">'+tot+' sheet'+(tot===1?'':'s')+' in all. Pieces are cut in rows across the sheet (a straight cut first, then each row); ↻ = piece turned. W3 = window 3. '+(forPrint?'':'Sheet size: Settings → Factory → Stock &amp; capacity.')+'</p>'+out+'</div>'; }
+
 function glassOf(o){ var out=[]; if(!o||o.kind==='doors') return out; o.items.forEach(function(it,i){ var c=cutWindow(it); (c.glass||[]).forEach(function(g){ out.push(Object.assign({loc:it.loc,i:(i+1)+(g.sub||''),win:i+1,g:it.glass},g)); }); }); return out; }
 function glassRef(o){ return o.proj?'Flat '+o.no:'#'+o.no; }
 function glassList(orders){ var T={}, tot={n:0,sq:0};
@@ -5529,7 +5583,7 @@ function subCutting(o,forPrint){
   var nestH='<div class="card"><h2>Nesting — bar by bar</h2><p class="faint">Double-head saw: each piece is cut at both ends in one go. Trapezoid = 45° piece (length on the outer edge, mitres inward, small triangle offcut between pieces); rectangle = straight cut. Hatched tail = waste. W1, W2… = window number. Profiles cut 2 bars at a time show both bars with the same pattern. 5 mm saw allowance.</p>'
    +M.bom.map(function(r){return '<div class="pg"><h3 style="margin:12px 0 4px">'+esc(r.code)+' · '+esc(r.prof)+' · '+r.bars+' bar'+(r.bars==1?'':'s')+' <span style="text-transform:none;letter-spacing:0;font-weight:400">— '+ruleTxt(r.rule)+'</span></h3>'+(bigNest(M,forPrint)?'<button class="btn sm" data-nestshow="'+M.bom.indexOf(r)+'">Show the bar plan ('+r.bars+' bars)</button><div class="nestbox"></div>':nestRows(r))+'</div>';}).join('')+'</div>';
   var cl=gridHtml(o);
-  return bom+nestH+cl+gl+me;
+  return bom+nestH+cl+gl+glassNestHtml(o,forPrint)+me;
 }
 /* wide grid: one row per window, one column per piece */
 var COLS=[['Outer frame','width'],['Outer frame','height'],['Shutter','glass shutter width'],['Shutter','glass shutter height'],['Mesh shutter','width'],['Mesh shutter','height'],['Mesh frame','width'],['Mesh frame','height'],['Interlock',''],['Ventilator','louver rail'],['Ventilator','louver stile'],['Mullion','between louver and fan'],['Mullion','vertical'],['Mullion','transom'],['Glass bead','bead width'],['Glass bead','bead height'],['Door frame','side'],['Door frame','top']];
@@ -5630,7 +5684,9 @@ function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t
   var w=todayArr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dr=todayArr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0);
   var boxes=function(k,cap,cls){ var s=''; for(var i=0;i<cap;i++) s+='<i class="'+(i<k?'on '+cls:'')+'"></i>'; return '<span class="pbbox">'+s+'</span>'; };
   var jobs={}; todayArr.forEach(function(x){ jobs[x.id]=(jobs[x.id]||0)+x.qty; });
-  var h='<div class="card pb"><div class="hhead"><h2>'+(t0===today()?'Today':'Next working day')+' — '+new Date(t0+'T00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})+'</h2></div>'
+  var nj=Object.keys(jobs).length, urg=Object.keys(jobs).filter(function(id){ var o=byId(id); return o&&plev(o)==='Urgent'; }).length;
+  var h='<div class="card pb pbtoday"><div class="pbtop"><div><span class="pbk">'+(t0===today()?'TODAY':'NEXT WORKING DAY')+'</span><h2>'+new Date(t0+'T00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})+'</h2></div>'
+   +'<div class="pbsum"><div><b>'+nj+'</b><span>job'+(nj===1?'':'s')+'</span></div><div><b>'+w+'</b><span>window'+(w===1?'':'s')+'</span></div><div><b>'+dr+'</b><span>door'+(dr===1?'':'s')+'</span></div>'+(urg?'<div class="urg"><b>'+urg+'</b><span>urgent</span></div>':'')+'</div></div>'
    +'<div class="pbcap"><div><span>🪟 Windows</span>'+boxes(w,cw,'w')+'<b>'+w+' / '+cw+'</b></div><div><span>🚪 Doors</span>'+boxes(dr,cd,'d')+'<b>'+dr+' / '+cd+'</b></div></div>'
    +(todayArr.length?Object.keys(jobs).map(function(id){ var o=byId(id); return o?pbJob(o,jobs[id],true):''; }).join(''):'<div class="empty">Nothing planned — all caught up 👍</div>')+'</div>';
   h+='<div class="card pb"><div class="hhead"><h2>Next days</h2><span class="faint">'+cw+' windows · '+cd+' doors a day</span></div><div class="pbdays">'
@@ -5970,7 +6026,8 @@ function viewSettings0(){
    +'<div class="card"><h2>How we cut</h2><p class="faint">Profiles cut 2 bars at a time are nested in pairs — both bars get the same cut pattern.</p><table><thead><tr><th>Profile</th><th>Bars at a time</th><th>Cut</th></tr></thead><tbody>'
    +PROFS.concat([['door','Door frame']]).map(function(p){var r=D.cutRule[p[0]]||{bars:1,angle:45};return '<tr><td>'+p[1]+'</td><td><select data-rule="'+p[0]+'|bars" style="max-width:140px"><option value="1"'+(r.bars==1?' selected':'')+'>1 bar</option><option value="2"'+(r.bars==2?' selected':'')+'>2 bars</option></select></td><td><select data-rule="'+p[0]+'|angle" style="max-width:140px"><option value="45"'+(r.angle==45?' selected':'')+'>45°</option><option value="90"'+(r.angle==90?' selected':'')+'>Straight</option></select></td></tr>';}).join('')+'</tbody></table></div>'
    +'<div class="card"><h2>Stock & capacity</h2>'
-   +'<div class="grid3" style="margin-top:10px"><label class="f"><span>Stock length mm</span><input type="number" data-d="stock" value="'+D.stock+'"></label><label class="f"><span>Windows / day</span><input type="number" data-pd="windows" value="'+D.perDay.windows+'"></label><label class="f"><span>Doors / day</span><input type="number" data-pd="doors" value="'+D.perDay.doors+'"></label></div></div>'
+   +'<div class="grid3" style="margin-top:10px"><label class="f"><span>Stock length mm</span><input type="number" data-d="stock" value="'+D.stock+'"></label><label class="f"><span>Windows / day</span><input type="number" data-pd="windows" value="'+D.perDay.windows+'"></label><label class="f"><span>Doors / day</span><input type="number" data-pd="doors" value="'+D.perDay.doors+'"></label></div>'
+   +'<div class="grid3" style="margin-top:10px"><label class="f"><span>Glass sheet W mm</span><input type="number" data-d="glassW" value="'+gSheet().w+'"></label><label class="f"><span>Glass sheet H mm</span><input type="number" data-d="glassH" value="'+gSheet().h+'"></label><label class="f"><span>Glass cut gap mm</span><input type="number" data-d="glassGap" value="'+gSheet().gap+'"></label></div><p class="faint">The glass sheet size is used for the glass nesting on every cutting list (8 × 6 ft = 2440 × 1830).</p></div>'
    +'<div class="card"><h2>Logins</h2><div class="grid2"><label class="f"><span>Admin PIN</span><input type="text" data-pin="admin" value="'+esc(D.pins.admin)+'"></label><label class="f"><span>Sales PIN</span><input type="text" data-pin="sales" value="'+esc(D.pins.sales)+'"></label><label class="f"><span>Production PIN</span><input type="text" data-pin="production" value="'+esc(D.pins.production)+'"></label></div><p class="faint">Sales: orders, quotes, payments, production — no cost, profit, accounts, reports or settings, and cannot delete anything.<br>Production: only the floor — what to make, sizes, cutting list, tick items made. No prices, phone numbers or payments.</p></div>'
    +'<div class="card"><h2>Online sync & login (Supabase)</h2><p class="faint">When filled in, the app asks for email + password and keeps one shared copy of all data online. Only emails on the allowed list below can see anything — anyone else who signs up gets nothing. Setup SQL (run once in Supabase → SQL editor):</p><pre id="setupsql" style="font-size:11px;background:#f3f4f6;padding:8px;border-radius:8px;overflow:auto;white-space:pre-wrap;max-height:160px">'+esc(setupSql(SESS&&SESS.email))+'</pre><button class="btn sm" data-act="copysql">Copy SQL</button>'
    +'<label class="f"><span>Project URL</span><input type="text" data-sb="url" value="'+esc(D.sb.url)+'" placeholder="https://xxxx.supabase.co"></label><label class="f"><span>Anon key</span><input type="password" data-sb="key" value="'+esc(D.sb.key)+'"></label>'
