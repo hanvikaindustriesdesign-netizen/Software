@@ -938,6 +938,8 @@ h2>.icw .ico,h1>.icw .ico{width:1em;height:1em;vertical-align:-.12em;color:var(-
 
 .qask{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px} .qask .row{flex-wrap:wrap} .qask .btn{flex:1 1 150px}
 @media(max-width:430px){ .flow .fs b{font-size:9.5px} .flow .fd{width:26px;height:26px;font-size:12px} .flow .fl{margin-bottom:26px} }
+
+.flow .fs.can{cursor:pointer;border-radius:10px} .flow .fs.can:hover .fd,.flow .fs.can:focus .fd{box-shadow:0 0 0 3px #bfdbfe;border-color:#2563eb}
 </style>
 </head>
 <body>
@@ -1007,7 +1009,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 15:26';
+var APPV='06 Nov 2026, 15:38';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1221,11 +1223,26 @@ function balance(o){ return isBld(o)?0:orderTotal(o)-paid(o); }
 function advanceDue(o){ return Math.round(orderTotal(o)*n(D.advancePct)/100); }
 /* the work flow of an order as steps: done · now · later, with the date of each step */
 var FLOWI=['message','check','tool','box','truck'];
+/* which steps this login may jump to: admin any; sales up to Confirmed; production between Confirmed and Ready */
+function stepPos(o){ return o.proj?o.stage:(o.stage===0?(o.quoteSent?1:0):o.stage+1); }
+function stepOk(o,k){ if(!o||o.archived||k<0||k>(o.proj?4:5)) return false; var cur=stepPos(o); if(k===cur) return false; if(admin()) return true; var st=o.proj?k:(k<=1?0:k-1);
+  if(salesR()) return st<=1; if(prod()) return st>=1&&st<=3&&o.stage>=1; return false; }
+/* jump to step k: dates after it are cleared, dates up to it are filled in */
+function setStep(o,k){ var names=o.proj?['Measured','Confirmed','In production','Ready','Delivered']:['Enquiry','Quote sent','Confirmed','In production','Ready','Delivered'];
+  var cur=stepPos(o), fwd=k>cur; if(!confirm((fwd?'Move forward to "':'Move back to "')+names[k]+'"?'+(fwd?'':' Dates after it will be cleared.'))) return false;
+  var st=o.proj?k:(k<=1?0:k-1), was=o.stage; o.stage=st;
+  if(!o.proj){ if(k===0){ o.quoteSent=false; delete o.quoteOn; } else { o.quoteSent=true; if(!o.quoteOn) o.quoteOn=today(); } }
+  if(st<1) delete o.confirmedOn; else if(!o.confirmedOn) o.confirmedOn=today();
+  if(st<2) delete o.prodOn; else if(!o.prodOn) o.prodOn=today();
+  if(st<3) delete o.readyOn; else if(!o.readyOn) o.readyOn=today();
+  if(st<4) delete o.deliveredOn; else if(!o.deliveredOn) o.deliveredOn=today();
+  if(st>=1&&was<1) lockRates(o);
+  save(); render(); toast&&toast('Moved to '+names[k]); return true; }
 function flowBar(o){ if(!o||o.tpl||o.bat) return ''; var names=o.proj?['Measured','Confirmed','Production','Ready','Delivered']:['Enquiry','Quote sent','Confirmed','Production','Ready','Delivered'];
   var dates=o.proj?[o.measuredOn||'',o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||'']:[o.created||'',o.quoteOn||'',o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||''];
   var st=o.proj?o.stage:(o.stage===0?(o.quoteSent?1:0):o.stage+1);
   return '<div class="flow" role="list" aria-label="Order progress">'+names.map(function(nm,i){ var cls=i<st?'done':i===st?'now':'next';
-    return (i?'<span class="fl '+(i<=st?'done':'')+'"></span>':'')+'<div class="fs '+cls+'" role="listitem"><span class="fd">'+(i<st?'✓':(i+1))+'</span><b>'+nm+'</b><small>'+(dates[i]&&i<=st?dShort(dates[i]):i===st?'now':'')+'</small></div>'; }).join('')+'</div>'; }
+    return (i?'<span class="fl '+(i<=st?'done':'')+'"></span>':'')+'<div class="fs '+cls+(stepOk(o,i)?' can':'')+'" role="listitem"'+(stepOk(o,i)?' data-step="'+i+'" tabindex="0" title="Tap to move here"':'')+'><span class="fd">'+(i<st?'✓':(i+1))+'</span><b>'+nm+'</b><small>'+(dates[i]&&i<=st?dShort(dates[i]):i===st?'now':'')+'</small></div>'; }).join('')+'</div>'; }
 function payLine(o){ if(isBld(o)) return '🏗 Builder pays — see the project statement'; var p=paid(o), b=balance(o); return b<=0.5?'<span class="goodt">Fully paid</span>':p>0.5?'Advance '+money(p)+' · <b class="warnt">Balance '+money(b)+'</b>':'<b class="warnt">Payment pending '+money(b)+'</b>'; }
 function madeCount(o){ return o.items.filter(function(i){return i.made;}).length; }
 function leftQty(o){ return o.items.filter(function(i){return !i.made;}).reduce(function(a,i){return a+n(i.qty);},0); }
@@ -1759,7 +1776,7 @@ function viewOrder0(){
   var total=orderTotal(o), bal=balance(o);
   if(prod()){ var p=plan()[o.id];
     var hd='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px">#'+o.no+' · '+esc(o.customer)+'</h2><div class="muted">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span>'+(o.due?' · due '+dShort(o.due):'')+(p?' · plan '+dShort(p.start)+' → '+dShort(p.finish):'')+'</div>'+(o.notes?'<div class="muted" style="margin-top:6px">📝 '+esc(o.notes)+'</div>':'')+'</div></div>'
-     +'<div style="margin-top:12px">'+(o.stage===1?'<button class="btn primary big" data-act="next">Start production</button>':o.stage===2?'<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>':'<span class="muted">'+HINT[o.stage]+'</span>')+'</div></div>';
+     +flowBar(o)+'<div style="margin-top:12px">'+(o.stage===1?'<button class="btn primary big" data-act="next">Start production</button>':o.stage===2?'<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>':'<span class="muted">'+HINT[o.stage]+'</span>')+(stepOk(o,stepPos(o)-1)?'<div style="margin-top:8px"><button class="btn ghost sm" data-step="'+(stepPos(o)-1)+'">← Back a step</button></div>':'')+'</div></div>';
     if(S.sub!=='cutting'&&S.sub!=='production'&&S.sub!=='items') S.sub='production';
     var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
     return hd+vnProd(o)+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
@@ -1767,7 +1784,7 @@ function viewOrder0(){
    +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+(o.stage===0&&o.quoteSent?'Quote sent, waiting for yes':HINT[o.stage])+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
    +(!noAmt(o)&&!salesR()&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
-   +flowBar(o)+'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
+   +flowBar(o)+'<div style="margin-top:12px">'+nextBtn(o)+(stepOk(o,stepPos(o)-1)?'<div style="margin-top:8px"><button class="btn ghost sm" data-step="'+(stepPos(o)-1)+'">← Back a step</button></div>':'')+'</div></div>';
   var subs=[['items',o.kind==='doors'?'Doors':'Windows'],['customer','Customer'],['price','💰 Price'],['quote','Quote'],['payments','Payments'],['cutting','Cutting list'],['production','Production']];
   if(!admin()){ subs=subs.filter(function(x){ return x[0]!=='price'; }); if(S.sub==='price') S.sub='items'; } if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'&&x[0]!=='price'; }); if(S.sub==='quote'||S.sub==='payments'||S.sub==='price') S.sub='items'; }
   else if(isBld(o)&&paid(o)<0.5){ subs=subs.filter(function(x){ return x[0]!=='payments'; }); if(S.sub==='payments') S.sub='items'; }
@@ -6328,8 +6345,9 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
+  if(d.step!==undefined&&o){ if(stepOk(o,+d.step)) setStep(o,+d.step); return; }
   if(d.go){ if(d.stab) S.stab=d.stab; go(d.go); return; }
   if(d.open){ go('order',d.open); return; }
   if(d.filter!==undefined){ S.filter=d.filter==='all'?null:d.filter==='arch'?'arch':d.filter==='pay'?'pay':d.filter==='own'?'own':+d.filter; go('orders'); return; }
