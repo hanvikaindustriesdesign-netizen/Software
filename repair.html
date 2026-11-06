@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hanvika app — Repair &amp; troubleshoot</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f6feb">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#111827;--soft:#5b6472;--line:#e3e6ea;--accent:#1f6feb;--ok:#15803d;--okbg:#ecfdf5;--warn:#b45309;--warnbg:#fffbeb;--bad:#b91c1c;--badbg:#fef2f2}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));padding-block:14px 40px}
+.wrap{max-width:620px;margin:0 auto}
+h1{font-size:22px;margin:4px 0 2px}
+h2{font-size:17px;margin:0 0 10px}
+.lead{color:var(--soft);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad);border-color:#fca5a5}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 8px;padding:9px 0;border-top:1px solid var(--line)}
+.chk li:first-child{border-top:0}
+.st{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;font-size:13px;font-weight:700;margin-top:1px}
+.st.ok{background:var(--okbg);color:var(--ok)} .st.warn{background:var(--warnbg);color:var(--warn)} .st.bad{background:var(--badbg);color:var(--bad)} .st.wait{background:#eef1f5;color:var(--soft)}
+.chk b{display:block;font-size:14.5px}
+.chk .d{color:var(--soft);font-size:13.5px;overflow-wrap:anywhere}
+.chk .fix{grid-column:2;margin-top:4px;font-size:13.5px;color:#333;line-height:1.45}
+.sum{padding:10px 12px;border-radius:10px;font-weight:600;margin:0 0 10px}
+.sum.ok{background:var(--okbg);color:var(--ok)} .sum.warn{background:var(--warnbg);color:var(--warn)} .sum.bad{background:var(--badbg);color:var(--bad)}
+.rep{display:grid;gap:10px}
+.rep>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.rep>div:first-child{border-top:0}
+.rep b{font-size:14.5px} .rep .d{color:var(--soft);font-size:13px}
+details{border-top:1px solid var(--line);padding:8px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600;font-size:14.5px;padding:4px 0}
+details ol{padding-left:20px;margin:6px 0 2px;color:#333}
+details li{margin:3px 0}
+.faint{color:var(--soft);font-size:13px}
+.msg{min-height:20px;color:var(--soft);font-size:13.5px;margin-top:8px}
+textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.hide{display:none}
+input.ask{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;min-height:40px}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;background:#eef1f5;color:var(--soft);font-size:12px;font-weight:600;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>Repair &amp; troubleshoot</h1><p class="lead">Hanvika app · checks this phone and fixes the usual problems. Nothing here deletes your work unless you ask for the full reset.</p></div><a class="btn" href="./">← Open the app</a></div>
+
+  <div class="card">
+    <div class="top"><h2>Checks</h2><button class="btn sm" id="again">Run again</button></div>
+    <div id="sum" class="sum warn">Checking…</div>
+    <ul class="chk" id="chk"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Repairs</h2>
+    <div class="rep">
+      <div><div><b>Get the newest version</b><div class="d">Throws away the copy kept on this phone and downloads the app again from the website. Your work is not touched.</div></div><button class="btn primary" data-fix="update">Update</button></div>
+      <div><div><b>Reload data from online</b><div class="d">Forgets what this phone thinks it has downloaded, so the next open loads everything fresh from the online database. Changes not yet sent are kept.</div></div><button class="btn" data-fix="resync">Reload</button></div>
+      <div><div><b>Sign out on this phone</b><div class="d">Clears the sign-in only. Work stays on the phone and is sent after you sign in again.</div></div><button class="btn" data-fix="signout">Sign out</button></div>
+      <div><div><b>Download a backup</b><div class="d">Everything kept on this phone — settings, orders, flats, accounts — as one file. Keep it on your computer or Google Drive.</div></div><button class="btn" data-fix="backup">Download</button></div>
+      <div><div><b>Problem report</b><div class="d">The results above plus the phone details, to send to the admin or to Claude.</div></div><button class="btn" data-fix="report">Make report</button></div>
+      <div><div><b>Full reset</b><div class="d">Removes everything the app kept on this phone and starts it fresh, like a new phone. A backup file is downloaded first. Use only when nothing else helps and your work is already online.</div></div><button class="btn danger" data-fix="reset">Reset…</button></div>
+    </div>
+    <div id="msg" class="msg"></div>
+    <div id="repbox" class="hide" style="margin-top:10px"><textarea id="rep" readonly></textarea><div class="row" style="margin-top:8px"><button class="btn sm" id="repcopy">Copy</button><button class="btn sm" id="repshare">Share…</button></div></div>
+    <div id="resetbox" class="hide" style="margin-top:10px;padding:12px;border:1px solid #fca5a5;border-radius:10px;background:var(--badbg)"><b style="color:var(--bad)">Full reset — are you sure?</b><div class="faint" style="margin:4px 0 8px">Type <b>RESET</b> to confirm. A backup is downloaded first. Anything not yet sent online will be lost.</div><div class="row"><input class="ask" id="resetword" placeholder="RESET" autocomplete="off"><button class="btn danger" id="resetgo">Reset this phone now</button><button class="btn sm" id="resetx">Cancel</button></div></div>
+  </div>
+
+  <div class="card">
+    <h2>When something goes wrong</h2>
+    <details><summary>The app opens blank or says "could not start"</summary><ol><li>Open the link in <b>Chrome</b> (on iPhone: Safari) — not inside WhatsApp or Facebook. In WhatsApp tap ⋮ → <b>Open in Chrome</b>.</li><li>Update Chrome from the Play Store.</li><li>Press <b>Update</b> above (newest version).</li><li>Still blank: <b>Make report</b> and send it to the admin.</li></ol></details>
+    <details><summary>"New version" never shows / old screens / a button is missing</summary><ol><li>Press <b>Update</b> above. The check "Website version" shows whether this phone is behind.</li><li>If the website itself is behind, the admin uploads the new <b>index.html</b> and <b>sw.js</b> to GitHub (both files).</li></ol></details>
+    <details><summary>"Please sign in again" / "Session expired"</summary><ol><li>Normal after a long time away or a password change. Open the app and sign in — your work waits on the phone and is sent after sign-in.</li><li>If it keeps coming back every few minutes: check the <b>Clock</b> row above — a wrong phone time breaks sign-ins. Phone Settings → Date &amp; time → <b>Automatic</b>.</li><li>Not on the allowed list? The admin adds your email: Settings → Users.</li></ol></details>
+    <details><summary>"Can't reach the online database"</summary><ol><li>Check the internet — open any website. Mobile data with a weak signal often fails while Wi-Fi works.</li><li>Keep working: everything is saved on the phone and sent when the database is back.</li><li>Over an hour: the admin opens <b>supabase.com</b> → the project. If it says <b>Paused</b>, press <b>Restore project</b> and wait a few minutes.</li></ol></details>
+    <details><summary>Changes "not sent online yet" for a long time</summary><ol><li>Check the row <b>Changes waiting</b> above and the internet.</li><li>Open the app and tap <b>Send now</b> on the yellow bar, or wait — it retries by itself.</li><li>If a sign-in problem is shown, sign in again first.</li><li>Never do a full reset while changes are waiting — they would be lost. <b>Download a backup</b> first.</li></ol></details>
+    <details><summary>Another phone does not see my order / flat</summary><ol><li>On your phone: the change must be sent (no yellow bar). On the other phone: pull down or reopen the app — it refreshes every 45 seconds.</li><li>Both phones must be signed in to the same online database (check the row <b>Online database</b>).</li><li>Still different: <b>Reload data from online</b> on the phone that is behind.</li></ol></details>
+    <details><summary>🎤 Voice typing or 👥 contacts does not work</summary><ol><li>Voice typing needs <b>Google Chrome</b> on Android (the Google app does the listening) or Safari on iPhone. Inside other apps it is hidden.</li><li>Allow the microphone: phone Settings → Apps → Chrome → Permissions → Microphone.</li><li>Contacts picking works only in Chrome on Android. Otherwise type the name and number.</li><li>The keyboard's own 🎤 key always works as a fallback.</li></ol></details>
+    <details><summary>📷 Photos do not upload / "waiting to upload"</summary><ol><li>Photos upload in the background when there is internet; Wi-Fi is faster.</li><li>Check the row <b>Phone storage</b>: a full phone cannot keep photos. Free space, then reopen the app.</li><li>Allow Camera and Photos for Chrome if taking a photo fails.</li></ol></details>
+    <details><summary>"Phone storage is full"</summary><ol><li>Free space on the phone (old videos, WhatsApp media). The app needs only a little, but Chrome refuses to save when the phone is nearly full.</li><li>Your work is still saved online while signed in.</li></ol></details>
+    <details><summary>Morning reminders do not arrive</summary><ol><li>Allow <b>Notifications</b> for Chrome and for the installed app; turn off battery saving for Chrome.</li><li>In the app: Settings → Phone → Morning reminders → turn on for this phone.</li><li>On iPhone the app must be installed on the Home Screen (Share → Add to Home Screen) and iOS 16.4 or newer.</li></ol></details>
+    <details><summary>I forgot my password</summary><ol><li>On the sign-in screen tap <b>Forgot password? Email me a reset link</b>.</li><li>Or the admin sets a new one: Settings → Users → 🔑 next to your email.</li></ol></details>
+    <details><summary>Something was deleted or wrong data appeared</summary><ol><li>Only an admin can delete. The admin can bring a deleted order back: Settings → Backup → Online copies → <b>Restore deleted</b>.</li><li>A whole day's copy can be restored from <b>Online copies</b> (kept 21 days).</li><li>A backup file from <b>Download a backup</b> can be restored in the app: Settings → Backup → Restore backup.</li></ol></details>
+    <p class="faint" style="margin:10px 0 0">For the admin: Supabase project health, logs and the daily check are at supabase.com → the project; the daily check also runs from GitHub → Actions → "Daily database check".</p>
+  </div>
+  <p class="faint">Repair tool v1 · works offline once the app has been opened on this phone · <a href="./" style="color:var(--accent)">Open the app</a></p>
+</div>
+<script>
+(function(){
+'use strict';
+var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
+var $=function(s){ return document.querySelector(s); };
+var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+var R=[], RES={}, UA=navigator.userAgent||'';
+function ls(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsj(k,d){ try{ return JSON.parse(ls(k)||'null')||d; }catch(e){ return d; } }
+function sb(){ var d=lsj('wshop',{}); var s=d&&d.sb&&d.sb.url?d.sb:BAKED; return {url:String(s.url).replace(/\/$/,''),key:s.key}; }
+function withTimeout(p,ms){ return Promise.race([p,new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('timeout')); },ms); })]); }
+function row(id,title){ var r={id:id,title:title,st:'wait',d:'Checking…',fix:''}; R.push(r); return r; }
+function paint(){ var sum={ok:0,warn:0,bad:0,wait:0};
+  $('#chk').innerHTML=R.map(function(r){ sum[r.st]++; return '<li><span class="st '+r.st+'">'+({ok:'✓',warn:'!',bad:'✕',wait:'…'})[r.st]+'</span><div><b>'+esc(r.title)+'</b><div class="d">'+r.d+'</div></div>'+(r.fix?'<div class="fix">'+r.fix+'</div>':'')+'</li>'; }).join('');
+  var s=$('#sum'); if(sum.wait){ s.className='sum warn'; s.textContent='Checking… ('+(R.length-sum.wait)+' of '+R.length+')'; }
+  else if(sum.bad){ s.className='sum bad'; s.textContent=sum.bad+' problem'+(sum.bad>1?'s':'')+' found — see the red rows and the repair next to each.'; }
+  else if(sum.warn){ s.className='sum warn'; s.textContent='Mostly fine — '+sum.warn+' thing'+(sum.warn>1?'s':'')+' to look at.'; }
+  else { s.className='sum ok'; s.textContent='All checks passed. This phone and the app are fine.'; } }
+function set(r,st,d,fix){ r.st=st; r.d=d; r.fix=fix||''; RES[r.id]={st:st,d:d.replace(/<[^>]+>/g,'')}; paint(); }
+function fixBtn(fix,label){ return '<button class="btn sm" data-fix="'+fix+'">'+label+'</button>'; }
+function fmtB(b){ return b>=1073741824?(b/1073741824).toFixed(1)+' GB':Math.max(1,Math.round(b/1048576))+' MB'; }
+function verOf(t){ var m=String(t||'').match(/var APPV='([^']+)'/); return m?m[1]:''; }
+var inApp=/\bwv\b|FBAN|FBAV|Instagram|Line\/|Snapchat/.test(UA), isIOS=/iPhone|iPad|iPod/.test(UA), isAndroid=/Android/.test(UA);
+var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+
+function checks(){ R=[]; RES={};
+  var rNet=row('net','Internet'), rBrowser=row('browser','Browser'), rVer=row('ver','Website version'), rSw=row('sw','Offline copy (service worker)'), rDb=row('db','Online database'),
+      rSess=row('sess','Sign-in'), rClock=row('clock','Clock'), rData=row('data','Data on this phone'), rUnsent=row('unsent','Changes waiting to go online'), rSto=row('sto','Phone storage'),
+      rPerm=row('perm','Permissions'), rVoice=row('voice','Voice typing & contacts');
+  paint();
+  // browser
+  var chrome=(UA.match(/Chrome\/(\d+)/)||[])[1], safari=/Safari/.test(UA)&&!/Chrome|CriOS/.test(UA);
+  if(inApp) set(rBrowser,'bad','Opened inside another app (WhatsApp, Facebook…). Many things do not work there.','Tap ⋮ in that app → <b>Open in Chrome</b>'+(isIOS?' / Safari':'')+'.');
+  else if(chrome&&+chrome<100) set(rBrowser,'warn','Chrome '+chrome+' is old.','Update Chrome from the Play Store.');
+  else set(rBrowser,'ok',(chrome?'Chrome '+chrome:safari?'Safari':UA.slice(0,60))+(standalone?' · installed as an app':' · in the browser')+(isAndroid?' · Android':isIOS?' · iPhone/iPad':''));
+  // internet
+  if(navigator.onLine===false) set(rNet,'bad','This phone is offline.','Turn on Wi-Fi or mobile data. The app still opens and keeps your work.');
+  else set(rNet,'ok','Connected'+(navigator.connection&&navigator.connection.effectiveType?' · '+navigator.connection.effectiveType:''));
+  // website version vs the copy on the phone
+  var siteV='', phoneV='';
+  var t0=Date.now();
+  var pSite=withTimeout(fetch('index.html?check=1',{cache:'no-cache'}).then(function(r){ var dh=r.headers.get('date'); if(dh){ var skew=Math.round((new Date(dh).getTime()-(t0+Date.now())/2)/1000); if(Math.abs(skew)>120) set(rClock,'bad','This phone\'s clock is off by about '+Math.round(Math.abs(skew)/60)+' min. Sign-ins fail with a wrong clock.','Phone Settings → Date & time → <b>Set automatically</b>.'); else set(rClock,'ok','Correct (within '+Math.abs(skew)+' s)'); } else set(rClock,'ok','Could not compare, probably fine'); return r.ok?r.text():''; }),12000).then(function(t){ siteV=verOf(t); }).catch(function(){ set(rClock,'warn','Not checked (no connection)'); });
+  var pPhone=(window.caches?caches.keys().then(function(ks){ var hv=ks.filter(function(k){ return /^hanvika/.test(k); }); return Promise.all(hv.map(function(k){ return caches.open(k).then(function(c){ return c.match('index.html'); }).then(function(r){ return r?r.text():''; }); })).then(function(ts){ phoneV=ts.map(verOf).filter(Boolean)[0]||''; RES._caches=hv; }); }):Promise.resolve()).catch(function(){});
+  Promise.all([pSite,pPhone]).then(function(){
+    if(!siteV&&navigator.onLine===false) set(rVer,'warn','Offline — could not ask the website.'+(phoneV?' This phone has '+esc(phoneV)+'.':''));
+    else if(!siteV) set(rVer,'warn','Could not read the website (hanvikaindustriesdesign-netizen.github.io). It may be down for a moment.'+(phoneV?' This phone has '+esc(phoneV)+'.':''),fixBtn('update','Try to update'));
+    else if(phoneV&&phoneV!==siteV) set(rVer,'warn','This phone has <b>'+esc(phoneV)+'</b>, the website has <b>'+esc(siteV)+'</b>.',fixBtn('update','Get the newest version'));
+    else set(rVer,'ok','Website: '+esc(siteV)+(phoneV?' · this phone has the same':' · no copy kept on this phone yet')); });
+  // service worker
+  if(!('serviceWorker' in navigator)) set(rSw,'warn','This browser cannot keep an offline copy. The app works only with internet.');
+  else withTimeout(navigator.serviceWorker.getRegistration(),6000).then(function(reg){ if(!reg) set(rSw,'warn','No offline copy yet — open the app once with internet and it is kept.'); else set(rSw,reg.active?'ok':'warn',(reg.active?'Working':'Installing…')+(RES._caches&&RES._caches.length?' · '+esc(RES._caches.join(', ')):'')+(reg.waiting?' · a newer copy is waiting':''),reg.waiting?fixBtn('update','Switch to the newer copy'):''); }).catch(function(e){ set(rSw,'warn','Could not check: '+esc(e.message)); });
+  // database + clock
+  var S=sb();
+  if(navigator.onLine===false){ set(rDb,'warn','Offline — not checked.'); }
+  else withTimeout(fetch(S.url+'/auth/v1/health',{headers:{apikey:S.key}}),12000).then(function(r){
+      if(r.ok) set(rDb,'ok','Reachable · '+esc(S.url.replace(/^https:\/\//,'').split('.')[0])); else if(r.status===540||r.status>=500) set(rDb,'bad','The database answered with an error ('+r.status+'). It may be <b>paused</b>.','Admin: supabase.com → project → <b>Restore project</b>, then wait a few minutes.'); else set(rDb,'ok','Reachable ('+r.status+')'); })
+    .catch(function(e){ set(rDb,'bad','Not reachable ('+esc(e.message)+'). Internet problem, or the project is paused.','Check the internet on another website. Admin: supabase.com → project → Restore if paused. Status: status.supabase.com'); });
+  // sign-in
+  var sess=lsj('sbsess',null), role=ls('sbrole')||'', dead=ls('sbdead')==='1';
+  if(!sess||!sess.access_token) set(rSess,ls('lastEmail')?'warn':'ok',(ls('lastEmail')?'Not signed in now (last: '+esc(ls('lastEmail'))+').':'Not signed in on this phone.')+' Open the app and sign in.');
+  else (function(){ var em=sess.email||ls('lastEmail')||'', fresh=sess.exp&&Date.now()<sess.exp-120000;
+    if(navigator.onLine===false){ set(rSess,'warn','Signed in as '+esc(em)+' · offline, not verified now.'); return; }
+    var pr=fresh?Promise.resolve(sess):withTimeout(fetch(S.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:S.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:sess.refresh_token})}).then(function(r){ return r.json().then(function(j){ if(r.ok&&j.access_token){ j.exp=Date.now()+(j.expires_in||3600)*1000; j.email=(j.user||{}).email||em; try{ localStorage.setItem('sbsess',JSON.stringify(j)); }catch(e){} return j; } var e=new Error('expired'); e.dead=(r.status===400||r.status===401||r.status===403); throw e; }); }),12000);
+    pr.then(function(j){ return withTimeout(fetch(S.url+'/rest/v1/app_users?select=role&email=eq.'+encodeURIComponent(String(j.email||em).toLowerCase()),{headers:{apikey:S.key,Authorization:'Bearer '+j.access_token}}),12000).then(function(r){ return r.ok?r.json():[]; }).then(function(rows){ var rr=rows&&rows[0]&&rows[0].role;
+        if(!rr) set(rSess,'bad','Signed in as '+esc(em)+', but this email is <b>not on the allowed list</b>.','Ask the admin: Settings → Users → add '+esc(em)+'.');
+        else set(rSess,'ok','Signed in as '+esc(em)+' · role <b>'+esc(rr)+'</b>'+(role&&role!==rr?' (the app still shows '+esc(role)+' — it updates on the next open)':'')); }); })
+      .catch(function(e){ if(e&&e.dead) set(rSess,'bad','The sign-in of '+esc(em)+' has expired.','Open the app and sign in again. Your work is kept and sent after sign-in.'+(dead?'':'')); else set(rSess,'warn','Signed in as '+esc(em)+', could not verify now ('+esc(e.message)+').'); }); })();
+  // data on this phone
+  var d=lsj('wshop',null); var nO=0,nF=0;
+  var idbCount=function(dbn,store){ return new Promise(function(res){ try{ if(!window.indexedDB) return res(0); var rq=indexedDB.open(dbn); rq.onupgradeneeded=function(){ try{ rq.transaction.abort(); }catch(e){} res(0); }; rq.onsuccess=function(){ var db=rq.result; try{ if(!db.objectStoreNames.contains(store)){ db.close(); return res(0); } var c=db.transaction(store,'readonly').objectStore(store).count(); c.onsuccess=function(){ db.close(); res(c.result||0); }; c.onerror=function(){ db.close(); res(0); }; }catch(e){ db.close(); res(0); } }; rq.onerror=function(){ res(0); }; setTimeout(function(){ res(0); },5000); }catch(e){ res(0); } }); };
+  Promise.all([idbCount('wshop-orders','orders'),idbCount('wshop-flats','flats')]).then(function(c){ nO=c[0]; nF=c[1]; var lsO=0; try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,3)==='wo:') lsO++; } }catch(e){}
+    if(!d) set(rData,'warn','Nothing kept on this phone yet — the app has not been opened here, or the storage was cleared. Everything comes back from online after sign-in.');
+    else { var sz=0; try{ sz=(ls('wshop')||'').length; }catch(e){} set(rData,'ok',esc((d.company&&d.company.name)||'Shop')+' · '+Math.max(nO,lsO,(d.orders||[]).length)+' orders · '+nF+' flats · shared data '+fmtB(sz)+(d.lastBackup?' · last backup file '+esc(d.lastBackup):' · no backup file downloaded yet'),(!d.lastBackup||(Date.now()-new Date(d.lastBackup).getTime())>30*864e5)?fixBtn('backup','Download a backup now'):''); } });
+  // unsent
+  var un=[]; var wd=ls('wdirty'), wpd=ls('wpdirty'), od=lsj('wodirty',{}), fd=lsj('wfdirty',{}), phq=lsj('wphq',[]);
+  if(wd) un.push('settings / shared data'); if(wpd) un.push('accounts (admin data)'); var no=Object.keys(od).length, nf=Object.keys(fd).length; if(no) un.push(no+' order'+(no>1?'s':'')); if(nf) un.push(nf+' flat'+(nf>1?'s':'')); if(phq.length) un.push(phq.length+' photo'+(phq.length>1?'s':''));
+  var since=+(ls('wunsince')||0);
+  if(!un.length) set(rUnsent,'ok','Nothing waiting — everything is online.');
+  else set(rUnsent,since&&Date.now()-since>3600e3?'bad':'warn','Waiting: '+esc(un.join(', '))+(since?' (since '+new Date(since).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+')':'')+'. Kept safely on this phone.','Open the app with internet, signed in, and tap <b>Send now</b> on the yellow bar. Do not reset this phone until this row is green.');
+  // storage
+  if(navigator.storage&&navigator.storage.estimate) navigator.storage.estimate().then(function(e){ var u=e.usage||0, q=e.quota||0; var pc=q?Math.round(u/q*100):0; return (navigator.storage.persisted?navigator.storage.persisted():Promise.resolve(null)).then(function(p){ var t='The app uses '+fmtB(u)+(q?' of '+fmtB(q)+' allowed ('+pc+'%)':'')+(p===true?' · protected from automatic clearing':p===false?' · not protected (Chrome may clear it when the phone is very full)':''); if(q&&pc>85) set(rSto,'bad',t,'Free space on the phone (videos, WhatsApp media) and reopen the app.'); else if(q&&q<50*1048576) set(rSto,'warn',t+' — the phone is nearly full.','Free some space on the phone.'); else set(rSto,'ok',t); }); }).catch(function(){ set(rSto,'ok','Could not measure, probably fine'); });
+  else set(rSto,'ok','Could not measure on this browser');
+  // permissions
+  if(navigator.permissions&&navigator.permissions.query){ var names=[['microphone','Microphone'],['camera','Camera'],['geolocation','Location'],['notifications','Notifications']];
+    Promise.all(names.map(function(n){ return navigator.permissions.query({name:n[0]}).then(function(p){ return n[1]+': '+p.state; },function(){ return null; }); })).then(function(xs){ xs=xs.filter(Boolean); var den=xs.filter(function(x){ return /denied/.test(x); }); set(rPerm,den.length?'warn':'ok',esc(xs.join(' · ')||'none asked yet'),den.length?'Allow it for Chrome: phone Settings → Apps → Chrome → Permissions.':''); }); }
+  else set(rPerm,'ok','Asked when needed');
+  // voice & contacts
+  var sr=!!(window.webkitSpeechRecognition||window.SpeechRecognition), ct=!!(navigator.contacts&&navigator.contacts.select);
+  set(rVoice,sr?'ok':'warn','Voice typing: '+(sr?'available':'not in this browser')+' · Contacts picker: '+(ct?'available':'not here'+(isAndroid?' (needs Chrome)':'')),sr?'':'Use Google Chrome on Android or Safari on iPhone. The keyboard\'s 🎤 key always works.');
+}
+
+/* ---- repairs ---- */
+function msg(t){ $('#msg').innerHTML=t; }
+function clearSW(){ var p=[]; if('serviceWorker' in navigator) p.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); })); if(window.caches) p.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); })); return Promise.all(p).catch(function(){}); }
+function idbRead(dbn,store){ return new Promise(function(res){ try{ if(!window.indexedDB) return res([]); var rq=indexedDB.open(dbn); rq.onupgradeneeded=function(){ try{ rq.transaction.abort(); }catch(e){} res([]); }; rq.onsuccess=function(){ var db=rq.result; try{ if(!db.objectStoreNames.contains(store)){ db.close(); return res([]); } var g=db.transaction(store,'readonly').objectStore(store).getAll(); g.onsuccess=function(){ db.close(); res((g.result||[]).map(function(v){ try{ return JSON.parse(v); }catch(e){ return null; } }).filter(function(x){ return x&&x.id; })); }; g.onerror=function(){ db.close(); res([]); }; }catch(e){ db.close(); res([]); } }; rq.onerror=function(){ res([]); }; setTimeout(function(){ res([]); },6000); }catch(e){ res([]); } }); }
+function dl(name,text){ var b=new Blob([text],{type:'application/json'}), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); URL.revokeObjectURL(u); },2000); }
+function backup(){ var d=lsj('wshop',null); if(!d){ msg('Nothing kept on this phone to back up.'); return Promise.resolve(false); }
+  return Promise.all([idbRead('wshop-orders','orders'),idbRead('wshop-flats','flats')]).then(function(x){ var seen={}; var orders=(d.orders||[]).slice(); orders.forEach(function(o){ seen[o.id]=1; }); x[0].forEach(function(o){ if(!seen[o.id]&&!o.del){ orders.push(o); seen[o.id]=1; } });
+    try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.slice(0,3)==='wo:'){ var o=JSON.parse(localStorage.getItem(k)); if(o&&o.id&&!o.del){ var at=-1; orders.forEach(function(y,j){ if(y.id===o.id) at=j; }); if(at>=0) orders[at]=o; else orders.push(o); } } } }catch(e){}
+    var flats=x[1].filter(function(f){ return !f.del; }); if(!flats.length&&d.flats) flats=d.flats;
+    var out=Object.assign({},d,{orders:orders,flats:flats,_repairBackup:new Date().toISOString()});
+    var day=new Date().toISOString().slice(0,10); dl('windowshop-backup-'+day+'.json',JSON.stringify(out,null,1)); msg('Backup downloaded: windowshop-backup-'+day+'.json ('+orders.length+' orders, '+flats.length+' flats). Restore it in the app: Settings → Backup → Restore backup.'); return true; }); }
+function report(){ var lines=['Hanvika app — problem report','Made: '+new Date().toLocaleString('en-IN'),'Page: '+location.href,'Browser: '+UA,'Installed app: '+(standalone?'yes':'no')+' · in another app: '+(inApp?'yes':'no'),''];
+  R.forEach(function(r){ lines.push('['+r.st.toUpperCase()+'] '+r.title+': '+r.d.replace(/<[^>]+>/g,'')); });
+  var d=lsj('wshop',null); lines.push('','Last email: '+(ls('lastEmail')||'-')+' · role on phone: '+(ls('sbrole')||'-')+' · app data: '+(d?'yes':'no')+' · dead sign-in flag: '+(ls('sbdead')||'-'));
+  var q=lsj('wdiagq',[]); if(q.length){ lines.push('','Notes not yet sent to the server:'); q.slice(-10).forEach(function(x){ lines.push(' - '+new Date(x.t).toLocaleString('en-IN')+' '+(x.r&&x.r.what)+': '+(x.r&&x.r.err)); }); }
+  var c=lsj('wdiag',null); if(c&&c.d) lines.push('Diagnostic notes today: '+(c.n||0));
+  $('#rep').value=lines.join('\n'); $('#repbox').classList.remove('hide'); $('#rep').scrollIntoView({block:'nearest'}); msg('Report ready below — Copy it, or Share it to WhatsApp / email.'); }
+function doFix(k){
+  if(k==='update'){ msg('Getting the newest version…'); clearSW().then(function(){ location.replace('./?u='+Date.now()); }); }
+  else if(k==='resync'){ ['sbseen','woseen','wosince','wfseen','wfsince','wpseen'].forEach(function(x){ try{ localStorage.removeItem(x); }catch(e){} }); try{ var pv=localStorage.getItem('wpmode'); if(pv) localStorage.setItem('wpmode',pv); }catch(e){} msg('Done. Open the app — it will download everything again from the online database. Changes not yet sent are still kept and go online after that.'); }
+  else if(k==='signout'){ ['sbsess','sbrole','sbdead','setok'].forEach(function(x){ try{ localStorage.removeItem(x); }catch(e){} }); try{ sessionStorage.removeItem('role'); sessionStorage.removeItem('setok'); }catch(e){} msg('Signed out on this phone. Open the app and sign in again.'); checks(); }
+  else if(k==='backup'){ backup(); }
+  else if(k==='report'){ report(); }
+  else if(k==='reset'){ $('#resetbox').classList.remove('hide'); $('#resetword').focus(); }
+}
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[data-fix]'); if(b) doFix(b.getAttribute('data-fix')); });
+$('#again').addEventListener('click',checks);
+$('#resetx').addEventListener('click',function(){ $('#resetbox').classList.add('hide'); });
+$('#resetgo').addEventListener('click',function(){ if($('#resetword').value.trim()!=='RESET'){ $('#resetword').focus(); return; }
+  var un=RES.unsent&&RES.unsent.st!=='ok'; if(un&&!confirm('Changes are still waiting to go online. They will be LOST. Reset anyway?')) return;
+  msg('Resetting… a backup is downloaded first.');
+  backup().catch(function(){}).then(function(){ return new Promise(function(r){ setTimeout(r,1500); }); }).then(function(){ try{ localStorage.clear(); sessionStorage.clear(); }catch(e){} return clearSW(); })
+    .then(function(){ return Promise.all(['wshop-orders','wshop-flats','wshop-photos'].map(function(n){ return new Promise(function(res){ try{ var rq=indexedDB.deleteDatabase(n); rq.onsuccess=rq.onerror=rq.onblocked=function(){ res(); }; setTimeout(res,4000); }catch(e){ res(); } }); })); })
+    .then(function(){ msg('This phone is reset. Opening the app fresh…'); setTimeout(function(){ location.replace('./?u='+Date.now()); },800); }); });
+$('#repcopy').addEventListener('click',function(){ var t=$('#rep'); var done=function(){ msg('Copied — paste it into WhatsApp or an email to the admin.'); }; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t.value).then(done,function(){ t.select(); document.execCommand&&document.execCommand('copy'); done(); }); else { t.select(); document.execCommand&&document.execCommand('copy'); done(); } });
+$('#repshare').addEventListener('click',function(){ var t=$('#rep').value; if(navigator.share) navigator.share({title:'Hanvika app — problem report',text:t}).catch(function(){}); else msg('Sharing is not available here — use Copy.'); });
+checks();
+})();
+</script>
+</body>
+</html>

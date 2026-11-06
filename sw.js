@@ -1,12 +1,14 @@
 // Hanvika app — offline shell. Never touches Supabase traffic (other origin).
-const CACHE='hanvika-v49';
-const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
+const CACHE='hanvika-v50';
+const SHELL=['./','index.html','repair.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
 self.addEventListener('fetch',e=>{
   const req=e.request, url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==self.location.origin) return;
-  const isPage=req.mode==='navigate'||url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');
+  // the repair page is its own page: newest from the website, the kept copy when offline (it must open even when the app cannot)
+  if(url.pathname.endsWith('/repair.html')){ e.respondWith(fetch(req.url,{cache:'no-cache',credentials:'same-origin'}).then(r=>{ if(r.ok){ const cp=r.clone(); caches.open(CACHE).then(c=>c.put('repair.html',cp)); } return r; }).catch(()=>caches.match('repair.html'))); return; }
+  const isPage=(req.mode==='navigate'&&!/\.[a-z0-9]+$/i.test(url.pathname.split('/').pop()||''))||url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');
   if(isPage){ // the phone's copy is used until the person taps "Update now" (?u=): then the newest copy is fetched and kept.
     // ?check=1 is the app asking the website which version is there (never cached).
     const fresh=url.searchParams.has('u')||url.searchParams.has('check');
