@@ -925,6 +925,16 @@ h2>.icw .ico,h1>.icw .ico{width:1em;height:1em;vertical-align:-.12em;color:var(-
 .cul{display:flex;flex-direction:column;gap:6px} .cur{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff} .cur.warn{border-color:#fcd34d;background:#fffdf5} .cur.bad{border-color:#fca5a5;background:#fff7f7}
 .cur .cui{font-size:16px;line-height:1.3;flex:0 0 auto} .cur.ok .cui{color:#16a34a} .cur.warn .cui{color:#d97706} .cur.bad .cui{color:#dc2626} .cur .cui .ico{margin:0;width:20px;height:20px} .cur b{display:block;font-size:14.5px} .cur .faint{font-size:13px;line-height:1.4;overflow-wrap:anywhere} .cur .btn{flex:0 0 auto;align-self:center}
 .cuhome{text-align:center;margin:16px 0 4px} .culist{padding-left:20px;line-height:1.5}
+
+/* work flow stepper */
+.flow{display:flex;align-items:center;gap:0;margin:14px 0 2px;overflow-x:auto;padding-bottom:4px}
+.flow .fs{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;flex:0 0 auto;text-align:center}
+.flow .fd{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid #cbd5e1;color:#64748b;background:#fff}
+.flow .fs b{font-size:10.5px;font-weight:600;color:#64748b;line-height:1.15;white-space:nowrap} .flow .fs small{font-size:10.5px;color:var(--faint);line-height:1.1;min-height:12px}
+.flow .done .fd{background:#16a34a;border-color:#16a34a;color:#fff} .flow .done b{color:#166534}
+.flow .now .fd{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px #dbeafe} .flow .now b{color:#1e3a8a;font-weight:700} .flow .now small{color:#2563eb;font-weight:600}
+.flow .fl{flex:1 1 8px;height:3px!important;max-height:3px;padding:0!important;display:block;background:#e2e8f0;min-width:6px;margin:0 2px 28px;font-size:0;line-height:0} .flow .fl.done{background:#16a34a}
+@media(min-width:700px){ .flow .fs b{font-size:13px} .flow .fd{width:34px;height:34px} }
 </style>
 </head>
 <body>
@@ -994,7 +1004,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 14:25';
+var APPV='06 Nov 2026, 15:01';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1206,6 +1216,12 @@ function profit(o){ return subTotal(o)-orderCost(o); }
 function paid(o){ return (o.payments||[]).reduce(function(a,p){return a+n(p.amt);},0); }
 function balance(o){ return isBld(o)?0:orderTotal(o)-paid(o); }
 function advanceDue(o){ return Math.round(orderTotal(o)*n(D.advancePct)/100); }
+/* the work flow of an order as steps: done · now · later, with the date of each step */
+var FLOWI=['message','check','tool','box','truck'];
+function flowBar(o){ if(!o||o.tpl||o.bat) return ''; var names=o.proj?['Measured','Confirmed','Production','Ready','Delivered']:['Enquiry','Confirmed','Production','Ready','Delivered'];
+  var dates=[o.proj?(o.measuredOn||''):(o.created||''),o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||''], st=o.stage;
+  return '<div class="flow" role="list" aria-label="Order progress">'+names.map(function(nm,i){ var cls=i<st?'done':i===st?'now':'next';
+    return (i?'<span class="fl '+(i<=st?'done':'')+'"></span>':'')+'<div class="fs '+cls+'" role="listitem"><span class="fd">'+(i<st?'✓':(i+1))+'</span><b>'+nm+'</b><small>'+(dates[i]&&i<=st?dShort(dates[i]):i===st?'now':'')+'</small></div>'; }).join('')+'</div>'; }
 function payLine(o){ if(isBld(o)) return '🏗 Builder pays — see the project statement'; var p=paid(o), b=balance(o); return b<=0.5?'<span class="goodt">Fully paid</span>':p>0.5?'Advance '+money(p)+' · <b class="warnt">Balance '+money(b)+'</b>':'<b class="warnt">Payment pending '+money(b)+'</b>'; }
 function madeCount(o){ return o.items.filter(function(i){return i.made;}).length; }
 function leftQty(o){ return o.items.filter(function(i){return !i.made;}).reduce(function(a,i){return a+n(i.qty);},0); }
@@ -1541,7 +1557,7 @@ function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWor
     if(salesR()){ } else if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
     else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,oTitleT(o)+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
     else if(p&&p.late) al.push(['y',o.id,oTitleT(o)+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
-    if(o.stage>=3&&balance(o)>0.5&&!noAmt(o)) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
+    if(o.stage>=3&&balance(o)>0.5&&!noAmt(o)&&!salesR()) al.push(['r',o.id,oTitleT(o)+' — collect '+money(balance(o))+(o.stage===4?' (delivered)':' before delivery')]);
     if(o.stage===1&&paid(o)<0.5&&!noAmt(o)&&!isBld(o)) al.push(['y',o.id,oTitleT(o)+' — confirmed but no advance received']); });
   if(admin()){ var lows=lowStock(); if(lows.length) al.push(['y','','inventory',lows.length+' item'+(lows.length>1?'s':'')+' low in stock — '+lows.slice(0,3).map(function(k){return D.inv[k].name;}).join(', ')+(lows.length>3?'…':'')]);
     if(D.staff.length){ var d=new Date(); if(d.getDate()>=3){ d.setDate(1); d.setMonth(d.getMonth()-1); var pm=ymd(d).slice(0,7); if(!D.expenses.some(function(e){return e.sal===pm;})) al.push(['y','','staff','Salaries for '+mLabel(pm)+' not yet paid / posted (Staff tab)']); } }
@@ -1687,7 +1703,7 @@ function homeSales(){ var open=openOrders().filter(function(o){ return !o.proj; 
   var pay='<div class="card h-pa"><div class="row between"><h2>Payment pending</h2><span class="faint">'+(pend.length?pl(pend.length,'order'):'')+'</span></div><div class="olist">'
    +(pend.length?pend.slice(0,12).map(function(o){ return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">'+oTitle(o)+'</div><div class="d">'+STAGES[o.stage]+' · total '+money(orderTotal(o))+' · received '+money(paid(o))+'</div></div><div class="amt right warnt">'+money(balance(o))+'<small>'+(paid(o)>0.5?'balance':'advance pending')+'</small></div></button>'; }).join('')
      +(pend.length>12?'<div class="hmore"><button class="btn ghost sm" data-filter="pay">All '+pend.length+' ›</button></div>':''):'<div class="empty">Nothing pending 👍</div>')+'</div></div>';
-  return installCard()+swCard()+permCard()+hGreet()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol">'+pay+'</div></div><p class="cuhome"><button class="btn sm ghost" data-act="cuopen">🩺 Phone check-up — something not working?</button></p>'; }
+  return installCard()+swCard()+permCard()+hGreet()+'<button class="btn primary big" data-act="new" style="margin-bottom:12px">+ New order</button><div class="hgrid"><div class="hcol">'+follow+'</div><div class="hcol"></div></div><p class="cuhome"><button class="btn sm ghost" data-act="cuopen">🩺 Phone check-up — something not working?</button></p>'; }
 /* ============================================================
    GST — builder flats get GST (the shop's GST %, or the project's builder %). Owner flats and other orders
    have no GST unless it is added: on the order / flat, for ticked flats, or for a project's owner flats.
@@ -1725,12 +1741,12 @@ function homeProd(){
 function oRow(o){ var t=orderTotal(o), b=balance(o);
   if(prod()) return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer||'(no name)')+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+(o.due?' · due '+dShort(o.due):'')+(o.stage===2?' · '+madeCount(o)+'/'+o.items.length+' made':'')+'</div></div><span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span></button>';
   return '<button class="o" data-open="'+o.id+'"><div class="grow"><div class="n">#'+o.no+' '+esc(o.customer||'(no name)')+'</div><div class="d">'+qty(o)+' '+(o.kind==='doors'?'doors':'windows')+(o.due?' · due '+dShort(o.due):'')+(o.stage===2?' · '+madeCount(o)+'/'+o.items.length+' made':'')+'</div></div>'
-   +plBadge(o)+' <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span><div class="amt right">'+money(t)+(o.stage>0?(b>0.5?'<small>'+(paid(o)>0.5?'bal ':'pending ')+money(b)+'</small>':'<small style="color:var(--good)">paid</small>'):'')+'</div></button>'; }
+   +plBadge(o)+' <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span><div class="amt right">'+money(t)+(o.stage>0&&!salesR()?(b>0.5?'<small>'+(paid(o)>0.5?'bal ':'pending ')+money(b)+'</small>':'<small style="color:var(--good)">paid</small>'):'')+'</div></button>'; }
 
 function viewOrders(){
   var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(prod()&&!(o.stage>=1)) return false; if(S.filter==='own') return false; if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
     return !q||(o.customer+' '+o.phone+' '+(o.phone2||'')+' '+o.no+' '+o.address).toLowerCase().indexOf(q)>=0; }).sort(function(a,b){return b.no-a.no;});
-  if(prod()&&(S.filter===0||S.filter==='pay')) S.filter=null; var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}).filter(function(x){ return !prod()||x[0]>0; }),prod()?[]:[['pay','₹ Pending']],lpOwnChip()?[['own','👤 Flat owners']]:[],[['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
+  if((prod()&&S.filter===0)||((prod()||salesR())&&S.filter==='pay')) S.filter=null; var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}).filter(function(x){ return !prod()||x[0]>0; }),prod()||salesR()?[]:[['pay','₹ Pending']],lpOwnChip()?[['own','👤 Flat owners']]:[],[['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
   return projCard()+'<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+lpOrdersList(list,q)+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
 }
 
@@ -1745,9 +1761,9 @@ function viewOrder0(){
     return hd+vnProd(o)+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
    +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
-   +(!noAmt(o)&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
+   +(!noAmt(o)&&!salesR()&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
-   +'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
+   +flowBar(o)+'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
   var subs=[['items',o.kind==='doors'?'Doors':'Windows'],['customer','Customer'],['price','💰 Price'],['quote','Quote'],['payments','Payments'],['cutting','Cutting list'],['production','Production']];
   if(!admin()){ subs=subs.filter(function(x){ return x[0]!=='price'; }); if(S.sub==='price') S.sub='items'; } if(noAmt(o)){ subs=subs.filter(function(x){ return x[0]!=='quote'&&x[0]!=='payments'&&x[0]!=='price'; }); if(S.sub==='quote'||S.sub==='payments'||S.sub==='price') S.sub='items'; }
   else if(isBld(o)&&paid(o)<0.5){ subs=subs.filter(function(x){ return x[0]!=='payments'; }); if(S.sub==='payments') S.sub='items'; }
@@ -1760,7 +1776,7 @@ function nextBtn(o){
   if(o.stage===1) return '<button class="btn primary big" data-act="next">Start production</button>';
   if(o.stage===2) return '<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>';
   if(o.stage===3) return '<button class="btn good big" data-act="next">Delivered</button>';
-  if(balance(o)>0.5) return '<span class="muted">Delivered.'+(noAmt(o)?'':' Collect '+money(balance(o))+' to archive.')+'</span> '+(admin()?'<button class="btn ghost sm" data-act="back">Undo delivered</button>':'');
+  if(balance(o)>0.5) return '<span class="muted">Delivered.'+(noAmt(o)||salesR()?'':' Collect '+money(balance(o))+' to archive.')+'</span> '+(admin()?'<button class="btn ghost sm" data-act="back">Undo delivered</button>':'');
   return '<button class="btn big" data-act="archive">Move to archive</button>';
 }
 
@@ -5682,7 +5698,7 @@ function subQuote(o){
 function subPayments(o){
   var ps=o.payments||[];
   var adv=advanceDue(o), bal=balance(o), pd=paid(o);
-  return '<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Order total</span><b>'+money(orderTotal(o))+'</b><i>advance '+D.advancePct+'% = '+money(adv)+'</i></div><div class="kpi good"><span>Received</span><b>'+money(pd)+'</b><i>'+(pd>=adv-0.5?'advance received':pd>0?'part advance':'advance pending')+'</i></div><div class="kpi'+(bal>0.5?' warn':' good')+'"><span>Balance pending</span><b>'+money(Math.max(0,bal))+'</b><i>'+(bal<=0.5?'fully paid':o.stage>=3?'collect before delivery':'')+'</i></div></div>'
+  return '<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Order total</span><b>'+money(orderTotal(o))+'</b><i>advance '+D.advancePct+'% = '+money(adv)+'</i></div><div class="kpi good"><span>Received</span><b>'+money(pd)+'</b><i>'+(pd>=adv-0.5?'advance received':pd>0?'part advance':'advance pending')+'</i></div>'+(salesR()?'':'<div class="kpi'+(bal>0.5?' warn':' good')+'"><span>Balance pending</span><b>'+money(Math.max(0,bal))+'</b><i>'+(bal<=0.5?'fully paid':o.stage>=3?'collect before delivery':'')+'</i></div>')+'</div>'
    +'<div class="card"><div class="row between"><h2>Payments</h2><span class="row">'+(pd<adv-0.5?'<button class="btn sm primary" data-act="payadv">+ Advance '+money(adv-pd)+'</button>':'')+(bal>0.5?'<button class="btn sm good" data-act="paybal">+ Balance '+money(bal)+'</button>':'')+lpBtn(o)+'</span></div>'
    +'<table><thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody>'+(ps.length?ps.map(function(p,i){return '<tr><td>'+dShort(p.on)+'</td><td>'+esc(p.note)+' <span class="faint">'+(p.mode||'Cash')+'</span>'+lpInfo(o,p)+'</td><td class="num">'+money(p.amt)+'</td><td class="nw">'+lpEditBtn(o,p,i)+(lpMulti(p)?'':delBtn('data-pdel',i))+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">No payment yet</td></tr>')+'</tbody></table>'
    +'<div class="row" style="margin-top:12px"><input type="date" id="pon" value="'+today()+'" style="width:150px"><input type="text" id="pnote" placeholder="Advance / Balance" class="grow"><select id="pmode" style="width:95px">'+opts(MODES,'Cash')+'</select><input type="number" id="pamt" placeholder="₹" style="width:120px"><button class="btn primary" data-act="pay">Add</button></div>'
@@ -6380,7 +6396,7 @@ document.addEventListener('click',function(e){
     if(o.stage===1&&admin()){ var nd=orderNeeds(o), sh=Object.keys(nd).filter(function(k){ var it=D.inv[k]; return it&&it.qty<nd[k]; }); if(sh.length&&!confirm('⚠ Stock is short for:\n'+sh.slice(0,8).map(function(k){return '• '+D.inv[k].name+': need '+(Math.round(nd[k]*10)/10)+', have '+D.inv[k].qty;}).join('\n')+(sh.length>8?'\n…':'')+'\n\nStart production anyway?')) return; }
     if(o.stage===3&&balance(o)>0.5&&!confirm(noAmt(o)?'⚠ Payment is still pending.\nMark as delivered anyway?':'⚠ Balance of '+money(balance(o))+' is still pending.\nMark as delivered anyway?')) return;
     if(o.stage===2&&o.items.some(function(i){return !i.made;})) return; if((o.stage===0||o.stage===1)&&!szAskOK(o,o.stage===0?'confirming':'starting production')) return; if(o.stage===0&&!o.customer&&!isBld(o)){toast(o.proj?'Enter the owner name first':'Enter the customer name first'); S.sub='customer'; render(); return;} if(o.stage===0&&!noAmt(o)){ var nr0=noRate(o); if(nr0.length&&!confirm('⚠ No rate yet for '+nr0.map(function(c){ return c.t+' · '+c.s; }).join(', ')+' — ₹0 on the bill.'+(admin()?'':' Ask the admin to set it.')+'\n\nConfirm anyway?')){ if(admin()){ S.sub='price'; render(); } return; } }
-    o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
+    o.stage=Math.min(4,o.stage+1); if(o.stage===1){ o.confirmedOn=today(); lockRates(o); } if(o.stage===2) o.prodOn=today(); if(o.stage===3) o.readyOn=today(); if(o.stage===4) o.deliveredOn=today(); var took=o.stage===2?consumeOrder(o):0; save(); render(); toast(STAGES[o.stage]+(took?' · stock updated':'')); if(o.stage===1&&paid(o)<0.5){ S.sub='payments'; render(); } }
   if(a==='back'&&o&&admin()){ o.stage=3; delete o.deliveredOn; save(); render(); }
   if(a==='allmade'&&o){ o.items.forEach(function(i){i.made=true;}); save(); render(); }
   if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); if(o.proj&&projById(o.proj)){ S.tab='project'; S.pid=o.proj; render(); window.scrollTo(0,0); } else go('orders'); }
