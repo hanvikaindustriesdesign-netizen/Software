@@ -907,6 +907,10 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .ibrand{max-width:150px;flex:0 0 auto}
 
 .btn.emg{border-color:#fca5a5;background:#fef2f2;color:#b91c1c;font-weight:700} .plsel{min-height:34px;padding:4px 26px 4px 8px;width:100px;font-size:13px}
+
+.updpop.updmini{position:fixed;left:0;right:0;top:0;bottom:auto;background:none;z-index:60;padding:0;display:block;align-items:stretch}
+.updmini .updbar{position:static;transform:none;width:auto;border:0;border-radius:0;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#1e3a8a;color:#fff;padding:8px 12px;font-size:13.5px;box-shadow:0 2px 8px rgba(0,0,0,.25)} .updmini .updbar .btn{white-space:nowrap}
+body:has(.updmini) #app{padding-top:46px}
 </style>
 </head>
 <body>
@@ -976,7 +980,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 11:16';
+var APPV='06 Nov 2026, 11:33';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -6334,12 +6338,14 @@ function checkUpdate(manual){ if(!BAKED.url||APPV==='dev'||!/^https?:$/.test(loc
   fetch('index.html?check=1',{cache:'no-cache'}).then(function(r){ return r.ok?r.text():''; }).then(function(t){ var m=t.match(/var APPV='([^']+)'/);
     if(m&&m[1]!==APPV){ UPD=m[1]; if(manual) UPDLATER=0; showUpdate(); } else if(manual) toast('You have the latest version ✓'); }).catch(function(){ if(manual) toast('Could not check — try again'); }); }
 var UPDSNOOZE=3*60*1000;
-function showUpdate(){ if(!UPD||(UPDLATER&&Date.now()<UPDLATER)||document.getElementById('updbar')) return;
-  var b=document.createElement('div'); b.id='updbar'; b.className='updpop'; b.setAttribute('role','dialog'); b.setAttribute('aria-modal','true');
-  b.innerHTML='<div class="updcard"><div class="updic">🔄</div><h2>New version available</h2><p>Please update now — it takes a few seconds and your work is kept.</p>'
-   +'<button class="btn primary big" data-u="go">Update now</button><button class="btn ghost sm" data-u="later">Remind me in 3 minutes</button></div>';
+var UPDMINI=0;
+function showUpdate(){ if(!UPD||document.getElementById('updbar')) return;
+  var b=document.createElement('div'); b.id='updbar'; b.className=UPDMINI?'updpop updmini':'updpop'; if(!UPDMINI){ b.setAttribute('role','dialog'); b.setAttribute('aria-modal','true'); }
+  b.innerHTML=UPDMINI?'<div class="updbar"><span>🔄 Update '+esc(UPD)+' is waiting — installed only when you tap</span><button class="btn primary sm" data-u="go">Update now</button></div>'
+   :'<div class="updcard"><div class="updic">🔄</div><h2>New version available</h2><p>Version '+esc(UPD)+' is on the website. Nothing changes on this phone until you tap <b>Update now</b> — it takes a few seconds and your work is kept.</p>'
+   +'<button class="btn primary big" data-u="go">Update now</button><button class="btn ghost sm" data-u="later">Not now — keep reminding me</button></div>';
   b.addEventListener('click',function(e){ var x=e.target.closest('[data-u]'); if(!x) return;
-    if(x.dataset.u==='later'){ UPDLATER=Date.now()+UPDSNOOZE; b.remove(); clearTimeout(showUpdate.t); showUpdate.t=setTimeout(showUpdate,UPDSNOOZE+500); return; }
+    if(x.dataset.u==='later'){ UPDMINI=1; b.remove(); showUpdate(); return; }
     x.textContent='Updating…'; x.disabled=true; doUpdate(); });
   document.body.appendChild(b); }
 function doUpdate(){ var done=false, go=function(){ if(done) return; done=true; location.replace(location.pathname.replace(/index\.html$/,'')+'?u='+Date.now()); };

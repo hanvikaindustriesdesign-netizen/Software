@@ -1,5 +1,5 @@
 // Hanvika app — offline shell. Never touches Supabase traffic (other origin).
-const CACHE='hanvika-v48';
+const CACHE='hanvika-v49';
 const SHELL=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
@@ -7,10 +7,12 @@ self.addEventListener('fetch',e=>{
   const req=e.request, url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==self.location.origin) return;
   const isPage=req.mode==='navigate'||url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');
-  if(isPage){ // network first, always asking the website for the newest copy, so updates arrive as soon as you're online
-    e.respondWith(fetch(req.url,{cache:'no-cache',credentials:'same-origin'}).then(r=>{ if(r.redirected) return Response.redirect(r.url,302);
-      if(r.ok){ const cp=r.clone(); caches.open(CACHE).then(c=>c.put('index.html',cp)); } return r; })
-      .catch(()=>caches.match('index.html').then(r=>r||caches.match('./'))));
+  if(isPage){ // the phone's copy is used until the person taps "Update now" (?u=): then the newest copy is fetched and kept.
+    // ?check=1 is the app asking the website which version is there (never cached).
+    const fresh=url.searchParams.has('u')||url.searchParams.has('check');
+    const net=()=>fetch(req.url,{cache:'no-cache',credentials:'same-origin'}).then(r=>{ if(r.redirected) return Response.redirect(r.url,302);
+      if(r.ok&&!url.searchParams.has('check')){ const cp=r.clone(); caches.open(CACHE).then(c=>c.put('index.html',cp)); } return r; });
+    e.respondWith(fresh?net().catch(()=>caches.match('index.html').then(r=>r||caches.match('./'))):caches.match('index.html').then(r=>r||net()));
     return; }
   e.respondWith(caches.match(req).then(r=>r||fetch(req)));
 });
