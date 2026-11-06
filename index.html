@@ -935,6 +935,9 @@ h2>.icw .ico,h1>.icw .ico{width:1em;height:1em;vertical-align:-.12em;color:var(-
 .flow .now .fd{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 0 0 4px #dbeafe} .flow .now b{color:#1e3a8a;font-weight:700} .flow .now small{color:#2563eb;font-weight:600}
 .flow .fl{flex:1 1 8px;height:3px!important;max-height:3px;padding:0!important;display:block;background:#e2e8f0;min-width:6px;margin:0 2px 28px;font-size:0;line-height:0} .flow .fl.done{background:#16a34a}
 @media(min-width:700px){ .flow .fs b{font-size:13px} .flow .fd{width:34px;height:34px} }
+
+.qask{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:14px} .qask .row{flex-wrap:wrap} .qask .btn{flex:1 1 150px}
+@media(max-width:430px){ .flow .fs b{font-size:9.5px} .flow .fd{width:26px;height:26px;font-size:12px} .flow .fl{margin-bottom:26px} }
 </style>
 </head>
 <body>
@@ -960,7 +963,7 @@ setTimeout(function(){ if(!window.__booted){ var b=document.getElementById('boot
    DATA — one object. Saved in this browser; optionally mirrored to Supabase.
    ============================================================ */
 var STAGES=['Enquiry','Confirmed','In production','Ready','Delivered'];
-var HINT=['Quote sent, waiting for yes','Advance received, to be made','Being made on the floor','Made, to be delivered','Done'];
+var HINT=['Enquiry — send the quote','Advance received, to be made','Being made on the floor','Made, to be delivered','Done'];
 var WTYPES=['2 Track','2.5 Track','3 Track','Fixed','Openable','Top hung','French','Ventilator','Custom'];
 var CELLT=['Fixed','2 Track','2.5 Track','3 Track','Openable','Top hung','French','Ventilator','Vent + fan','Fan'];
 var FANSZ={'6':{hole:170,sec:300},'7':{hole:195,sec:330},'8':{hole:220,sec:360}};
@@ -1004,7 +1007,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 15:01';
+var APPV='06 Nov 2026, 15:26';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1218,8 +1221,9 @@ function balance(o){ return isBld(o)?0:orderTotal(o)-paid(o); }
 function advanceDue(o){ return Math.round(orderTotal(o)*n(D.advancePct)/100); }
 /* the work flow of an order as steps: done · now · later, with the date of each step */
 var FLOWI=['message','check','tool','box','truck'];
-function flowBar(o){ if(!o||o.tpl||o.bat) return ''; var names=o.proj?['Measured','Confirmed','Production','Ready','Delivered']:['Enquiry','Confirmed','Production','Ready','Delivered'];
-  var dates=[o.proj?(o.measuredOn||''):(o.created||''),o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||''], st=o.stage;
+function flowBar(o){ if(!o||o.tpl||o.bat) return ''; var names=o.proj?['Measured','Confirmed','Production','Ready','Delivered']:['Enquiry','Quote sent','Confirmed','Production','Ready','Delivered'];
+  var dates=o.proj?[o.measuredOn||'',o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||'']:[o.created||'',o.quoteOn||'',o.confirmedOn||'',o.prodOn||'',o.readyOn||'',o.deliveredOn||''];
+  var st=o.proj?o.stage:(o.stage===0?(o.quoteSent?1:0):o.stage+1);
   return '<div class="flow" role="list" aria-label="Order progress">'+names.map(function(nm,i){ var cls=i<st?'done':i===st?'now':'next';
     return (i?'<span class="fl '+(i<=st?'done':'')+'"></span>':'')+'<div class="fs '+cls+'" role="listitem"><span class="fd">'+(i<st?'✓':(i+1))+'</span><b>'+nm+'</b><small>'+(dates[i]&&i<=st?dShort(dates[i]):i===st?'now':'')+'</small></div>'; }).join('')+'</div>'; }
 function payLine(o){ if(isBld(o)) return '🏗 Builder pays — see the project statement'; var p=paid(o), b=balance(o); return b<=0.5?'<span class="goodt">Fully paid</span>':p>0.5?'Advance '+money(p)+' · <b class="warnt">Balance '+money(b)+'</b>':'<b class="warnt">Payment pending '+money(b)+'</b>'; }
@@ -1553,7 +1557,7 @@ function viewLogin(){ if(sbOn()&&PWR) return viewPwReset(); if(sbOn()&&!S.pinMod
 function alerts(){ var open=openOrders(), P=plan(), t=today(), al=[], tom=addWorkDays(t,1);
   open.forEach(function(o){ var p=P[o.id]; if(salesR()&&o.proj) return;
     if(o.remind&&o.remind<=t) al.push(['r',o.id,'🔔 #'+o.no+' '+o.customer+' — '+(o.remindNote||'follow up')+(o.remind<t?' (was '+dShort(o.remind)+')':'')]);
-    if(o.stage===0&&o.created&&addWorkDays(o.created,5)<t&&!o.remind) al.push(['y',o.id,oTitleT(o)+' — enquiry waiting '+Math.round((new Date(t)-new Date(o.created))/864e5)+' days, follow up']);
+    if(o.stage===0&&o.created&&addWorkDays(o.created,5)<t&&!o.remind) al.push(['y',o.id,oTitleT(o)+' — enquiry waiting '+Math.round((new Date(t)-new Date(o.created))/864e5)+' days, '+(o.quoteSent?'follow up':'send the quote')]);
     if(salesR()){ } else if(o.stage>=1&&o.stage<4&&o.due&&o.due<t) al.push(['r',o.id,oTitleT(o)+' — delivery was due '+dShort(o.due)]);
     else if(o.stage>=1&&o.stage<4&&(o.due===t||o.due===tom)) al.push(['y',o.id,oTitleT(o)+' — delivery due '+(o.due===t?'today':'tomorrow')+(o.stage<3?' and not ready yet':'')]);
     else if(p&&p.late) al.push(['y',o.id,oTitleT(o)+' — plan finishes '+dShort(p.finish)+', due '+dShort(o.due)]);
@@ -1760,7 +1764,7 @@ function viewOrder0(){
     var tb='<div class="subtabs osub">'+[['production','Production'],['cutting','Cutting list'],['items','Sizes']].map(function(s){return '<button data-sub="'+s[0]+'" class="'+(S.sub===s[0]?'on':'')+'">'+s[1]+'</button>';}).join('')+'</div>';
     return hd+vnProd(o)+tb+(S.sub==='cutting'?subCutting(o):S.sub==='items'?subSizes(o):subProduction(o)); }
   var head='<div class="card"><div class="row between"><div class="grow"><button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button><h2 style="margin-top:4px;font-size:26px" id="oh">#'+o.no+' · '+esc(o.customer||'New order')+'</h2>'
-   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+HINT[o.stage]+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
+   +'<div class="muted" style="font-size:15px">'+(o.kind==='doors'?'Doors':'Windows')+' · <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span> '+plBadge(o)+' '+(o.stage===0&&o.quoteSent?'Quote sent, waiting for yes':HINT[o.stage])+'</div></div><div class="right">'+(noAmt(o)?'':'<div style="font-size:26px;font-weight:650" id="otot">'+money(total)+'</div><div class="faint" id="ogstl" style="font-size:12.5px">'+gstLine(o)+'</div>')
    +(!noAmt(o)&&!salesR()&&(o.stage>0||paid(o)>0||isBld(o))?'<div class="muted" style="font-size:14px">'+payLine(o)+'</div>':'')
    +(admin()&&o.items.length?'<div class="faint" id="oprof">Profit '+money(profit(o))+' ('+pct(profit(o),subTotal(o))+')</div>':'')+'</div></div>'
    +flowBar(o)+'<div style="margin-top:12px">'+nextBtn(o)+'</div></div>';
@@ -1772,7 +1776,8 @@ function viewOrder0(){
 }
 function nextBtn(o){
   if(o.archived) return '<button class="btn" data-act="unarchive">Bring back from archive</button>';
-  if(o.stage===0) return '<button class="btn primary big" data-act="next">Customer said yes → Confirm order</button>';
+  if(o.stage===0&&!o.proj&&!o.quoteSent) return '<div class="qask"><b>Quote sent to the customer?</b><div class="row" style="gap:8px;margin-top:8px"><button class="btn primary" data-act="qsent">✓ Yes, quote sent</button><button class="btn" data-act="qno">Not yet → open Quote</button></div></div>';
+  if(o.stage===0) return (o.quoteSent?'<div class="muted" style="font-size:13px;margin-bottom:8px">Quote sent '+(o.quoteOn?dShort(o.quoteOn):'')+' · <button class="btn ghost sm" data-act="qundo">not sent?</button></div>':'')+'<button class="btn primary big" data-act="next">Customer said yes → Confirm order</button>';
   if(o.stage===1) return '<button class="btn primary big" data-act="next">Start production</button>';
   if(o.stage===2) return '<button class="btn primary big" data-act="next"'+(madeCount(o)<o.items.length?' disabled':'')+'>'+(madeCount(o)<o.items.length?'Tick all items in Production first':'All made → Mark ready')+'</button>';
   if(o.stage===3) return '<button class="btn good big" data-act="next">Delivered</button>';
@@ -4306,7 +4311,7 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
   var o=order();
   /* quotation */
   if(a==='bzqsend'||a==='bzqdl'){ if(!o) return; var w=document.getElementById('qwith'), list=[o]; if(w&&w.value&&byId(w.value)) list.push(byId(w.value));
-    if(!o.remind&&o.stage===0){ o.remind=addWorkDays(today(),3); o.remindNote='Follow up on quote'; save(); }
+    if(o.stage===0&&!o.quoteSent){ o.quoteSent=true; o.quoteOn=today(); } if(!o.remind&&o.stage===0){ o.remind=addWorkDays(today(),3); o.remindNote='Follow up on quote'; } if(o.stage===0) save();
     var qbp=isBld(o)?projById(o.proj):null; if(qbp&&!qbp.builder) qbp=null;
     var fn=bzName('Quotation Q-'+list.map(function(x){ return x.no; }).join('-'),qbp?qbp.builder:o.customer), bl=quotePdf(list);
     if(a==='bzqdl') download(fn,bl); else pdfSend(bl,fn,quoteMsg(list),qbp?qbp.bphone:o.phone); return; }
@@ -6402,6 +6407,9 @@ document.addEventListener('click',function(e){
   if(a==='archive'&&o){ o.archived=true; save(); toast('Archived'); if(o.proj&&projById(o.proj)){ S.tab='project'; S.pid=o.proj; render(); window.scrollTo(0,0); } else go('orders'); }
   if(a==='unarchive'&&o){ o.archived=false; save(); render(); }
   if(a==='delete'&&o&&admin()&&(o.proj||o.tpl)){ pjDelete(o); return; }
+  if(a==='qsent'&&o){ o.quoteSent=true; o.quoteOn=today(); if(!o.remind){ o.remind=addWorkDays(today(),3); o.remindNote='Follow up on quote'; } save(); render(); return; }
+  if(a==='qno'&&o){ S.sub='quote'; render(); return; }
+  if(a==='qundo'&&o){ o.quoteSent=false; delete o.quoteOn; save(); render(); return; }
   if(a==='delete'&&o&&admin()){ if(confirm('Delete order #'+o.no+'? This cannot be undone.')){ D.orders=D.orders.filter(function(x){return x.id!==o.id;}); save(); go('orders'); } }
   if(a==='payadv'&&o){ $('#pamt').value=Math.max(0,advanceDue(o)-paid(o)); $('#pnote').value='Advance'; $('#pamt').focus(); }
   if(a==='paybal'&&o){ $('#pamt').value=Math.max(0,balance(o)); $('#pnote').value='Balance'; $('#pamt').focus(); }
@@ -6412,7 +6420,7 @@ document.addEventListener('click',function(e){
   if(a==='useradd'){ D.users=D.users||[]; D.users.push({email:'',role:'sales'}); save(); render(); }
   if(a==='headadd'){ D.heads.push({name:'',grp:'Indirect'}); save(); render(); }
   if(a==='vxlsx'){ var mm=S.em||today().slice(0,7); download('daybook-'+mm+'.xlsx',xlsx([['Day book',[['Date','Voucher','Type','Ledger','Party','Mode','Narration','Receipt','Payment']].concat(vouchers().filter(function(v){return (v.on||'').slice(0,7)===mm;}).map(function(v){return [v.on,v.vno,v.kind,v.head,v.party,v.mode,v.narr,v.kind==='Receipt'?v.amt:'',v.kind==='Payment'?v.amt:''];}))]])); }
-  if((a==='print'||a==='share')&&o){ var w=$('#qwith'), list=[o]; if(w&&w.value&&byId(w.value)) list.push(byId(w.value));
+  if((a==='print'||a==='share')&&o){ var w=$('#qwith'), list=[o]; if(w&&w.value&&byId(w.value)) list.push(byId(w.value)); if(o.stage===0&&!o.quoteSent){ o.quoteSent=true; o.quoteOn=today(); save(); }
     if(!o.remind&&o.stage===0){ o.remind=addWorkDays(today(),3); o.remindNote='Follow up on quote'; save(); toast('Reminder set for '+dShort(o.remind)); } if(a==='print') printDoc(quoteHtml(list)); else { var ph=(o.phone||'').replace(/\D/g,''); if(ph.length===10) ph='91'+ph; window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(quoteText(list))); } }
   if(a==='invoice'&&o) printDoc(invoiceHtml(o));
   if(a==='xlsx'&&o) cutXlsx(o);
