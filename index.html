@@ -887,6 +887,10 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 
 .cutinfo{display:flex;flex-wrap:wrap;gap:4px 16px;margin:-2px 0 10px;font-size:13.5px;line-height:1.4} .cutinfo small{color:var(--soft);font-size:12px;margin-right:3px} .cutinfo span{white-space:normal;overflow-wrap:anywhere}
 @media print{ .cutinfo{font-size:11px} }
+
+.tyg{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:520px){ .tyg{grid-template-columns:1fr} }
+.tyl h3{margin:0 0 4px;font-size:14px} .tyt td{padding:6px 8px} .tyt .del{min-height:0;padding:0 6px;font-size:18px}
+.tyadd{margin-top:6px} .tyadd input{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -953,7 +957,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 06:22';
+var APPV='06 Nov 2026, 06:29';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1340,7 +1344,7 @@ var I={home:'<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v
  people:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-5-6.3"/></svg>',
  cog:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'};
 
-function render(){ window.__booted=true;
+function render(){ window.__booted=true; typeLists();
   var app=$('#app'), nav=$('#nav');
   if(!S.role){ nav.innerHTML=''; document.body.setAttribute('data-tab','login'); app.innerHTML=viewLogin(); return; }
   if(S.tab==='txn'&&!admin()) S.tab='home';
@@ -5787,7 +5791,7 @@ function viewReports(){
 var SETSH=[['co','🏢 Company'],['win','🪟 Windows'],['fac','🏭 Factory'],['usr','👥 Users'],['ph','📱 Phone'],['bak','💾 Backup']];
 /* every part of Settings by its title: [sheet, part, title] — in the order shown on the sheet */
 var SETSEC=[['co','co',/^Company/],['co','qb',/^Quotes & bills/],
-  ['win','wdef',/New windows and doors/],['win','brands',/^Brands$/],['win','rates',/window rates|material cost/],['win','doors',/doors, ₹ per door|door cost/],
+  ['win','wdef',/New windows and doors/],['win','types',/^Glass and mesh types/],['win','brands',/^Brands$/],['win','rates',/window rates|material cost/],['win','doors',/doors, ₹ per door|door cost/],
   ['fac','brand',/^Brand$/],['fac','pcodes',/profile codes/],['fac','cut',/cutting deductions/],['fac','hw',/^Hardware/],['fac','howcut',/^How we cut/],['fac','stock',/^Stock & capacity/],
   ['usr','users',/^Users & roles/],['usr','pins',/^Logins/],['usr','sync',/^Online sync/],
   ['ph','perm',/This phone/],['ph','push',/Morning reminders/],['ph','appv',/^App version/],
@@ -5819,6 +5823,26 @@ function setTryUnlock(){ var i=document.getElementById('setpw'), e=document.getE
 document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-act="setunlock"],[data-act="setlock"]'); if(!t) return;
   if(t.getAttribute('data-act')==='setlock'){ setRelock(); render(); toast('Settings locked'); return; } setTryUnlock(); });
 document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target&&e.target.id==='setpw'){ e.preventDefault(); setTryUnlock(); } });
+
+/* ---------- Glass and mesh types are a list in Settings (asked: "Add option to add mesh type, glass type") ---------- */
+var GLASS0=GLASS.slice(), MESH0=MESH.slice();
+function typeLists(){ var g=(D.glassTypes&&D.glassTypes.length?D.glassTypes:GLASS0).filter(Boolean), m=(D.meshTypes&&D.meshTypes.length?D.meshTypes:MESH0).filter(function(x){ return x&&x!=='No mesh'; }).concat(['No mesh']);
+  GLASS.length=0; g.forEach(function(x){ GLASS.push(x); }); MESH.length=0; m.forEach(function(x){ MESH.push(x); }); }
+function typeUsed(k,v){ var c=0; allJobs().forEach(function(o){ (o.items||[]).forEach(function(it){ if(it[k]===v) c+=n(it.qty)||1; }); }); return c; }
+function typeAdd(k,v){ v=String(v||'').trim().replace(/\s+/g,' '); if(!v) return 'Type a name first'; if(v.length>30) return 'Keep it under 30 letters';
+  var key=k==='glass'?'glassTypes':'meshTypes', cur=k==='glass'?GLASS:MESH; if(cur.some(function(x){ return x.toLowerCase()===v.toLowerCase(); })) return 'Already in the list';
+  if(k==='mesh'&&/^no mesh$/i.test(v)) return 'Already in the list'; D[key]=(k==='glass'?GLASS:MESH.filter(function(x){ return x!=='No mesh'; })).concat([v]); typeLists(); save(); return ''; }
+function typeDel(k,v){ if(k==='mesh'&&v==='No mesh') return '"No mesh" stays'; var u=typeUsed(k,v); if(u) return 'Used by '+u+' window'+(u===1?'':'s')+' — cannot remove'; var key=k==='glass'?'glassTypes':'meshTypes';
+  var left=(k==='glass'?GLASS:MESH.filter(function(x){ return x!=='No mesh'; })).filter(function(x){ return x!==v; }); if(!left.length) return 'Keep at least one';
+  D[key]=left; typeLists(); if(D.wdef&&D.wdef[k]===v) D.wdef[k]=left[0]; save(); return ''; }
+function typesCard(){ var list=function(k,arr,lab){ return '<div class="tyl"><h3>'+lab+'</h3><table class="xt tyt"><tbody>'+arr.map(function(x){ var u=typeUsed(k,x), fixed=k==='mesh'&&x==='No mesh';
+    return '<tr><td>'+esc(x)+'</td><td class="num faint">'+(u?u+' win':'')+'</td><td class="num">'+(fixed?'':'<button class="del" data-tydel="'+k+'|'+esc(x)+'" title="Remove">×</button>')+'</td></tr>'; }).join('')+'</tbody></table>'
+   +'<div class="row tyadd"><input type="text" maxlength="30" placeholder="New '+(k==='glass'?'glass':'mesh')+' type" data-tyin="'+k+'"><button class="btn sm" data-tyadd="'+k+'">+ Add</button></div></div>'; };
+  return '<div class="card tycard"><h2>Glass and mesh types</h2><p class="faint">The choices in every window line. A type in use cannot be removed.</p><div class="tyg">'+list('glass',GLASS,'Glass')+list('mesh',MESH,'Mesh')+'</div></div>'; }
+document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&&e.target.closest('[data-tyadd],[data-tydel]'); if(!t||!admin()) return;
+  if(t.hasAttribute('data-tyadd')){ var k=t.getAttribute('data-tyadd'), i=document.querySelector('[data-tyin="'+k+'"]'), err=typeAdd(k,i&&i.value); if(err){ toast(err); if(i) i.focus(); return; } render(); toast('Added'); return; }
+  var q=t.getAttribute('data-tydel').split('|'), err2=typeDel(q[0],q.slice(1).join('|')); if(err2){ toast(err2); return; } render(); toast('Removed'); });
+document.addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target&&e.target.hasAttribute&&e.target.hasAttribute('data-tyin')){ e.preventDefault(); var b=document.querySelector('[data-tyadd="'+e.target.getAttribute('data-tyin')+'"]'); if(b) b.click(); } });
 
 function viewSettings(){ if(!setUnlocked()) return viewSetLock(); return setSheet(viewSettings0()).replace('<div class="xs">','<div class="xs"><div class="setlk"><span class="faint">🔓 Settings unlocked</span><button class="btn ghost sm" data-act="setlock">Lock now</button></div>'); }
 function setSheet(html){ var cur=S.stab; if(!SETSH.some(function(x){ return x[0]===cur; })) cur=S.stab='co';
@@ -5932,6 +5956,7 @@ function viewSettings0(){
   return '<div class="card"><h2>Company (shown on quotes and statements)</h2><label class="f"><span>Name</span><input type="text" data-c="name" value="'+esc(D.company.name)+'"></label><div class="grid2"><label class="f"><span>Phone</span><input type="tel" data-c="phone" value="'+esc(D.company.phone)+'"></label><label class="f"><span>GST no</span><input type="text" data-c="gst" value="'+esc(D.company.gst)+'"></label></div>'
    +'<label class="f"><span>Address</span><textarea data-c="address">'+esc(D.company.address)+'</textarea></label><div class="grid2"><label class="f"><span>Email</span><input type="email" data-c="email" value="'+esc(D.company.email||'')+'"></label></div><label class="f"><span>Bank / UPI details for payment (printed on statements)</span><textarea data-c="bank" placeholder="Bank name · A/c no. · IFSC · UPI ID">'+esc(D.company.bank||'')+'</textarea></label><div class="grid2"><label class="f"><span>Tax invoice numbers start with</span><input type="text" data-c="invPre" maxlength="6" value="'+esc(D.company.invPre||'INV')+'"></label><label class="f"><span>HSN code (windows and doors)</span><input type="text" data-c="hsn" maxlength="8" inputmode="numeric" value="'+esc(D.company.hsn||'39252000')+'"></label><label class="f"><span>Glass supplier WhatsApp no.</span><input type="tel" data-c="glassPh" value="'+esc(D.company.glassPh||'')+'"></label></div><p class="faint" style="margin:-4px 0 10px">Tax invoice numbers go like '+esc((D.company.invPre||'INV')+'/'+invFY(today())+'/001')+' and start again from 001 every April. HSN 39252000 = plastic (uPVC) doors and windows, 18% GST.</p><label class="f"><span>Quote terms</span><textarea data-c="terms">'+esc(D.company.terms)+'</textarea></label><div class="grid2"><label class="f"><span>GST % for builder flats (other orders and owner flats: no GST unless you add it on the order)</span><input type="number" data-d="gstPct" value="'+D.gstPct+'"></label><label class="f"><span>Advance % to confirm an order</span><input type="number" data-d="advancePct" value="'+D.advancePct+'"></label></div></div>'
    +'<div class="card"><div class="row between"><h2>⚙ New windows and doors</h2><button class="btn sm" data-act="wdef">Change</button></div><div class="faint">Windows: <b>'+esc(wdefSum(false))+'</b> · Doors: <b>'+esc(wdefSum(true))+'</b> · Sizes on this phone in <b>'+uLab()+'</b></div></div>'
+   +typesCard()
    +'<div class="card"><h2>Brands</h2><p class="faint">Each brand has its own costs, deductions and profile codes. Pick the brand on every window line.</p><div class="row"><select id="bsel" style="max-width:220px">'+D.brands.map(function(b,i){return '<option value="'+i+'"'+(i===bi?' selected':'')+'>'+esc(b.name)+'</option>';}).join('')+'</select><button class="btn sm" data-act="baddb">+ Add brand</button><button class="btn sm" data-act="bren">Rename</button>'+(D.brands.length>1?'<button class="btn sm danger" data-act="bdel">Delete</button>':'')+'</div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — material cost, ₹ per sq ft</h2><p class="faint">What a window costs you (profile + glass + hardware) — used only for profit, never shown to customers or Sales. Selling rates are in each order and flat (💰 Price) and each project (💰 Rates).</p><div class="tscroll"><table class="items"><thead><tr><th>Type</th>'+SERIES.map(function(s){return '<th class="num">Cost '+s+'</th>';}).join('')+'</tr></thead><tbody class="plain">'+rateRows+'</tbody></table></div></div>'
    +'<div class="card"><h2>'+esc(B.name)+' — door cost, ₹ per door</h2><p class="faint">What a door costs you — used only for profit. The selling price is on each door line of an order; a new line starts from the last price used for that door.</p><div class="grid2"><label class="f"><span>PVC cost</span><input type="number" data-dc="PVC" value="'+B.doorCost.PVC+'"></label><label class="f"><span>WPC cost</span><input type="number" data-dc="WPC" value="'+B.doorCost.WPC+'"></label></div></div>'
