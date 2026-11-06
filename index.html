@@ -969,7 +969,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 09:34';
+var APPV='06 Nov 2026, 09:49';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1612,9 +1612,9 @@ function oRow(o){ var t=orderTotal(o), b=balance(o);
    +plBadge(o)+' <span class="stage s'+o.stage+'">'+STAGES[o.stage]+'</span><div class="amt right">'+money(t)+(o.stage>0?(b>0.5?'<small>'+(paid(o)>0.5?'bal ':'pending ')+money(b)+'</small>':'<small style="color:var(--good)">paid</small>'):'')+'</div></button>'; }
 
 function viewOrders(){
-  var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(S.filter==='own') return false; if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
+  var q=S.q.toLowerCase(), list=D.orders.filter(function(o){ if(prod()&&!(o.stage>=1)) return false; if(S.filter==='own') return false; if(S.filter==='arch') return o.archived; if(o.archived) return false; if(S.filter==='pay') return o.stage>0&&balance(o)>0.5; if(S.filter!==null&&o.stage!==S.filter) return false;
     return !q||(o.customer+' '+o.phone+' '+o.no+' '+o.address).toLowerCase().indexOf(q)>=0; }).sort(function(a,b){return b.no-a.no;});
-  var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}),[['pay','₹ Pending']],lpOwnChip()?[['own','👤 Flat owners']]:[],[['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
+  if(prod()&&(S.filter===0||S.filter==='pay')) S.filter=null; var chips='<div class="subtabs">'+[['all','All open']].concat(STAGES.map(function(s,i){return [i,s];}).filter(function(x){ return !prod()||x[0]>0; }),prod()?[]:[['pay','₹ Pending']],lpOwnChip()?[['own','👤 Flat owners']]:[],[['arch','Archive']]).map(function(x){return '<button data-filter="'+x[0]+'" class="'+((S.filter===null?'all':S.filter)==x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div>';
   return projCard()+'<div class="row" style="margin-bottom:10px"><input type="text" class="grow" id="q" placeholder="Search name, order no" value="'+esc(S.q)+'">'+(prod()?'':'<button class="btn primary newin" data-act="new">+ New</button>')+'</div>'+chips+'<div class="card olist">'+lpOrdersList(list,q)+'</div>'+(prod()?'':'<button class="fab" data-act="new">+ New order</button>');
 }
 
@@ -2446,7 +2446,7 @@ function lastPay(f){ var ps=(f.payments||[]).slice().sort(function(a,b){ return 
 function pjPayRows(fl){ var rows=[]; fl.forEach(function(f){ (f.payments||[]).forEach(function(x,i){ rows.push({f:f,x:x,i:i}); }); }); rows.sort(function(a,b){ var d=(b.x.on||'').localeCompare(a.x.on||''); return d||flatSort(a.f,b.f); }); return rows; }
 function viewProject(){ var p=projById(S.pid); if(!p) return '<div class="card">Project not found. <button class="btn ghost" data-go="orders">Back</button></div>';
   if(!FL.loaded) return '<div class="card"><h2>🏢 '+esc(p.name)+'</h2><div class="faint">Loading flats…</div></div>';
-  var fl=projFlats(p.id), st=projStats(p,fl), c=pjCounts(fl), F=S.pf||(S.pf={tower:'',st:'',q:''}), hasB=(p.batches||[]).length>0, np=fl.reduce(function(a,f){return a+(f.payments||[]).length;},0);
+  var fl=projFlats(p.id).filter(function(f){ return !prod()||f.stage>=1; }), st=projStats(p,fl), c=pjCounts(fl), F=S.pf||(S.pf={tower:'',st:'',q:''}), hasB=(p.batches||[]).length>0, np=fl.reduce(function(a,f){return a+(f.payments||[]).length;},0);
   if(S.psub==='stmt') S.psub='builder'; if(!admin()&&(F.st==='pend'||F.st==='Advance paid'||F.st==='noadv')) F.st=''; var hasBf=fl.some(isBld);
   var tabs=prod()?[['flats','Flats in work']].concat(hasB?[['batches','Batches',p.batches.length]]:[]):[['flats','All flats',fl.length]].concat(admin()?[['owners','Owners'],['builder','Builder'],['pay','Advance & payments',np],['rates','💰 Rates']]:[]).concat([['types','Flat types',(p.types||[]).length]]).concat(hasB?[['batches','Batches',p.batches.length]]:[]);
   var sub=tabs.some(function(t){return t[0]===S.psub;})?S.psub:'flats';
@@ -2932,7 +2932,9 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.closes
       setR(p.rates[r[0]],r[1],r[2],r[3],pv===''||!(n(pv)>0)?null:n(pv)); save(); render(); } } });
 
 function viewOrder(){ if(S.oid&&!byId(S.oid)&&typeof ORS!=='undefined'&&(!ORS.loaded||!FL.loaded)) return '<div class="card"><div class="faint">Loading…</div></div>'; var df=S.oid&&flatById(S.oid); if(df&&df.del&&projById(df.proj)){ S.tab='project'; S.pid=df.proj; return viewProject(); }
-  var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o); var h=viewOrder0();
+  var o=order(); if(o&&o.tpl) return tplView(o); if(o&&o.bat) return batchView(o);
+  if(prod()&&o&&!(o.stage>=1)) return '<div class="card"><h2>⏳ Not confirmed yet</h2><p>'+esc(oTitle(o))+' is still an enquiry. It comes to production and the plan only after the office confirms it.</p><button class="btn" data-go="orders">‹ Orders</button></div>';
+  var h=viewOrder0();
   if(o&&o.proj){ h=flatTop(o)+h.replace('<button class="btn ghost" style="padding:0;font-size:16px" data-go="orders">‹ Orders</button>','').replace('>Customer</button>','>Owner</button>').replace('>Delete this order</button>','>🗑 Delete this flat</button>').replace('id="oh">#'+esc(o.no)+' · New order</h2>','id="oh">Flat '+esc(o.no)+'</h2>').replace('id="oh">#','id="oh">Flat ').replace(/Customer said yes/g,isBld(o)?'Builder said yes':'Owner said yes').replace('<span>Customer name</span>','<span>Owner name</span>'); } return h; }
 var MATC=null; function material(o){ if(MATC&&MATC.o===o) return MATC.M; var M=material0(o); MATC={o:o,M:M}; setTimeout(function(){ MATC=null; },0); return M; }
 flatsBoot();
