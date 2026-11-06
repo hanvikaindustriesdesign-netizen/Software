@@ -1034,6 +1034,16 @@ table.xl td.xd.gl{background:#cffafe;color:#155e75;font-weight:700} table.xl td.
 @media(max-width:720px){ .cuth{display:none} .cutr{grid-template-columns:1fr 1fr} .cuto{grid-column:1/-1} .cutx{grid-column:1/-1;text-align:left} }
 @media(max-width:480px){ .cutr{grid-template-columns:1fr} }
 table.xl td.xline{white-space:nowrap;font-size:12px;color:#475569} table.xl tr.xg td{border-bottom:2px solid #cbd5e1} table.xl tr.xg td.xline{color:#0e7490;font-weight:600}
+
+/* stock sheet */
+.xstock{max-height:none} table.xs td,table.xs th{white-space:nowrap} table.xs td.xo b{font-size:13px}
+table.xs tr.sout td{background:#fef2f2} table.xs tr.slow td{background:#fffbeb} table.xs tr.sout td.sq b{color:#dc2626} table.xs tr.slow td.sq b{color:#b45309}
+table.xs tr.sout td.xo,table.xs tr.sout td.xc{background:#fef2f2} table.xs tr.slow td.xo,table.xs tr.slow td.xc{background:#fffbeb}
+table.xs td.sq b{font-size:15px} table.xs .xin{width:70px;min-height:32px;padding:3px 6px;text-align:right}
+.xpill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px} .xpill.ok{background:#dcfce7;color:#166534} .xpill.warn{background:#fef3c7;color:#92400e} .xpill.bad{background:#fee2e2;color:#991b1b}
+table.xs td.xact{white-space:nowrap} table.xs td.xact .btn{margin-right:4px}
+table.xs tr.xsec td{background:#e2e8f0!important;padding:4px 8px} .xsecb{background:none;border:0;font:inherit;font-weight:700;color:#1e293b;cursor:pointer;padding:4px 0;text-align:left} .xsecb .sgsum{font-weight:500;margin-left:8px}
+.xsq.sout{background:#fef2f2} .xsq.slow{background:#fffbeb}
 </style>
 </head>
 <body>
@@ -1103,7 +1113,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 21:23';
+var APPV='06 Nov 2026, 21:44';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1686,8 +1696,9 @@ function render(){ window.__booted=true; typeLists();
   var app=$('#app'), nav=$('#nav');
   if(!S.role){ nav.innerHTML=''; document.body.setAttribute('data-tab','login'); app.innerHTML=viewLogin(); return; }
   if(S.tab==='txn'&&!admin()) S.tab='home';
+  if(prod()&&(S.tab==='home'||S.tab==='orders')) S.tab='planning';
   document.body.setAttribute('data-tab',S.tab); navTrack(); if(lockFillCur()) setTimeout(save,0);
-  var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[['home','Floor',I.home],['orders','Orders',I.list]]; tabs.push(['planning','Plan',I.cal]); if(!admin()) tabs.push(['inventory','Stock',I.box]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
+  var tabs=[['home','Home',I.home],['orders','Orders',I.list]]; if(prod()) tabs=[]; tabs.push(['planning','Plan',I.cal]); if(!admin()) tabs.push(['inventory','Stock',I.box]); if(admin()) tabs.push(['inventory','Stock',I.box],['expenses','Accounts',I.cash],['staff','Staff',I.people],['reports','Reports',I.chart],['settings','Settings',I.cog]);
   nav.innerHTML=tabs.map(function(t){ return '<button data-go="'+t[0]+'" class="'+((S.tab===t[0]||(t[0]==='orders'&&(S.tab==='order'||S.tab==='project'))||(S.tab==='txn'&&t[0]===txOf().o))?'on':'')+'">'+t[2]+'<span>'+t[1]+'</span></button>'; }).join('');
   var v={home:viewHome,orders:viewOrders,order:viewOrder,project:viewProject,planning:viewPlanning,inventory:viewInventory,expenses:viewExpenses,staff:viewStaff,reports:viewReports,settings:viewSettings,txn:viewTxn,checkup:viewCheckup}[S.tab]();
   var nal=alertSets().live.length; app.innerHTML='<div class="top"><div class="tl">'+(canBack()?'<button class="btn backbtn" data-act="navback" aria-label="Back" title="Back">‹</button>':'')+'<h1>'+esc(D.company.name)+'</h1></div><span class="who">'+(navigator.onLine===false?'<span class="stage s0" style="margin-right:6px">Offline</span>':'')+'<button class="btn sm" data-act="bell" style="position:relative;margin-right:6px">🔔'+(nal?'<b style="position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px">'+nal+'</b>':'')+'</button>'+(SESS&&SESS.email?'<span class="wname">'+esc(SESS.email.split('@')[0])+' · </span>':'')+'<span class="wrole">'+(admin()?'Admin':prod()?'Production':'Sales')+' · </span><button class="btn ghost sm" data-act="logout">Log out</button></span></div>'+netBarHtml()+v;
@@ -6071,6 +6082,7 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   // day by day list
   var dl='<div class="card"><h2>Day by day</h2>'+dayList.slice(0,10).map(function(ds){ var arr=P._days[ds]||[]; return '<div class="hday" style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><div style="min-width:70px"><b>'+dShort(ds)+'</b><div class="faint">'+new Date(ds+'T00:00').toLocaleDateString('en-IN',{weekday:'short'})+'</div></div><div class="grow">'+(arr.length?arr.map(function(x){return '<div>'+x.qty+' '+(x.kind==='doors'?'door':'window')+(x.qty>1?'s':'')+' — <button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+x.id+'">#'+x.no+' '+esc(x.customer)+'</button></div>';}).join(''):'<span class="faint">free</span>')+'</div>'+(admin()?'<button class="btn sm" data-hol="'+ds+'">Holiday</button>':'')+'</div>'; }).join('')
    +(admin()?'<div style="margin-top:10px"><span class="faint">Holidays: </span>'+((D.holidays||[]).length?(D.holidays||[]).sort().map(function(h){return '<span class="stage">'+dShort(h)+' <button class="del" style="padding:0 2px;font-size:14px" data-holdel="'+h+'">×</button></span> ';}).join(''):'<span class="faint">none</span>')+' <input type="date" id="holadd" style="width:150px;display:inline-block;min-height:32px"> <button class="btn sm" data-act="holadd">Add holiday</button></div>':'')+'</div>';
+  if(prod()) return installCard()+swCard()+permCard()+pbBoard()+cap+planSheet(P,q,dayList)+daySheet(P,dayList)+'<div class="card" style="padding:10px 14px"><button class="btn sm ghost" data-act="cuopen">🩺 Phone check-up — something not working?</button></div>'+verCard();
   return pbBoard()+cap+planSheet(P,q,dayList)+daySheet(P,dayList); }
 /* ---- inventory ---- */
 /* how many brands use a profile code */
@@ -6135,10 +6147,20 @@ function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object
   var nLow=0,nOut=0; keys.forEach(function(k){ var it=D.inv[k]; if(it.min>0&&it.qty<=0) nOut++; else if(it.min>0&&it.qty<it.min) nLow++; });
   html+='<div class="subtabs" style="margin-bottom:10px">'+[['','All items'],['low','⚠ Low ('+nLow+')'],['out','✖ Finished ('+nOut+')']].map(function(c){ return '<button class="'+(fl===c[0]?'on':'')+'" data-ifl="'+c[0]+'">'+c[1]+'</button>'; }).join('')+'</div>';
   var keep=function(k){ var it=D.inv[k]; if(fl==='out') return it.min>0&&it.qty<=0; if(fl==='low') return it.min>0&&it.qty<it.min; return true; };
-  groups.forEach(function(g){ var rows=keys.filter(function(k){ if(k.charAt(0)!==g[0]) return false; if(!keep(k)) return false; if(g[0]!=='P') return !S.is; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; if(S.is&&!(ks[k]&&ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return false; return g[2]==='*'?!b:b===g[2]; }); if(!rows.length) return;
-    var gl=rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min; }).length, go=rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[g[1]];
-    html+='<div class="card sgrp"><button class="sghead" data-igrp="'+esc(g[1])+'"><h2>'+g[1]+'</h2><span class="sgsum">'+rows.length+' item'+(rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+(go)+' finished</b>':'')+'</span><span class="sgarrow">'+(col?'▸':'▾')+'</span></button>'+(col?'':'<div class="slist">'+rows.sort(function(x,y){ var ix=D.inv[x], iy=D.inv[y]; var rx=ix.min>0?ix.qty/ix.min:9, ry=iy.min>0?iy.qty/iy.min:9; return rx-ry||(x<y?-1:1); }).map(function(k){ return stRow(k,!ks[k]); }).join('')+'</div>')+'</div>'; });
-  var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); others=others.filter(keep); if(others.length) html+='<div class="card sgrp"><div class="sghead"><h2>Other items</h2><span class="sgsum">'+others.length+' item'+(others.length===1?'':'s')+'</span></div><div class="slist">'+others.map(function(k){ return stRow(k,true); }).join('')+'</div></div>';
+  /* the stock sheet: one grid, a section row per group (asked: "Stock make it like excel sheet format") */
+  var sec=[], nrow=0;
+  groups.forEach(function(g){ var rows=keys.filter(function(k){ if(k.charAt(0)!==g[0]) return false; if(!keep(k)) return false; if(g[0]!=='P') return !S.is; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; if(S.is&&!(ks[k]&&ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return false; return g[2]==='*'?!b:b===g[2]; }); if(rows.length) sec.push({name:g[1],rows:rows}); });
+  var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}).filter(keep); if(others.length) sec.push({name:'Other items',rows:others,custom:true});
+  var stCell=function(k,custom){ var it=D.inv[k], out=it.min>0&&it.qty<=0, lowk=!out&&it.min>0&&it.qty<it.min, nd=need[k]||0, short=Math.max(0,nd-it.qty), parts=it.name.split(' · '), code=parts[0], desc=parts.slice(1).join(' · ').replace(/ \([^)]*\)$/,''), meta=ks[k]||{}; nrow++;
+    return '<tr class="'+(out?'sout':lowk?'slow':'')+'"><td class="xc">'+nrow+'</td><td class="xo"><b>'+esc(code)+'</b>'+(custom?' <small class="faint">custom</small>':'')+'</td><td>'+esc(desc||(custom?it.name:''))+'</td><td>'+esc(meta.brand||'')+'</td><td>'+((meta.series||[]).join(', '))+'</td><td>'+esc(it.unit)+'</td>'
+     +'<td class="num sq"><b>'+it.qty+'</b></td><td class="num"><input class="n xin" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" aria-label="Minimum"></td><td class="num">'+(nd?Math.round(nd*10)/10:'')+'</td><td class="num '+(short>0.01?'warnt':'')+'">'+(short>0.01?'<b>'+(Math.round(short*10)/10)+'</b>':'')+'</td>'
+     +'<td class="xst"><span class="xpill '+(out?'bad':lowk?'warn':'ok')+'">'+(out?'Finished':lowk?'Low':it.min>0?'OK':'—')+'</span></td><td class="xact"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button><button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</td></tr>'; };
+  if(sec.length){ var nItems=sec.reduce(function(a,x){ return a+x.rows.length; },0);
+    html+='<div class="card"><div class="hhead"><h2>Stock sheet</h2><span class="faint">'+nItems+' item'+(nItems===1?'':'s')+' · tap a group row to fold it</span></div><div class="xwrap xstock"><table class="xl xs"><thead><tr><th class="xc">#</th><th class="xo">Code</th><th>Item</th><th>Brand</th><th>Series</th><th>Unit</th><th class="num">In stock</th><th class="num">Min</th><th class="num">Need (queue)</th><th class="num">Short</th><th>Status</th><th></th></tr></thead><tbody>'
+     +sec.map(function(x){ var gl=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min&&D.inv[k].qty>0; }).length, go=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[x.name];
+       return '<tr class="xsec"><td class="xc"></td><td class="xo" colspan="11"><button class="xsecb" data-igrp="'+esc(x.name)+'"><span class="sgarrow">'+(col?'▸':'▾')+'</span> '+esc(x.name)+' <span class="sgsum">'+x.rows.length+' item'+(x.rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+go+' finished</b>':'')+'</span></button></td></tr>'+(col?'':x.rows.map(function(k){ return stCell(k,!!x.custom); }).join('')); }).join('')
+     +'</tbody></table></div><p class="faint xleg"><i class="xsq sout"></i> finished &nbsp; <i class="xsq slow"></i> below minimum &nbsp; · change the Min box to set the reorder level · Need = material for the orders in the queue not yet started</p></div>'; }
+  else html+='<div class="card"><div class="empty">No items match</div></div>';
   var cm={}; Object.keys(ks).forEach(function(k){ if(k.charAt(0)!=='P') return; var c=k.slice(2).split('@')[0], b=ks[k].brand||''; if(S.ib&&b!==S.ib) return; if(S.is&&!(ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return; (cm[b]=cm[b]||[]).indexOf(c)<0&&cm[b].push(c); }); var codes=[]; Object.keys(cm).forEach(function(b){ cm[b].sort().forEach(function(c){ if(codes.indexOf(c)<0) codes.push(c); }); });
   var codeOpts=Object.keys(cm).length>1?Object.keys(cm).map(function(b){ return '<optgroup label="'+esc(b||'Other')+'">'+cm[b].sort().map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('')+'</optgroup>'; }).join(''):codes.map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
   html+='<div class="card"><h2>Offcuts (usable cut pieces)</h2><p class="faint">Leftover pieces ≥ '+D.minOffcut+' mm are added here automatically when an order starts production, and the nesting uses them before opening a new bar. Enter pieces you already have in the rack.</p>'
