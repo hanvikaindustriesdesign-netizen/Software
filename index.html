@@ -969,6 +969,32 @@ table.xday td.xdate{white-space:nowrap} table.xday tr.today td{background:#f0f6f
 .xchip{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px;border:1px solid #e2e8f0;border-left:4px solid #2563eb;border-radius:6px;background:#fff;font:inherit;font-size:12px;cursor:pointer} .xchip b{color:#1e3a8a}
 @media print{ .xwrap{max-height:none;overflow:visible} }
 @media(max-width:600px){ .xwrap table.xl th,.xwrap table.xl td{padding:5px 6px!important;font-size:12px;line-height:1.25} .xwrap table.xl td.xd,.xwrap table.xl th.xd{padding:4px 2px!important;min-width:40px} .xwrap table.xl th.xo,.xwrap table.xl td.xo{min-width:140px} }
+
+/* compact board */
+.pbtyp{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px} .pbtc{background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600} .pbtc b{font-weight:800} .pbtc.tot{background:#f1f5f9;color:#475569} .pbtc.done{background:#dcfce7;color:#166534}
+.pbwins{display:flex;flex-direction:column;gap:4px;margin-top:8px} .pbwh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin:2px 0}
+.pbw,.pbw.x{width:100%!important;max-width:none!important;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font:inherit;cursor:pointer}
+.pbw .pbtick{position:static;flex:0 0 auto;width:24px;height:24px;border:2px solid #cbd5e1;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:#fff;background:#fff} .pbw.done .pbtick{background:#16a34a;border-color:#16a34a}
+.pbw .pbn{flex:0 0 auto;width:22px;color:#94a3b8;font-size:12px;text-align:right} .pbw b{margin:0;font-size:14px;flex:0 0 auto} .pbw small{margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.pbw.done{border-color:#16a34a;background:#f0fdf4} .pbw.done b,.pbw.done small{text-decoration:line-through;color:#64748b}
+.pbmore{font-size:12px;margin-top:2px}
+
+/* stock dashboard */
+.sd{margin-bottom:4px} .sdh{display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px 14px;margin-bottom:10px;border:1px solid}
+.sdh.good{background:#f0fdf4;border-color:#bbf7d0} .sdh.warn{background:#fffbeb;border-color:#fde68a} .sdh.bad{background:#fef2f2;border-color:#fecaca}
+.sdh .sdi{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#fff;flex:0 0 auto}
+.sdh.good .sdi{background:#16a34a} .sdh.warn .sdi{background:#d97706} .sdh.bad .sdi{background:#dc2626}
+.sdh b{display:block;font-size:15px} .sdh span{font-size:13px;color:var(--soft)}
+.sdk .kpi i{display:block;font-style:normal;font-size:11.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .sdk .kpi b small{font-size:12px;font-weight:500;color:var(--soft)}
+.sdg{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media(max-width:760px){ .sdg{grid-template-columns:1fr} }
+.sdc{margin-bottom:0} .sdl{display:flex;flex-direction:column;gap:8px}
+.sdr{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;font-size:13px} .sdn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdb{height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden} .sdb i{display:block;height:100%;border-radius:999px;background:#d97706;min-width:3px} .sdb i.bad{background:#dc2626}
+.sdv{white-space:nowrap;font-size:12.5px} .sdv small{color:var(--soft)} .sdv .btn{margin-left:4px}
+@media(max-width:520px){ .sdr{grid-template-columns:1fr auto} .sdb{grid-column:1/-1} }
+table.sdt td.num small{color:var(--soft);font-size:11px}
+.sdk .kpi i{white-space:normal;overflow:visible}
+@media(max-width:600px){ .pbw{flex-wrap:wrap} .pbw small{flex:1 1 100%;white-space:normal;padding-left:34px;margin-top:-2px} }
 </style>
 </head>
 <body>
@@ -1038,7 +1064,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 16:24';
+var APPV='06 Nov 2026, 16:51';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5860,15 +5886,23 @@ function pbDays(n){ var out=[], d=nextWork(today()); for(var i=0;i<n;i++){ out.p
 function pbItemsLeft(o){ return (o.items||[]).map(function(it,i){ return {it:it,i:i}; }).filter(function(x){ return !x.it.made; }); }
 function pbSize(it){ return Math.round(n(it.w))+' × '+Math.round(n(it.h)); }
 /* one window: picture, size, place, tick */
-function pbWin(o,x,big){ var it=x.it, px=big?96:72; return '<button class="pbw'+(it.made?' done':'')+'" data-pmade="'+o.id+'|'+x.i+'" aria-label="'+(it.made?'Made: ':'Mark made: ')+esc(it.loc||'')+' '+pbSize(it)+' mm">'
-  +'<span class="pbsk">'+sketch(o,it,px)+'<i class="pbtick">'+(it.made?'✓':'')+'</i></span><b>'+pbSize(it)+' <em>mm</em></b><small>'+esc(it.loc||'')+(it.loc?' · ':'')+esc(o.kind==='doors'?it.type:(it.type+' '+it.series))+(n(it.qty)>1?' × '+fmt(it.qty):'')+'</small></button>'; }
+function pbWin(o,x,big){ var it=x.it; return '<button class="pbw'+(it.made?' done':'')+'" data-pmade="'+o.id+'|'+x.i+'" aria-label="'+(it.made?'Made: ':'Mark made: ')+esc(it.loc||'')+' '+pbSize(it)+' mm">'
+  +'<i class="pbtick">'+(it.made?'✓':'')+'</i><span class="pbn">'+(x.i+1)+'</span><b>'+pbSize(it)+' <em>mm</em></b><small>'+esc(it.loc||'')+(it.loc?' · ':'')+esc(o.kind==='doors'?it.type:(it.type+' '+it.series))+(n(it.qty)>1?' × '+fmt(it.qty):'')+'</small></button>'; }
+/* what kinds of pieces are left: "2.5 Track 80 × 22", "Ventilator 80 × 5" */
+function pbTypes(o){ var g={}, order=[]; (o.items||[]).forEach(function(it){ if(it.made) return; var k=o.kind==='doors'?it.type:(it.type+' '+it.series); if(!g[k]){ g[k]=0; order.push(k); } g[k]+=Math.max(1,n(it.qty)||1); });
+  if(!order.length) return '<div class="pbtyp"><span class="pbtc done">✓ all made</span></div>';
+  return '<div class="pbtyp">'+order.map(function(k){ return '<span class="pbtc">'+esc(k)+' <b>× '+g[k]+'</b></span>'; }).join('')+'</div>'; }
+/* today's pieces for this job: a short tick list (sizes), not pictures */
+function pbToday(o,take){ var left=pbItemsLeft(o), rows=take?left.slice(0,take):left.slice(0,8), more=left.length-rows.length;
+  if(!rows.length) return '';
+  return '<div class="pbwins"><div class="pbwh">'+(take?'Make today':'Next up')+'</div>'+rows.map(function(x){ return pbWin(o,x,false); }).join('')+(more>0?'<div class="faint pbmore">+ '+more+' more in this order — see the cutting list</div>':'')+'</div>'; }
 /* a job on the board */
 function pbJob(o,take,big){ var p=plev(o), left=pbItemsLeft(o), tot=(o.items||[]).length, made=tot-left.length, pct=tot?Math.round(made/tot*100):0;
   return '<div class="pbjob" style="border-left-color:'+PBCOL[p]+'"><div class="pbh"><div><b>#'+o.no+' '+esc(o.customer||'')+'</b>'+(o.proj?'<small class="faint"> · '+esc(oTitleT(o).replace(/^Flat /,'Flat '))+'</small>':'')+'</div>'
    +'<span class="pbpl" style="background:'+PBCOL[p]+'">'+p+'</span></div>'
    +'<div class="pbmeta"><span>'+(take?'<b>'+take+'</b> '+(o.kind==='doors'?'door':'window')+(take===1?'':'s')+' today':'')+'</span><span class="faint">'+made+' of '+tot+' made'+(o.due?' · due '+dShort(o.due):'')+'</span></div>'
    +'<div class="pbbar"><i style="width:'+pct+'%"></i></div>'
-   +'<div class="pbwins">'+(o.items||[]).map(function(it,i){ return pbWin(o,{it:it,i:i},big); }).join('')+'</div>'
+   +pbTypes(o)+pbToday(o,take)
    +'<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">✂ Cutting list</button><button class="btn sm ghost" data-open="'+o.id+'" data-osub="production">Open order ›</button>'+(prod()?'':'<span class="grow"></span><select data-plev="'+o.id+'" class="plsel" style="background-color:'+PBCOL[p]+'22">'+opts(PLEV,p)+'</select>'+emergBtn(o))+'</div></div>'; }
 function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t0]||[], cw=D.perDay.windows||1, cd=D.perDay.doors||1;
   var w=todayArr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dr=todayArr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0);
@@ -5879,7 +5913,7 @@ function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t
    +'<div class="pbsum"><div><b>'+nj+'</b><span>job'+(nj===1?'':'s')+'</span></div><div><b>'+w+'</b><span>window'+(w===1?'':'s')+'</span></div><div><b>'+dr+'</b><span>door'+(dr===1?'':'s')+'</span></div>'+(urg?'<div class="urg"><b>'+urg+'</b><span>urgent</span></div>':'')+'</div></div>'
    +'<div class="pbcap"><div><span>🪟 Windows</span>'+boxes(w,cw,'w')+'<b>'+w+' / '+cw+'</b></div><div><span>🚪 Doors</span>'+boxes(dr,cd,'d')+'<b>'+dr+' / '+cd+'</b></div></div>'
    +(todayArr.length?Object.keys(jobs).map(function(id){ var o=byId(id); return o?pbJob(o,jobs[id],true):''; }).join(''):'<div class="empty">Nothing planned — all caught up 👍</div>')+'</div>';
-  h+='<div class="card pb"><div class="hhead"><h2>Next days</h2><span class="faint">'+cw+' windows · '+cd+' doors a day</span></div><div class="pbdays">'
+  var nextDays='<div class="card pb"><div class="hhead"><h2>Next days</h2><span class="faint">'+cw+' windows · '+cd+' doors a day</span></div><div class="pbdays">'
    +days.slice(1).map(function(ds){ var arr=P._days[ds]||[], ww=arr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dd=arr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0), seen={}, names=[];
      arr.forEach(function(x){ if(seen[x.id]) return; seen[x.id]=1; var o=byId(x.id); names.push('<button class="pbdj" data-open="'+x.id+'" data-osub="production" style="border-left-color:'+PBCOL[o?plev(o):'Normal']+'">#'+x.no+' '+esc(x.customer||'')+' <small>'+x.qty+(x.kind==='doors'?' door':' win')+(x.qty===1?'':'s')+'</small></button>'); });
      var dt=new Date(ds+'T00:00');
@@ -5951,12 +5985,38 @@ function consumeOrder(o){ if(o.consumed) return 0; var M=material(o), need=order
   M.bom.forEach(function(r){ if(!r.code) return; r.offUsed.forEach(function(u){ offTake(r.code,u.len,u.qty); }); var made=0; r.nest.forEach(function(bin){ if(bin.waste>=D.minOffcut){ offAdd(r.code,bin.waste,r.two?2:1); made+=r.two?2:1; } }); if(made) D.invLog.push({id:uid(),on:today(),key:pkey(r.brand,r.code),qty:0,note:(o.proj?oTitleT(o)+':':'Order #'+o.no+':')+' '+made+' offcut'+(made>1?'s':'')+' added to rack'}); }); Object.keys(need).forEach(function(key){ var it=invItem(key,ks[key]); it.qty=Math.round((it.qty-need[key])*10)/10; D.invLog.push({id:uid(),on:today(),key:key,qty:-need[key],note:(o.proj?oTitleT(o):'Order #'+o.no+' '+(o.customer||''))}); k++; }); o.consumed=true; return k; }
 function lowStock(){ return Object.keys(D.inv).filter(function(k){ var it=D.inv[k]; return it.min>0&&it.qty<it.min; }); }
 function invMigrate(){ var ks=invKeys(), ch=0; Object.keys(D.inv).forEach(function(k){ if(ks[k]||k.indexOf('P:')!==0||k.indexOf('@')>0) return; var code=k.slice(2), nk=Object.keys(ks).filter(function(x){ return x.indexOf('P:'+code+'@')===0; })[0]; if(nk){ var it=D.inv[k]; invItem(nk,ks[nk]); D.inv[nk].qty=Math.round((n(D.inv[nk].qty)+n(it.qty))*10)/10; if(!D.inv[nk].min) D.inv[nk].min=it.min||0; delete D.inv[k]; (D.invLog||[]).forEach(function(l){ if(l.key===k) l.key=nk; }); ch++; } }); return ch; }
+/* ---- Stock dashboard (asked: "Create dash board for stocks with easy understanding") ---- */
+function sdNeed(){ var need={}; queue().forEach(function(o){ if(o.consumed) return; var nd=orderNeeds(o); Object.keys(nd).forEach(function(k){ need[k]=(need[k]||0)+nd[k]; }); }); return need; }
+function sdFmt(v,u){ v=Math.round(v*10)/10; return v+' <small>'+u+'</small>'; }
+function stockDash(ks){ var inv=D.inv, keys=Object.keys(inv), need=sdNeed(), t=today();
+  var low=[], out=[], short=[];
+  keys.forEach(function(k){ var it=inv[k]; if(it.min>0&&it.qty<it.min) low.push(k); if(it.min>0&&it.qty<=0) out.push(k); });
+  Object.keys(need).forEach(function(k){ var it=inv[k]; var have=it?it.qty:0; if(need[k]>have+0.01) short.push({k:k,name:it?it.name:k,unit:it?it.unit:'',need:need[k],have:have}); });
+  short.sort(function(a,b){ return (b.need-b.have)-(a.need-a.have); });
+  var grp=function(ch){ return keys.filter(function(k){ return k.charAt(0)===ch; }); };
+  var bars=0, byBrand={}; grp('P').forEach(function(k){ bars+=inv[k].qty; var b=(ks[k]&&ks[k].brand)||'Other'; byBrand[b]=(byBrand[b]||0)+inv[k].qty; });
+  var glass=grp('G').reduce(function(a,k){ return a+inv[k].qty; },0), mesh=grp('M').reduce(function(a,k){ return a+inv[k].qty; },0), boards=grp('B').reduce(function(a,k){ return a+inv[k].qty; },0);
+  var ocs=0; Object.keys(D.offcuts||{}).forEach(function(c){ (D.offcuts[c]||[]).forEach(function(z){ ocs+=z.qty; }); });
+  var m=t.slice(0,7), mIn=0, mOut=0; (D.invLog||[]).forEach(function(l){ if((l.on||'').slice(0,7)!==m) return; if(l.qty>0) mIn++; else mOut++; });
+  var health=out.length?'bad':low.length?'warn':'good', htxt=out.length?out.length+' item'+(out.length===1?'':'s')+' finished — buy now':low.length?low.length+' item'+(low.length===1?'':'s')+' below minimum':'All items above minimum';
+  var h='<div class="sd"><div class="sdh '+health+'"><div class="sdi">'+(health==='good'?'✓':'!')+'</div><div><b>'+htxt+'</b><span>'+(short.length?short.length+' item'+(short.length===1?'':'s')+' short for the orders in the queue':'Enough stock for every order in the queue')+'</span></div></div>'
+   +'<div class="kpis sdk"><div class="kpi"><span>Profile bars in stock</span><b>'+Math.round(bars)+'</b><i>'+Object.keys(byBrand).map(function(b){ return esc(b)+' '+Math.round(byBrand[b]); }).join(' · ')+'</i></div>'
+   +'<div class="kpi"><span>Glass · Mesh</span><b>'+Math.round(glass)+' <small>sq ft</small></b><i>mesh '+Math.round(mesh)+' sq ft · door boards '+Math.round(boards)+'</i></div>'
+   +'<div class="kpi'+(low.length?' warn':' good')+'"><span>Low stock</span><b>'+low.length+'</b><i>'+(out.length?out.length+' finished':'items below minimum')+'</i></div>'
+   +'<div class="kpi"><span>Offcuts in rack</span><b>'+ocs+'</b><i>'+mIn+' in · '+mOut+' out this month</i></div></div>';
+  // low stock bars
+  h+='<div class="sdg"><div class="card sdc"><div class="hhead"><h2>⚠ Low stock</h2><span class="faint">stock vs minimum</span></div>'
+   +(low.length?'<div class="sdl">'+low.sort(function(a,b){ return inv[a].qty/inv[a].min-inv[b].qty/inv[b].min; }).slice(0,10).map(function(k){ var it=inv[k], pct=Math.max(0,Math.min(100,Math.round(it.qty/it.min*100))); return '<div class="sdr"><div class="sdn">'+esc(it.name)+'</div><div class="sdb"><i class="'+(it.qty<=0?'bad':'warn')+'" style="width:'+pct+'%"></i></div><div class="sdv"><b class="'+(it.qty<=0?'warnt':'')+'">'+it.qty+'</b> / '+it.min+' <small>'+it.unit+'</small> <button class="btn sm" data-iin="'+esc(k)+'">+ In</button></div></div>'; }).join('')+(low.length>10?'<div class="faint">+'+(low.length-10)+' more below</div>':'')+'</div>':'<div class="empty">Nothing below minimum 👍</div>')+'</div>'
+   +'<div class="card sdc"><div class="hhead"><h2>🧾 Needed for the queue</h2><span class="faint">'+queue().filter(function(o){ return !o.consumed; }).length+' orders not yet started</span></div>'
+   +(short.length?'<table class="rt sdt"><thead><tr><th>Item</th><th class="num">Need</th><th class="num">Have</th><th class="num">Short</th></tr></thead><tbody>'+short.slice(0,10).map(function(x){ return '<tr><td class="rw">'+esc(x.name)+'</td><td class="num">'+sdFmt(x.need,x.unit)+'</td><td class="num">'+sdFmt(x.have,x.unit)+'</td><td class="num warnt"><b>'+(Math.round((x.need-x.have)*10)/10)+'</b></td></tr>'; }).join('')+'</tbody></table>'+(short.length>10?'<div class="faint">+'+(short.length-10)+' more — see Material plan</div>':''):'<div class="empty">'+(Object.keys(need).length?'Everything needed is in stock ✓':'No orders waiting for material')+'</div>')+'</div></div></div>';
+  return h; }
+
 function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
   var groups=D.brands.map(function(B){ return ['P','Profiles — '+B.name+' (bars)',B.name]; }).concat([['P','Profiles — other (bars)','*'],['G','Glass (sq ft)'],['M','Mesh (sq ft)'],['B','Door boards'],['H','Hardware & consumables']]);
   if(S.ib&&!D.brands.some(function(B){ return B.name===S.ib; })) S.ib='';
   var html='<div class="row" style="margin-bottom:10px"><select id="ibrand" class="ibrand" aria-label="Brand"><option value="">All brands</option>'+D.brands.map(function(B){ return '<option'+(S.ib===B.name?' selected':'')+'>'+esc(B.name)+'</option>'; }).join('')+'</select><input type="text" class="grow" id="iq" placeholder="Search stock" value="'+esc(S.iq||'')+'"><button class="btn" data-act="invadd">+ Other item</button></div>';
-  var low=lowStock(); if(low.length) html+='<div class="card" style="border-color:#fcd34d;background:#fffbeb"><b>Low stock:</b> '+low.map(function(k){return esc(D.inv[k].name)+' ('+D.inv[k].qty+' '+D.inv[k].unit+')';}).join(' · ')+'</div>';
+  if(!q&&!S.ib) html+=stockDash(ks);
   groups.forEach(function(g){ var rows=keys.filter(function(k){ if(k.charAt(0)!==g[0]) return false; if(g[0]!=='P') return true; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; return g[2]==='*'?!b:b===g[2]; }); if(!rows.length) return;
     html+='<div class="card"><h2>'+g[1]+'</h2><div class="tscroll"><table class="rt"><thead><tr><th>Item</th><th class="num">In stock</th><th class="num">Min</th><th></th></tr></thead><tbody>'+rows.map(function(k){ var it=D.inv[k], lowk=it.min>0&&it.qty<it.min; return '<tr><td class="rw">'+esc(it.name)+(ks[k]?'':' <span class="faint">(custom)</span>')+'</td><td class="num'+(lowk?' warnt':'')+'" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(ks[k]?'':' <button class="del" data-idel="'+esc(k)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table></div></div>'; });
   var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); if(others.length) html+='<div class="card"><h2>Other items</h2><table class="rt"><tbody>'+others.map(function(k){var it=D.inv[k];return '<tr><td class="rw">'+esc(it.name)+'</td><td class="num" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button> <button class="del" data-idel="'+esc(k)+'">×</button></td></tr>';}).join('')+'</tbody></table></div>';
