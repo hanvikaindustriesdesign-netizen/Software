@@ -884,6 +884,9 @@ label.f span.micbs,span.micbs{position:absolute;right:4px;top:50%;transform:tran
 .pbleg{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12px;margin:8px 0 0} .pbdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 3px 0 6px;vertical-align:-1px}
 @media(min-width:900px){ .pbw{width:calc(16.66% - 7px)} }
 @media(max-width:420px){ .pbw{width:calc(50% - 4px);max-width:none} }
+
+.cutinfo{display:flex;flex-wrap:wrap;gap:4px 16px;margin:-2px 0 10px;font-size:13.5px;line-height:1.4} .cutinfo small{color:var(--soft);font-size:12px;margin-right:3px} .cutinfo span{white-space:normal;overflow-wrap:anywhere}
+@media print{ .cutinfo{font-size:11px} }
 </style>
 </head>
 <body>
@@ -950,7 +953,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='05 Nov 2026, 22:43';
+var APPV='06 Nov 2026, 06:22';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5541,9 +5544,15 @@ function barSvg(bar,rule){ var L=D.stock, x=0, W=1000*((bar.cap||L)/L), h=34, d=
   if(x<W) g+='<rect x="'+x+'" y="2" width="'+(W-x)+'" height="'+(h-4)+'" fill="url(#hatch)" stroke="#cbd5e1" stroke-width="1"/>';
   return '<svg viewBox="0 0 1000 '+h+'" preserveAspectRatio="none" style="width:100%;height:'+h+'px;display:block"><defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" stroke-width="2"/></pattern></defs>'+g+'</svg>'; }
 function ruleTxt(r){ return (r.bars===2?'2 bars at a time':'1 bar at a time')+' · '+(r.angle===45?'45° both ends, double head':'straight cut'); }
+/* one line under the heading: who it is for and what it is made of */
+function cutInfo(o){ var u=function(f){ var m={}, out=[]; (o.items||[]).forEach(function(it){ var v=f(it); if(v&&!m[v]){ m[v]=1; out.push(v); } }); return out; };
+  var parts=[['Customer',o.proj?oTitle(o)+(o.customer?' · '+o.customer:''):(o.customer||'')],['Brand',u(function(it){ return it.brand; }).join(', ')],
+    ['Series',u(function(it){ return it.series; }).join(', ')],['Type',u(function(it){ return o.kind==='doors'?it.type:it.type; }).join(', ')],
+    ['Mesh',u(function(it){ return it.mesh; }).join(', ')],['Glass',u(function(it){ return it.glass; }).join(', ')]];
+  return '<p class="cutinfo">'+parts.filter(function(p){ return p[1]; }).map(function(p){ return '<span><small>'+p[0]+'</small> '+esc(p[1])+'</span>'; }).join('')+'</p>'; }
 function gridHtml(o){ var G=grid(o), hasG=G.rows.some(function(r){return r.glass;}), hasM=G.rows.some(function(r){return r.mesh;});
   var codeOf={}, mixed={}; G.rows.forEach(function(r){ G.cols.forEach(function(k){ var p=r.cells[k]; if(!p) return; if(codeOf[k]==null) codeOf[k]=p.code; else if(codeOf[k]!==p.code) mixed[k]=1; }); });
-  return '<div class="card cut"><div class="row between"><h2>Cutting list</h2><span class="faint">length mm × pieces · 45° except interlock (straight)</span></div><div class="tscroll"><table class="grid"><thead><tr><th>#</th><th>Location</th><th>Type</th><th>Size</th><th class="num">Qty</th>'+G.cols.map(function(k){return '<th class="num">'+COLN[k]+'<br><span class="faint">'+(mixed[k]?'code per row':esc(codeOf[k]||''))+'</span></th>';}).join('')+(hasG?'<th class="num">Glass W × H</th>':'')+(hasM?'<th class="num">Mesh W × H</th>':'')+'</tr></thead><tbody>'
+  return '<div class="card cut"><div class="row between"><h2>Cutting list</h2><span class="faint">length mm × pieces · 45° except interlock (straight)</span></div>'+cutInfo(o)+'<div class="tscroll"><table class="grid"><thead><tr><th>#</th><th>Location</th><th>Type</th><th>Size</th><th class="num">Qty</th>'+G.cols.map(function(k){return '<th class="num">'+COLN[k]+'<br><span class="faint">'+(mixed[k]?'code per row':esc(codeOf[k]||''))+'</span></th>';}).join('')+(hasG?'<th class="num">Glass W × H</th>':'')+(hasM?'<th class="num">Mesh W × H</th>':'')+'</tr></thead><tbody>'
    +G.rows.map(function(r){var it=r.it; return '<tr><td>'+r.i+'</td><td><b>'+esc(it.loc||'—')+'</b></td><td>'+esc(it.type)+(it.series?' '+it.series:'')+'<br><span class="faint">'+esc(it.brand||'')+'</span></td><td class="num">'+it.w+' × '+it.h+'</td><td class="num">'+it.qty+'</td>'+G.cols.map(function(k){var p=r.cells[k]; return '<td class="num">'+(p?'<b>'+p.len+'</b> <span class="faint">×'+p.cnt+'</span>'+(mixed[k]?'<br><span class="faint">'+esc(p.code)+'</span>':''):'')+'</td>';}).join('')
      +(hasG?'<td class="num">'+(r.glass?Math.round(r.glass.w)+' × '+Math.round(r.glass.h)+' <span class="faint">×'+r.glass.cnt+'</span>':'')+'</td>':'')+(hasM?'<td class="num">'+(r.mesh?Math.round(r.mesh.w)+' × '+Math.round(r.mesh.h)+' <span class="faint">×'+r.mesh.cnt+'</span>':'')+'</td>':'')+'</tr>';}).join('')+'</tbody></table></div></div>'; }
 function gridRows(o){ var G=grid(o), hasG=G.rows.some(function(r){return r.glass;}), hasM=G.rows.some(function(r){return r.mesh;}), codeOf={};
