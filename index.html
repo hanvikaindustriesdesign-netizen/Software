@@ -1005,6 +1005,35 @@ table.xl td.xd.gl{background:#cffafe;color:#155e75;font-weight:700} table.xl td.
 
 .pbbox{flex-wrap:wrap;max-width:100%} .pbcap .row{flex-wrap:wrap}
 .vercard{margin-top:12px;padding:10px 14px}
+
+/* stock item rows */
+.sgrp{padding:0;overflow:hidden} .sghead{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#f8fafc;border:0;border-bottom:1px solid var(--line);padding:12px 16px;font:inherit;color:inherit;cursor:pointer}
+.sghead h2{margin:0;font-size:15px} .sgsum{color:var(--soft);font-size:12.5px;margin-left:auto} .sgsum b{font-weight:700} .badt{color:#dc2626} .sgarrow{color:var(--soft);font-size:14px}
+.slist{display:flex;flex-direction:column}
+.sitem{display:grid;grid-template-columns:10px minmax(150px,1.4fr) minmax(120px,1fr) auto auto auto;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)} .sitem:last-child{border-bottom:0}
+.sitem .sdot{width:10px;height:10px;border-radius:50%;background:#16a34a} .sitem.low .sdot{background:#d97706} .sitem.out .sdot{background:#dc2626}
+.sitem.low{background:#fffbeb} .sitem.out{background:#fef2f2}
+.sname b{display:block;font-size:14px;line-height:1.2} .sname small{display:block;font-size:12px;color:var(--soft);line-height:1.3}
+.slev small{display:block;font-size:11px;color:var(--soft);margin-top:3px} .sitem.low .slev small{color:#b45309;font-weight:600} .sitem.out .slev small{color:#dc2626;font-weight:600}
+.sbar{position:relative;height:10px;background:#e2e8f0;border-radius:999px;overflow:visible} .sbar i{display:block;height:100%;border-radius:999px;background:#16a34a;min-width:2px} .sitem.low .sbar i{background:#d97706} .sitem.out .sbar i{background:#dc2626}
+.sbar em{position:absolute;top:-3px;width:2px;height:16px;background:#334155;margin-left:-1px}
+.sqty{text-align:right;min-width:52px} .sqty b{display:block;font-size:20px;line-height:1} .sqty small{font-size:10.5px;color:var(--soft)} .sitem.low .sqty b{color:#b45309} .sitem.out .sqty b{color:#dc2626}
+.smin{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--soft)} .smin input{width:64px;min-height:34px;padding:4px 6px}
+.sact{display:flex;gap:6px;align-items:center;white-space:nowrap}
+@media(max-width:700px){ .sitem{grid-template-columns:10px 1fr auto;grid-template-areas:"d n q" "d l l" "d m a";row-gap:6px} .sitem .sdot{grid-area:d;align-self:start;margin-top:5px} .sname{grid-area:n} .sqty{grid-area:q} .slev{grid-area:l} .smin{grid-area:m} .sact{grid-area:a;justify-content:flex-end} }
+
+/* cutting plan */
+.cutg{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.cuth{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 60px;gap:10px;padding:0 12px;font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.03em}
+.cutr{display:grid;grid-template-columns:1.1fr 1.4fr 1.4fr 60px;gap:10px;align-items:start;border:1px solid var(--line);border-left:5px solid #2563eb;border-radius:10px;padding:10px 12px;background:#fff}
+.cuto b{display:block;font-size:14px} .cuto small{color:var(--soft);font-size:12px}
+.cutp b,.cutg2 b{font-size:18px;line-height:1} .cutp small,.cutg2 small{font-size:12px;color:var(--soft)}
+.cutc{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px} .cutc span{font-size:11px;background:#eef2ff;color:#1e3a8a;border-radius:6px;padding:2px 6px} .cutc span b{font-size:11px}
+.cutg2 b{color:#0e7490} .cutdone{display:inline-block;color:#166534;background:#dcfce7;border-radius:6px;padding:3px 8px;font-size:13px;font-weight:700}
+.cutx{text-align:right;align-self:center}
+@media(max-width:720px){ .cuth{display:none} .cutr{grid-template-columns:1fr 1fr} .cuto{grid-column:1/-1} .cutx{grid-column:1/-1;text-align:left} }
+@media(max-width:480px){ .cutr{grid-template-columns:1fr} }
+table.xl td.xline{white-space:nowrap;font-size:12px;color:#475569} table.xl tr.xg td{border-bottom:2px solid #cbd5e1} table.xl tr.xg td.xline{color:#0e7490;font-weight:600}
 </style>
 </head>
 <body>
@@ -1074,7 +1103,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 20:52';
+var APPV='06 Nov 2026, 21:23';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -1352,6 +1381,51 @@ function pbGlass(P){ var t=nextWork(today()), arr=(P._glass&&P._glass[t])||[], c
      :'<div class="empty">No glass to cut today'+(cut.length?' — '+cut.length+' order'+(cut.length===1?'':'s')+' already cut':'')+'</div>')
    +(cut.length?'<div class="faint" style="margin-top:8px">Glass already cut: '+cut.map(function(o){ return '#'+o.no+' '+esc(o.customer||'')+' <button class="btn ghost sm" data-gcut="'+o.id+'">undo</button>'; }).join(' · ')+'</div>':'')+'</div>'; }
 /* sheet: glass cutting per day */
+/* ---- Cutting plan: profiles + glass together, per day (asked: "club profile n glass cutting plan") ---- */
+/* profile bars still to cut for an order (windows not yet made) */
+function profLeft(o){ if(!o) return {bars:0,cuts:0,codes:[],m:0}; var items=(o.items||[]).filter(function(it){ return !it.made; }); if(!items.length) return {bars:0,cuts:0,codes:[],m:0};
+  var M=material0(Object.assign({},o,{items:items,consumed:true})), bars=0, cuts=0, m=0, codes=[];
+  (M.bom||[]).forEach(function(b){ bars+=b.bars; cuts+=b.pieces; m+=b.m; codes.push({code:b.code||b.prof||'profile',bars:b.bars,cuts:b.pieces}); });
+  codes.sort(function(a,b){ return b.bars-a.bars; }); return {bars:bars,cuts:cuts,m:Math.round(m*10)/10,codes:codes}; }
+/* the two lines of one day, merged per order */
+function cutDay(P,ds){ var rows={}, list=[];
+  (P._days[ds]||[]).forEach(function(k){ var o=byId(k.id); if(!o) return; if(!rows[k.id]){ rows[k.id]={o:o,fr:0,gl:0}; list.push(rows[k.id]); } rows[k.id].fr+=k.qty; });
+  ((P._glass&&P._glass[ds])||[]).forEach(function(k){ var o=byId(k.id); if(!o) return; if(!rows[k.id]){ rows[k.id]={o:o,fr:0,gl:0}; list.push(rows[k.id]); } rows[k.id].gl+=k.sq; rows[k.id].gpcs=k.pcs; rows[k.id].gty=k.types; });
+  return list; }
+function pbCut(P){ var t=nextWork(today()), list=cutDay(P,t), cw=D.perDay.windows||1, cd=D.perDay.doors||1, gc=gCap();
+  var w=0,d=0,g=0; list.forEach(function(r){ if(r.o.kind==='doors') d+=r.fr; else w+=r.fr; g+=r.gl; });
+  var boxes=function(k,cap,cls){ var s='', nb=Math.min(cap,10), on=cap>10?Math.round(k/cap*10):k; for(var i=0;i<nb;i++) s+='<i class="'+(i<on?'on '+cls:'')+'"></i>'; return '<span class="pbbox">'+s+'</span>'; };
+  var h='<div class="card pb pbcut"><div class="hhead"><h2>✂ Cutting plan — today</h2><span class="faint">'+dShort(t)+' · profiles and glass to cut</span></div>'
+   +'<div class="pbcap"><span class="row" style="gap:8px"><b>Profiles</b> '+boxes(w,cw,'w')+' <b>'+w+' / '+cw+'</b> <span class="faint">windows</span></span>'+(d||cd>1?'<span class="row" style="gap:8px"><b>Doors</b> '+boxes(d,cd,'d')+' <b>'+d+' / '+cd+'</b></span>':'')+'<span class="row" style="gap:8px"><b>Glass</b> '+boxes(Math.round(g),gc,'g')+' <b>'+fmt(g)+' / '+gc+'</b> <span class="faint">sq ft</span></span></div>';
+  if(!list.length) return h+'<div class="empty">Nothing to cut today</div></div>';
+  h+='<div class="cutg"><div class="cuth"><span>Order</span><span>Profiles</span><span>Glass</span><span></span></div>'+list.map(function(r){ var o=r.o, p=P[o.id]||{}, pl=r.fr?profLeft(o):null, gl=p.glass||{};
+    return '<div class="cutr" style="border-left-color:'+PBCOL[plev(o)]+'"><div class="cuto"><b>#'+o.no+' '+esc(o.customer||'')+'</b><small>'+(o.kind==='doors'?'doors':'windows')+' · '+madeCount(o)+'/'+o.items.length+' made · '+plev(o)+'</small></div>'
+     +'<div class="cutp">'+(r.fr?(o.profCut?'<span class="cutdone">✓ Profiles cut</span> <button class="btn ghost sm" data-pcut="'+o.id+'">undo</button>':'<b>'+r.fr+'</b> <small>'+(o.kind==='doors'?'door':'window')+(r.fr===1?'':'s')+' → '+pl.bars+' bars · '+pl.cuts+' cuts</small><div class="cutc">'+pl.codes.slice(0,4).map(function(c){ return '<span>'+esc(c.code)+' <b>'+c.bars+'</b></span>'; }).join('')+(pl.codes.length>4?'<span>+'+(pl.codes.length-4)+'</span>':'')+'</div>')+'<div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">✂ Cutting list</button><button class="btn sm '+(o.profCut?'':'primary')+'" data-pcut="'+o.id+'">'+(o.profCut?'undo':'✓ Profiles cut')+'</button></div>':'<span class="faint">frames '+(p.start?'on '+dShort(p.start):'later')+'</span>')+'</div>'
+     +'<div class="cutg2">'+(r.gl?(o.glassCut?'<span class="cutdone">✓ Glass cut</span>':'<b>'+fmt(r.gl)+'</b> <small>sq ft · '+(r.gpcs||0)+' pcs · '+(r.gty||[]).map(esc).join(', ')+(gl.sq&&r.gl<gl.sq-0.05?' · rest '+dShort(gl.finish):'')+(gl.late?' <span class="warnt">⚠ after frames start</span>':'')+'</small>')+'<div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-open="'+o.id+'" data-osub="cutting">🔷 Glass nesting</button><button class="btn sm '+(o.glassCut?'':'primary')+'" data-gcut="'+o.id+'">'+(o.glassCut?'undo':'✓ Glass cut')+'</button></div>':(o.kind==='doors'?'<span class="faint">no glass</span>':o.glassCut?'<span class="cutdone">✓ Glass cut</span> <button class="btn ghost sm" data-gcut="'+o.id+'">undo</button>':'<span class="faint">glass '+(gl.start?'on '+dShort(gl.start):'cut already')+'</span>'))+'</div>'
+     +'<div class="cutx"><a class="link" data-open="'+o.id+'" data-osub="production">Open ›</a></div></div>'; }).join('')+'</div></div>';
+  return h; }
+/* combined plan sheet: one order = Frames row + Glass row */
+function planSheet(P,q,dayList){ var t=today(), cw=D.perDay.windows||1, cd=D.perDay.doors||1, gc=gCap();
+  var head='<tr><th class="xc">#</th><th class="xo">Order</th><th>Priority</th><th>Line</th><th class="num">Left</th><th>Start</th><th>Finish</th><th>Due</th>'
+   +dayList.map(function(ds){ var x=xlDay(ds); return '<th class="xd'+(ds===t?' today':'')+'"><span>'+x.dow+'</span><b>'+x.dm+'</b><small>'+x.mon+'</small></th>'; }).join('')+'<th class="num xt">Total</th></tr>';
+  var rows=q.map(function(o,i){ var p=P[o.id]||{}, g=p.glass, tot=0, gtot=0, hasG=o.kind!=='doors'&&(g||o.glassCut);
+    var fcells=dayList.map(function(ds){ var k=(P._days[ds]||[]).filter(function(x){ return x.id===o.id; })[0]; var qty=k?k.qty:0; tot+=qty; var due=o.due===ds;
+      return '<td class="xd'+(qty?(p.late?' late':' on'):'')+(due?' due':'')+(ds===t?' today':'')+'" title="'+(qty?qty+(o.kind==='doors'?' door':' window')+(qty===1?'':'s')+' on ':'')+dShort(ds)+(due?' · due date':'')+'">'+(qty||'')+'</td>'; }).join('');
+    var gcells=hasG?dayList.map(function(ds){ var k=((P._glass&&P._glass[ds])||[]).filter(function(x){ return x.id===o.id; })[0]; var sq=k?k.sq:0; gtot+=sq; return '<td class="xd'+(sq?' gl':'')+(ds===t?' today':'')+'" title="'+(sq?fmt(sq)+' sq ft glass on ':'')+dShort(ds)+'">'+(sq?fmt(sq):'')+'</td>'; }).join(''):'';
+    var rs=hasG?' rowspan="2"':'', urg=plev(o)==='Urgent'?' class="xurg"':'';
+    var r1='<tr'+urg+'><td class="xc"'+rs+'>'+(i+1)+'</td><td class="xo"'+rs+'><button class="xlink" data-open="'+o.id+'" data-osub="production" style="border-left:4px solid '+PBCOL[plev(o)]+'"><b>#'+o.no+'</b> '+esc(o.customer||'')+'<small>'+(o.kind==='doors'?'Doors':'Windows')+' · '+madeCount(o)+'/'+o.items.length+' made</small></button></td>'
+     +'<td'+rs+'><span class="xdot" style="background:'+PBCOL[plev(o)]+'"></span>'+plev(o)+'</td><td class="xline">🪟 Frames</td><td class="num">'+leftQty(o)+'</td><td>'+dShort(p.start)+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td'+rs+' class="'+(p.late?'warnt':'')+'">'+dShort(o.due)+'</td>'+fcells+'<td class="num xt">'+tot+'</td></tr>';
+    var r2=hasG?'<tr class="xg'+(urg?' xurg':'')+'"><td class="xline">🔷 Glass</td><td class="num">'+(o.glassCut?'<small>cut ✓</small>':fmt(g.sq)+'<small> sq ft</small>')+'</td><td>'+(g?dShort(g.start):'')+'</td><td class="'+(g&&g.late?'warnt':'')+'">'+(g?dShort(g.finish)+(g.late?' ⚠':''):'')+'</td>'+gcells+'<td class="num xt">'+(o.glassCut?'':fmt(gtot))+'</td></tr>':'';
+    return r1+r2; }).join('');
+  var totW=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'windows'); }), totD=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'doors'); }), totG=dayList.map(function(ds){ return ((P._glass&&P._glass[ds])||[]).reduce(function(a,x){ return a+x.sq; },0); });
+  var sum=function(arr){ return arr.reduce(function(a,b){ return a+b; },0); };
+  var foot='<tr class="xsum"><td colspan="8">🪟 Windows / capacity</td>'+totW.map(function(w){ return '<td class="xd'+(w>=cw?' full':w?' part':'')+'">'+(w?w+'<small>/'+cw+'</small>':'<small>'+cw+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+sum(totW)+'</td></tr>'
+   +'<tr class="xsum"><td colspan="8">🚪 Doors / capacity</td>'+totD.map(function(d){ return '<td class="xd'+(d>=cd?' full':d?' part':'')+'">'+(d?d+'<small>/'+cd+'</small>':'<small>'+cd+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+sum(totD)+'</td></tr>'
+   +'<tr class="xsum"><td colspan="8">🔷 Glass sq ft / capacity</td>'+totG.map(function(s){ return '<td class="xd'+(s>=gc-0.1?' full':s?' part':'')+'">'+(s?fmt(s)+'<small>/'+gc+'</small>':'<small>'+gc+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+fmt(sum(totG))+'</td></tr>';
+  return '<div class="card"><div class="hhead"><h2>Plan sheet — next 14 working days</h2><span class="faint">'+q.length+' order'+(q.length===1?'':'s')+' · '+cw+' windows · '+cd+' doors · '+gc+' sq ft glass a day</span></div>'
+   +(q.length?'<div class="xwrap"><table class="xl"><thead>'+head+'</thead><tbody>'+rows+'</tbody><tfoot>'+foot+'</tfoot></table></div>'
+   +'<p class="faint xleg"><i class="xsq on"></i> frames made that day &nbsp; <i class="xsq gl"></i> glass cut that day &nbsp; <i class="xsq late"></i> finishes after due date &nbsp; <i class="xsq due"></i> due date &nbsp; <i class="xsq today"></i> today &nbsp; · tap an order to open it</p>':'<div class="empty">Nothing in the queue — confirmed orders appear here</div>')+'</div>'; }
+
 function glassSheet(P,dayList){ var t=today(), cap=gCap(), jobs=queue().filter(function(o){ return P[o.id]&&P[o.id].glass; }); if(!jobs.length) return '';
   var head='<tr><th class="xc">#</th><th class="xo">Order</th><th class="num">Glass</th><th class="num">Pieces</th><th>Cut on</th><th>Frames</th>'+dayList.map(function(ds){ var x=xlDay(ds); return '<th class="xd'+(ds===t?' today':'')+'"><span>'+x.dow+'</span><b>'+x.dm+'</b><small>'+x.mon+'</small></th>'; }).join('')+'</tr>';
   var rows=jobs.map(function(o,i){ var p=P[o.id], g=p.glass; return '<tr><td class="xc">'+(i+1)+'</td><td class="xo"><button class="xlink" data-open="'+o.id+'" data-osub="cutting" style="border-left:4px solid '+PBCOL[plev(o)]+'"><b>#'+o.no+'</b> '+esc(o.customer||'')+'<small>'+g.types.map(esc).join(', ')+'</small></button></td><td class="num">'+fmt(g.sq)+' <small>sq ft</small></td><td class="num">'+g.pcs+'</td><td class="'+(g.late?'warnt':'')+'">'+dShort(g.start)+(g.finish!==g.start?' – '+dShort(g.finish):'')+(g.late?' ⚠':'')+'</td><td>'+dShort(p.start)+'</td>'
@@ -5958,7 +6032,7 @@ function pbBoard(){ var P=plan(), days=pbDays(7), t0=days[0], todayArr=P._days[t
    +'<div class="pbsum"><div><b>'+nj+'</b><span>job'+(nj===1?'':'s')+'</span></div><div><b>'+w+'</b><span>window'+(w===1?'':'s')+'</span></div><div><b>'+dr+'</b><span>door'+(dr===1?'':'s')+'</span></div>'+(urg?'<div class="urg"><b>'+urg+'</b><span>urgent</span></div>':'')+'</div></div>'
    +'<div class="pbcap"><div><span>🪟 Windows</span>'+boxes(w,cw,'w')+'<b>'+w+' / '+cw+'</b></div><div><span>🚪 Doors</span>'+boxes(dr,cd,'d')+'<b>'+dr+' / '+cd+'</b></div></div>'
    +(todayArr.length?Object.keys(jobs).map(function(id){ var o=byId(id); return o?pbJob(o,jobs[id],true):''; }).join(''):'<div class="empty">Nothing planned — all caught up 👍</div>')+'</div>';
-  h+=pbGlass(P);
+  h+=pbCut(P);
   var nextDays='<div class="card pb"><div class="hhead"><h2>Next days</h2><span class="faint">'+cw+' windows · '+cd+' doors a day</span></div><div class="pbdays">'
    +days.slice(1).map(function(ds){ var arr=P._days[ds]||[], ww=arr.filter(function(x){ return x.kind==='windows'; }).reduce(function(a,x){ return a+x.qty; },0), dd=arr.filter(function(x){ return x.kind==='doors'; }).reduce(function(a,x){ return a+x.qty; },0), seen={}, names=[];
      arr.forEach(function(x){ if(seen[x.id]) return; seen[x.id]=1; var o=byId(x.id); names.push('<button class="pbdj" data-open="'+x.id+'" data-osub="production" style="border-left-color:'+PBCOL[o?plev(o):'Normal']+'">#'+x.no+' '+esc(x.customer||'')+' <small>'+x.qty+(x.kind==='doors'?' door':' win')+(x.qty===1?'':'s')+'</small></button>'); });
@@ -5975,20 +6049,6 @@ document.addEventListener('click',function(e){ var t=e.target&&e.target.closest&
 /* ---- Planning as spreadsheet-style grids (asked: "Planning part make better like excel sheet views for easy understanding") ---- */
 function xlDay(ds){ var d=new Date(ds+'T00:00'); return {dow:d.toLocaleDateString('en-IN',{weekday:'short'}),dm:d.getDate(),mon:d.toLocaleDateString('en-IN',{month:'short'})}; }
 function xlSum(arr,kind){ return arr.filter(function(x){ return !kind||x.kind===kind; }).reduce(function(a,x){ return a+x.qty; },0); }
-/* Sheet 1: one row per order, one column per working day — like a Gantt sheet in Excel */
-function planSheet(P,q,dayList){ var t=today(), cw=D.perDay.windows||1, cd=D.perDay.doors||1;
-  var head='<tr><th class="xc">#</th><th class="xo">Order</th><th>Priority</th><th class="num">Left</th><th>Start</th><th>Finish</th><th>Due</th>'
-   +dayList.map(function(ds){ var x=xlDay(ds), hol=(D.holidays||[]).indexOf(ds)>=0; return '<th class="xd'+(ds===t?' today':'')+'"><span>'+x.dow+'</span><b>'+x.dm+'</b><small>'+x.mon+'</small></th>'; }).join('')+'<th class="num xt">Total</th></tr>';
-  var rows=q.map(function(o,i){ var p=P[o.id]||{}, tot=0, cells=dayList.map(function(ds){ var k=(P._days[ds]||[]).filter(function(x){ return x.id===o.id; })[0]; var qty=k?k.qty:0; tot+=qty; var due=o.due===ds;
-      return '<td class="xd'+(qty?(p.late?' late':' on'):'')+(due?' due':'')+(ds===t?' today':'')+'" title="'+(qty?qty+(o.kind==='doors'?' door':' window')+(qty===1?'':'s')+' on ':'')+dShort(ds)+(due?' · due date':'')+'">'+(qty||'')+'</td>'; }).join('');
-    return '<tr'+(plev(o)==='Urgent'?' class="xurg"':'')+'><td class="xc">'+(i+1)+'</td><td class="xo"><button class="xlink" data-open="'+o.id+'" data-osub="production" style="border-left:4px solid '+PBCOL[plev(o)]+'"><b>#'+o.no+'</b> '+esc(o.customer||'')+'<small>'+(o.kind==='doors'?'Doors':'Windows')+' · '+madeCount(o)+'/'+o.items.length+' made</small></button></td>'
-     +'<td><span class="xdot" style="background:'+PBCOL[plev(o)]+'"></span>'+plev(o)+'</td><td class="num">'+leftQty(o)+'</td><td>'+dShort(p.start)+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(p.finish)+(p.late?' ⚠':'')+'</td><td class="'+(p.late?'warnt':'')+'">'+dShort(o.due)+'</td>'+cells+'<td class="num xt">'+tot+'</td></tr>'; }).join('');
-  var totW=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'windows'); }), totD=dayList.map(function(ds){ return xlSum(P._days[ds]||[],'doors'); });
-  var foot='<tr class="xsum"><td colspan="7">Windows planned / capacity</td>'+totW.map(function(w,i){ return '<td class="xd'+(w>=cw?' full':w?' part':'')+'">'+(w?w+'<small>/'+cw+'</small>':'<small>'+cw+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+totW.reduce(function(a,b){return a+b;},0)+'</td></tr>'
-   +'<tr class="xsum"><td colspan="7">Doors planned / capacity</td>'+totD.map(function(d,i){ return '<td class="xd'+(d>=cd?' full':d?' part':'')+'">'+(d?d+'<small>/'+cd+'</small>':'<small>'+cd+' free</small>')+'</td>'; }).join('')+'<td class="num xt">'+totD.reduce(function(a,b){return a+b;},0)+'</td></tr>';
-  return '<div class="card"><div class="hhead"><h2>Plan sheet — next 14 working days</h2><span class="faint">'+q.length+' order'+(q.length===1?'':'s')+' · '+cw+' windows · '+cd+' doors a day</span></div>'
-   +(q.length?'<div class="xwrap"><table class="xl">'+'<thead>'+head+'</thead><tbody>'+rows+'</tbody><tfoot>'+foot+'</tfoot></table></div>'
-   +'<p class="faint xleg"><i class="xsq on"></i> pieces made that day &nbsp; <i class="xsq late"></i> finishes after due date &nbsp; <i class="xsq due"></i> due date &nbsp; <i class="xsq today"></i> today &nbsp; · tap an order to open its production tab</p>':'<div class="empty">Nothing in the queue — confirmed orders appear here</div>')+'</div>'; }
 /* Sheet 2: one row per working day — what is made, how much capacity is free */
 function daySheet(P,dayList){ var t=today(), cw=D.perDay.windows||1, cd=D.perDay.doors||1;
   var rows=dayList.map(function(ds){ var arr=P._days[ds]||[], w=xlSum(arr,'windows'), d=xlSum(arr,'doors'), x=xlDay(ds), seen={}, names=[];
@@ -6011,7 +6071,7 @@ function viewPlanning(){ var P=plan(), q=queue(), held=openOrders().filter(funct
   // day by day list
   var dl='<div class="card"><h2>Day by day</h2>'+dayList.slice(0,10).map(function(ds){ var arr=P._days[ds]||[]; return '<div class="hday" style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><div style="min-width:70px"><b>'+dShort(ds)+'</b><div class="faint">'+new Date(ds+'T00:00').toLocaleDateString('en-IN',{weekday:'short'})+'</div></div><div class="grow">'+(arr.length?arr.map(function(x){return '<div>'+x.qty+' '+(x.kind==='doors'?'door':'window')+(x.qty>1?'s':'')+' — <button class="btn ghost sm" style="padding:0;min-height:0" data-open="'+x.id+'">#'+x.no+' '+esc(x.customer)+'</button></div>';}).join(''):'<span class="faint">free</span>')+'</div>'+(admin()?'<button class="btn sm" data-hol="'+ds+'">Holiday</button>':'')+'</div>'; }).join('')
    +(admin()?'<div style="margin-top:10px"><span class="faint">Holidays: </span>'+((D.holidays||[]).length?(D.holidays||[]).sort().map(function(h){return '<span class="stage">'+dShort(h)+' <button class="del" style="padding:0 2px;font-size:14px" data-holdel="'+h+'">×</button></span> ';}).join(''):'<span class="faint">none</span>')+' <input type="date" id="holadd" style="width:150px;display:inline-block;min-height:32px"> <button class="btn sm" data-act="holadd">Add holiday</button></div>':'')+'</div>';
-  return pbBoard()+cap+planSheet(P,q,dayList)+glassSheet(P,dayList)+daySheet(P,dayList); }
+  return pbBoard()+cap+planSheet(P,q,dayList)+daySheet(P,dayList); }
 /* ---- inventory ---- */
 /* how many brands use a profile code */
 function codeBrands(code){ var m={}; D.brands.forEach(function(B){ var hit=false; SERIES.forEach(function(sr){ PROFS.forEach(function(p){ if(B.prof[sr][p[0]]===code) hit=true; }); }); ['PVC','WPC'].forEach(function(d){ if(B.prof.door[d]===code) hit=true; }); if(hit) m[B.name]=1; }); return Object.keys(m); }
@@ -6062,10 +6122,23 @@ function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object
   var groups=D.brands.map(function(B){ return ['P','Profiles — '+B.name+' (bars)',B.name]; }).concat([['P','Profiles — other (bars)','*'],['G','Glass (sq ft)'],['M','Mesh (sq ft)'],['B','Door boards'],['H','Hardware & consumables']]);
   if(S.ib&&!D.brands.some(function(B){ return B.name===S.ib; })) S.ib='';
   var html='<div class="row" style="margin-bottom:10px"><select id="ibrand" class="ibrand" aria-label="Brand"><option value="">All brands</option>'+D.brands.map(function(B){ return '<option'+(S.ib===B.name?' selected':'')+'>'+esc(B.name)+'</option>'; }).join('')+'</select><select id="iseries" class="ibrand" aria-label="Series"><option value="">All series</option>'+SERIES.map(function(sr){ return '<option value="'+sr+'"'+(S.is===sr?' selected':'')+'>'+sr+' series</option>'; }).join('')+'</select><input type="text" class="grow" id="iq" placeholder="Search stock" value="'+esc(S.iq||'')+'"><button class="btn" data-act="invadd">+ Other item</button></div>';
-  if(!q&&!S.ib&&!S.is) html+=stockDash(ks);
-  groups.forEach(function(g){ var rows=keys.filter(function(k){ if(k.charAt(0)!==g[0]) return false; if(g[0]!=='P') return !S.is; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; if(S.is&&!(ks[k]&&ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return false; return g[2]==='*'?!b:b===g[2]; }); if(!rows.length) return;
-    html+='<div class="card"><h2>'+g[1]+'</h2><div class="tscroll"><table class="rt"><thead><tr><th>Item</th><th class="num">In stock</th><th class="num">Min</th><th></th></tr></thead><tbody>'+rows.map(function(k){ var it=D.inv[k], lowk=it.min>0&&it.qty<it.min; return '<tr><td class="rw">'+esc(it.name)+(ks[k]?'':' <span class="faint">(custom)</span>')+'</td><td class="num'+(lowk?' warnt':'')+'" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(ks[k]?'':' <button class="del" data-idel="'+esc(k)+'">×</button>')+'</td></tr>'; }).join('')+'</tbody></table></div></div>'; });
-  var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); if(others.length) html+='<div class="card"><h2>Other items</h2><table class="rt"><tbody>'+others.map(function(k){var it=D.inv[k];return '<tr><td class="rw">'+esc(it.name)+'</td><td class="num" data-l="Stock"><b>'+it.qty+'</b> <span class="faint">'+it.unit+'</span></td><td class="num" data-l="Min"><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" style="min-height:34px;width:62px"></td><td class="right ra" style="white-space:nowrap"><button class="btn sm" data-iin="'+esc(k)+'">+ In</button> <button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button> <button class="del" data-idel="'+esc(k)+'">×</button></td></tr>';}).join('')+'</tbody></table></div>';
+  if(!q&&!S.ib&&!S.is&&!S.ifl) html+=stockDash(ks);
+  var need=sdNeed(), fl=S.ifl||'';
+  var stRow=function(k,custom){ var it=D.inv[k], out=it.min>0&&it.qty<=0, lowk=!out&&it.min>0&&it.qty<it.min, nd=need[k]||0, shortk=nd>it.qty+0.01;
+    var top=Math.max(it.min*2,it.qty,nd,1), pct=Math.max(0,Math.min(100,Math.round(it.qty/top*100))), mpct=it.min>0?Math.min(100,Math.round(it.min/top*100)):0;
+    var parts=it.name.split(' · '), code=parts[0], desc=parts.slice(1).join(' · ').replace(/ \([^)]*\)$/,'');
+    return '<div class="sitem'+(out?' out':lowk?' low':'')+'"><span class="sdot"></span><div class="sname"><b>'+esc(code)+'</b>'+(desc?'<small>'+esc(desc)+'</small>':'')+(custom?'<small class="faint">custom item</small>':'')+(nd?'<small class="'+(shortk?'warnt':'faint')+'">queue needs '+(Math.round(nd*10)/10)+' '+esc(it.unit)+(shortk?' — short '+(Math.round((nd-it.qty)*10)/10):'')+'</small>':'')+'</div>'
+     +'<div class="slev"><div class="sbar"><i style="width:'+pct+'%"></i>'+(mpct?'<em style="left:'+mpct+'%" title="minimum"></em>':'')+'</div><small>'+(out?'Finished':lowk?'Below minimum':it.min>0?'OK':'no minimum set')+'</small></div>'
+     +'<div class="sqty"><b>'+it.qty+'</b><small>'+esc(it.unit)+'</small></div>'
+     +'<label class="smin"><span>min</span><input class="n" type="number" data-imin="'+esc(k)+'" value="'+it.min+'"></label>'
+     +'<div class="sact"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button><button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</div></div>'; };
+  var nLow=0,nOut=0; keys.forEach(function(k){ var it=D.inv[k]; if(it.min>0&&it.qty<=0) nOut++; else if(it.min>0&&it.qty<it.min) nLow++; });
+  html+='<div class="subtabs" style="margin-bottom:10px">'+[['','All items'],['low','⚠ Low ('+nLow+')'],['out','✖ Finished ('+nOut+')']].map(function(c){ return '<button class="'+(fl===c[0]?'on':'')+'" data-ifl="'+c[0]+'">'+c[1]+'</button>'; }).join('')+'</div>';
+  var keep=function(k){ var it=D.inv[k]; if(fl==='out') return it.min>0&&it.qty<=0; if(fl==='low') return it.min>0&&it.qty<it.min; return true; };
+  groups.forEach(function(g){ var rows=keys.filter(function(k){ if(k.charAt(0)!==g[0]) return false; if(!keep(k)) return false; if(g[0]!=='P') return !S.is; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; if(S.is&&!(ks[k]&&ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return false; return g[2]==='*'?!b:b===g[2]; }); if(!rows.length) return;
+    var gl=rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min; }).length, go=rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[g[1]];
+    html+='<div class="card sgrp"><button class="sghead" data-igrp="'+esc(g[1])+'"><h2>'+g[1]+'</h2><span class="sgsum">'+rows.length+' item'+(rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+(go)+' finished</b>':'')+'</span><span class="sgarrow">'+(col?'▸':'▾')+'</span></button>'+(col?'':'<div class="slist">'+rows.sort(function(x,y){ var ix=D.inv[x], iy=D.inv[y]; var rx=ix.min>0?ix.qty/ix.min:9, ry=iy.min>0?iy.qty/iy.min:9; return rx-ry||(x<y?-1:1); }).map(function(k){ return stRow(k,!ks[k]); }).join('')+'</div>')+'</div>'; });
+  var ot=[['X','Other items']]; var others=keys.filter(function(k){return 'PGMBH'.indexOf(k.charAt(0))<0;}); others=others.filter(keep); if(others.length) html+='<div class="card sgrp"><div class="sghead"><h2>Other items</h2><span class="sgsum">'+others.length+' item'+(others.length===1?'':'s')+'</span></div><div class="slist">'+others.map(function(k){ return stRow(k,true); }).join('')+'</div></div>';
   var cm={}; Object.keys(ks).forEach(function(k){ if(k.charAt(0)!=='P') return; var c=k.slice(2).split('@')[0], b=ks[k].brand||''; if(S.ib&&b!==S.ib) return; if(S.is&&!(ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return; (cm[b]=cm[b]||[]).indexOf(c)<0&&cm[b].push(c); }); var codes=[]; Object.keys(cm).forEach(function(b){ cm[b].sort().forEach(function(c){ if(codes.indexOf(c)<0) codes.push(c); }); });
   var codeOpts=Object.keys(cm).length>1?Object.keys(cm).map(function(b){ return '<optgroup label="'+esc(b||'Other')+'">'+cm[b].sort().map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('')+'</optgroup>'; }).join(''):codes.map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
   html+='<div class="card"><h2>Offcuts (usable cut pieces)</h2><p class="faint">Leftover pieces ≥ '+D.minOffcut+' mm are added here automatically when an order starts production, and the nesting uses them before opening a new bar. Enter pieces you already have in the rack.</p>'
@@ -6505,8 +6578,11 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
+  if(d.ifl!==undefined){ S.ifl=d.ifl; render(); return; }
+  if(d.igrp){ S.igc=S.igc||{}; S.igc[d.igrp]=!S.igc[d.igrp]; render(); return; }
+  if(d.pcut){ var pco=byId(d.pcut); if(pco){ pco.profCut=!pco.profCut; if(pco.profCut) pco.profCutOn=today(); else delete pco.profCutOn; save(); render(); } return; }
   if(d.gcut){ var gco=byId(d.gcut); if(gco){ gco.glassCut=!gco.glassCut; if(gco.glassCut) gco.glassCutOn=today(); else delete gco.glassCutOn; save(); render(); toast&&toast(gco.glassCut?'Glass cut for #'+gco.no:'Glass not cut for #'+gco.no); } return; }
   if(d.step!==undefined&&o){ if(stepOk(o,+d.step)) setStep(o,+d.step); return; }
   if(d.go){ if(d.stab) S.stab=d.stab; go(d.go); return; }
