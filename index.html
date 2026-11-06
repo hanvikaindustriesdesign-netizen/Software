@@ -1044,6 +1044,9 @@ table.xs td.sq b{font-size:15px} table.xs .xin{width:70px;min-height:32px;paddin
 table.xs td.xact{white-space:nowrap} table.xs td.xact .btn{margin-right:4px}
 table.xs tr.xsec td{background:#e2e8f0!important;padding:4px 8px} .xsecb{background:none;border:0;font:inherit;font-weight:700;color:#1e293b;cursor:pointer;padding:4px 0;text-align:left} .xsecb .sgsum{font-weight:500;margin-left:8px}
 .xsq.sout{background:#fef2f2} .xsq.slow{background:#fffbeb}
+
+.xsort{background:none;border:0;font:inherit;font-weight:700;color:inherit;text-transform:uppercase;letter-spacing:.02em;font-size:11.5px;padding:0;cursor:pointer;white-space:nowrap} table.xs th.sorted{background:#dbeafe;color:#1e3a8a}
+table.xs td.buyt{color:#1d4ed8;font-weight:700} table.xs tr.xtot td{background:#f1f5f9;font-weight:600;color:#334155;border-top:2px solid #cbd5e1}
 </style>
 </head>
 <body>
@@ -1113,7 +1116,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='06 Nov 2026, 21:44';
+var APPV='06 Nov 2026, 22:30';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -6129,6 +6132,17 @@ function stockDash(ks){ var inv=D.inv, keys=Object.keys(inv), need=sdNeed(), t=t
    +(short.length?'<table class="rt sdt"><thead><tr><th>Item</th><th class="num">Need</th><th class="num">Have</th><th class="num">Short</th></tr></thead><tbody>'+short.slice(0,10).map(function(x){ return '<tr><td class="rw">'+esc(x.name)+'</td><td class="num">'+sdFmt(x.need,x.unit)+'</td><td class="num">'+sdFmt(x.have,x.unit)+'</td><td class="num warnt"><b>'+(Math.round((x.need-x.have)*10)/10)+'</b></td></tr>'; }).join('')+'</tbody></table>'+(short.length>10?'<div class="faint">+'+(short.length-10)+' more — see Material plan</div>':''):'<div class="empty">'+(Object.keys(need).length?'Everything needed is in stock ✓':'No orders waiting for material')+'</div>')+'</div></div></div>';
   return h; }
 
+/* last stock-in date of an item */
+function lastIn(k){ var d=''; (D.invLog||[]).forEach(function(l){ if(l.key===k&&l.qty>0&&(l.on||'')>d) d=l.on; }); return d; }
+/* how much to buy: up to twice the minimum, or enough for the queue */
+function toBuy(k,need){ var it=D.inv[k]; if(!it) return 0; var want=Math.max(it.min>0?it.min*2:0,(need||0)+(it.min||0)); var b=want-it.qty; return b>0.01?Math.ceil(b):0; }
+function stockSort(keys,need){ var c=S.isort||'', dir=S.isdir||1; if(!c) return keys; var v=function(k){ var it=D.inv[k]; switch(c){ case 'qty': return it.qty; case 'min': return it.min; case 'need': return need[k]||0; case 'short': return Math.max(0,(need[k]||0)-it.qty); case 'buy': return toBuy(k,need[k]); case 'status': return it.min>0&&it.qty<=0?0:it.min>0&&it.qty<it.min?1:2; case 'last': return lastIn(k); default: return it.name; } };
+  return keys.slice().sort(function(a,b){ var x=v(a), y=v(b); return (x<y?-1:x>y?1:0)*dir; }); }
+function buyList(){ var need=sdNeed(), lines=[], by={}; Object.keys(D.inv).forEach(function(k){ var b=toBuy(k,need[k]); if(!b) return; var it=D.inv[k], ks=invKeys(), br=(ks[k]&&ks[k].brand)||'Other'; (by[br]=by[br]||[]).push('• '+it.name.replace(/ \([^)]*\)$/,'')+' — '+b+' '+it.unit+' (have '+it.qty+')'); });
+  Object.keys(by).sort().forEach(function(b){ lines.push(b+':'); lines=lines.concat(by[b]); lines.push(''); }); return lines.length?'Buy list — '+D.company.name+' — '+dShort(today())+'\n\n'+lines.join('\n').trim():''; }
+function stockCsv(){ var ks=invKeys(), need=sdNeed(), rows=[['Code','Item','Brand','Series','Unit','In stock','Min','Need (queue)','Short','To buy','Last in','Status']];
+  Object.keys(D.inv).forEach(function(k){ var it=D.inv[k], m=ks[k]||{}, parts=it.name.split(' · '), nd=need[k]||0; rows.push([parts[0],parts.slice(1).join(' · ').replace(/ \([^)]*\)$/,''),m.brand||'',(m.series||[]).join(' '),it.unit,it.qty,it.min,nd?Math.round(nd*10)/10:'',Math.max(0,Math.round((nd-it.qty)*10)/10)||'',toBuy(k,nd)||'',lastIn(k),it.min>0&&it.qty<=0?'Finished':it.min>0&&it.qty<it.min?'Low':'OK']); });
+  return rows.map(function(r){ return r.map(function(c){ c=String(c); return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(','); }).join('\n'); }
 function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
   var groups=D.brands.map(function(B){ return ['P','Profiles — '+B.name+' (bars)',B.name]; }).concat([['P','Profiles — other (bars)','*'],['G','Glass (sq ft)'],['M','Mesh (sq ft)'],['B','Door boards'],['H','Hardware & consumables']]);
@@ -6154,11 +6168,11 @@ function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object
   var stCell=function(k,custom){ var it=D.inv[k], out=it.min>0&&it.qty<=0, lowk=!out&&it.min>0&&it.qty<it.min, nd=need[k]||0, short=Math.max(0,nd-it.qty), parts=it.name.split(' · '), code=parts[0], desc=parts.slice(1).join(' · ').replace(/ \([^)]*\)$/,''), meta=ks[k]||{}; nrow++;
     return '<tr class="'+(out?'sout':lowk?'slow':'')+'"><td class="xc">'+nrow+'</td><td class="xo"><b>'+esc(code)+'</b>'+(custom?' <small class="faint">custom</small>':'')+'</td><td>'+esc(desc||(custom?it.name:''))+'</td><td>'+esc(meta.brand||'')+'</td><td>'+((meta.series||[]).join(', '))+'</td><td>'+esc(it.unit)+'</td>'
      +'<td class="num sq"><b>'+it.qty+'</b></td><td class="num"><input class="n xin" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" aria-label="Minimum"></td><td class="num">'+(nd?Math.round(nd*10)/10:'')+'</td><td class="num '+(short>0.01?'warnt':'')+'">'+(short>0.01?'<b>'+(Math.round(short*10)/10)+'</b>':'')+'</td>'
-     +'<td class="xst"><span class="xpill '+(out?'bad':lowk?'warn':'ok')+'">'+(out?'Finished':lowk?'Low':it.min>0?'OK':'—')+'</span></td><td class="xact"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button><button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</td></tr>'; };
+     +'<td class="num '+(toBuy(k,nd)?'buyt':'')+'">'+(toBuy(k,nd)||'')+'</td><td class="faint">'+(lastIn(k)?dShort(lastIn(k)):'')+'</td><td class="xst"><span class="xpill '+(out?'bad':lowk?'warn':'ok')+'">'+(out?'Finished':lowk?'Low':it.min>0?'OK':'—')+'</span></td><td class="xact"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button><button class="btn sm" data-iadj="'+esc(k)+'">Adjust</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</td></tr>'; };
   if(sec.length){ var nItems=sec.reduce(function(a,x){ return a+x.rows.length; },0);
-    html+='<div class="card"><div class="hhead"><h2>Stock sheet</h2><span class="faint">'+nItems+' item'+(nItems===1?'':'s')+' · tap a group row to fold it</span></div><div class="xwrap xstock"><table class="xl xs"><thead><tr><th class="xc">#</th><th class="xo">Code</th><th>Item</th><th>Brand</th><th>Series</th><th>Unit</th><th class="num">In stock</th><th class="num">Min</th><th class="num">Need (queue)</th><th class="num">Short</th><th>Status</th><th></th></tr></thead><tbody>'
+    html+='<div class="card"><div class="hhead"><h2>Stock sheet</h2><span class="row" style="gap:6px"><button class="btn sm" data-act="buylist">🛒 Buy list</button><button class="btn sm" data-act="stockxls">⬇ Excel</button></span></div><p class="faint" style="margin:0 0 8px">'+nItems+' item'+(nItems===1?'':'s')+' · tap a column name to sort · tap a group row to fold it · To buy = up to 2 × minimum or enough for the queue</p><div class="xwrap xstock"><table class="xl xs"><thead><tr><th class="xc">#</th>'+[['name','Code','xo'],['item','Item',''],['brand','Brand',''],['series','Series',''],['unit','Unit',''],['qty','In stock','num'],['min','Min','num'],['need','Need (queue)','num'],['short','Short','num'],['buy','To buy','num'],['last','Last in',''],['status','Status','']].map(function(c){ var on=S.isort===c[0]; return '<th class="'+c[2]+(on?' sorted':'')+'"><button class="xsort" data-isort="'+c[0]+'">'+c[1]+(on?(S.isdir===1?' ▲':' ▼'):'')+'</button></th>'; }).join('')+'<th></th></tr></thead><tbody>'
      +sec.map(function(x){ var gl=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min&&D.inv[k].qty>0; }).length, go=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[x.name];
-       return '<tr class="xsec"><td class="xc"></td><td class="xo" colspan="11"><button class="xsecb" data-igrp="'+esc(x.name)+'"><span class="sgarrow">'+(col?'▸':'▾')+'</span> '+esc(x.name)+' <span class="sgsum">'+x.rows.length+' item'+(x.rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+go+' finished</b>':'')+'</span></button></td></tr>'+(col?'':x.rows.map(function(k){ return stCell(k,!!x.custom); }).join('')); }).join('')
+       return '<tr class="xsec"><td class="xc"></td><td class="xo" colspan="13"><button class="xsecb" data-igrp="'+esc(x.name)+'"><span class="sgarrow">'+(col?'▸':'▾')+'</span> '+esc(x.name)+' <span class="sgsum">'+x.rows.length+' item'+(x.rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+go+' finished</b>':'')+'</span></button></td></tr>'+(col?'':stockSort(x.rows,need).map(function(k){ return stCell(k,!!x.custom); }).join('')+(function(){ var u={}; x.rows.forEach(function(k){ u[D.inv[k].unit]=(u[D.inv[k].unit]||0)+D.inv[k].qty; }); var tb=x.rows.reduce(function(a,k){ return a+toBuy(k,need[k]); },0); return '<tr class="xtot"><td class="xc"></td><td class="xo">Total</td><td colspan="4"></td><td class="num"><b>'+Object.keys(u).map(function(un){ return Math.round(u[un]*10)/10+' '+un; }).join(' · ')+'</b></td><td colspan="2"></td><td class="num"></td><td class="num buyt">'+(tb?'<b>'+tb+'</b>':'')+'</td><td colspan="3"></td></tr>'; })()); }).join('')
      +'</tbody></table></div><p class="faint xleg"><i class="xsq sout"></i> finished &nbsp; <i class="xsq slow"></i> below minimum &nbsp; · change the Min box to set the reorder level · Need = material for the orders in the queue not yet started</p></div>'; }
   else html+='<div class="card"><div class="empty">No items match</div></div>';
   var cm={}; Object.keys(ks).forEach(function(k){ if(k.charAt(0)!=='P') return; var c=k.slice(2).split('@')[0], b=ks[k].brand||''; if(S.ib&&b!==S.ib) return; if(S.is&&!(ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return; (cm[b]=cm[b]||[]).indexOf(c)<0&&cm[b].push(c); }); var codes=[]; Object.keys(cm).forEach(function(b){ cm[b].sort().forEach(function(c){ if(codes.indexOf(c)<0) codes.push(c); }); });
@@ -6600,9 +6614,10 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-isort],[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.ifl!==undefined){ S.ifl=d.ifl; render(); return; }
+  if(d.isort){ if(S.isort===d.isort) S.isdir=(S.isdir||1)*-1; else { S.isort=d.isort; S.isdir=1; } render(); return; }
   if(d.igrp){ S.igc=S.igc||{}; S.igc[d.igrp]=!S.igc[d.igrp]; render(); return; }
   if(d.pcut){ var pco=byId(d.pcut); if(pco){ pco.profCut=!pco.profCut; if(pco.profCut) pco.profCutOn=today(); else delete pco.profCutOn; save(); render(); } return; }
   if(d.gcut){ var gco=byId(d.gcut); if(gco){ gco.glassCut=!gco.glassCut; if(gco.glassCut) gco.glassCutOn=today(); else delete gco.glassCutOn; save(); render(); toast&&toast(gco.glassCut?'Glass cut for #'+gco.no:'Glass not cut for #'+gco.no); } return; }
@@ -6665,6 +6680,8 @@ document.addEventListener('click',function(e){
   if(a==='navback'){ if(canBack()) history.back(); else go('home'); }
   if(a==='unfix'&&o&&S.di!=null&&o.items[S.di]){ delete o.items[S.di].fixed; save(); render(); toast('Now priced from the rate card'); }
   if(a==='chkupd') checkUpdate(true);
+  if(a==='buylist'){ var bl=buyList(); if(!bl) toast('Nothing to buy — all items are above minimum and enough for the queue'); else pjShare(bl); }
+  if(a==='stockxls'){ download('stock-'+today()+'.csv',stockCsv()); toast('Stock sheet downloaded — opens in Excel'); }
   if(a==='install'&&INSTALL){ INSTALL.prompt(); INSTALL.userChoice.then(function(){ INSTALL=null; render(); }); }
   if(a==='noinstall'){ localStorage.setItem('noInstall','1'); render(); }
   if(a==='pinmode'){ S.pinMode=true; render(); } if(a==='emailmode'){ S.pinMode=false; render(); }
