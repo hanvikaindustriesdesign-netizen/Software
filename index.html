@@ -1204,7 +1204,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='07 Nov 2026, 10:13';
+var APPV='07 Nov 2026, 10:59';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -4259,9 +4259,9 @@ function stmtPdfDoc(o){ var d=PdfDoc(), M=36, W=d.W, CW=W-2*M, BOT=d.H-48, c=D.c
   return d; }
 /* ---- the builder's statement ---- */
 function bldPdf(p,sz){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDone(p), gx=done.some(function(f){ return gstOf(f)>0; }), k=0, j=0, m=0;
-  var cols=[{h:'#',w:22},{h:'Flat',w:52},{h:'Type',w:80},{h:'Delivered on',w:70},{h:'Windows',w:48,a:'r'}].concat(sz&&sz.sq?[{h:'Sq ft',w:52,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:74,a:'r'},{h:'GST',w:70,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:72,a:'r'},{h:'Payment',w:50}]);
-  var rows=done.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',dFull(f.deliveredOn),qty(f)].concat(sz&&sz.sq?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f)),stTxt(A.by[f.id])]); });
-  var secs=[{title:'Work done — delivered flats ('+done.length+')',cols:cols,rows:rows,empty:'No flat delivered yet',total:['','Total','','',done.reduce(function(a,f){ return a+qty(f); },0)].concat(sz&&sz.sq?[fmt(done.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(b.doneSub),nIN(b.doneGst)]:[]).concat([nIN(b.doneVal),''])}];
+  var cols=[{h:'#',w:22},{h:'Flat',w:52},{h:'Type',w:80},{h:'Delivered on',w:70},{h:'Windows',w:48,a:'r'}].concat(sz&&sz.tr?[{h:'Track / type',w:120}]:[]).concat(sz&&sz.sq?[{h:'Sq ft',w:52,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:74,a:'r'},{h:'GST',w:70,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:72,a:'r'},{h:'Payment',w:50}]);
+  var rows=done.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',dFull(f.deliveredOn),qty(f)].concat(sz&&sz.tr?[trackTxt(f)]:[]).concat(sz&&sz.sq?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f)),stTxt(A.by[f.id])]); });
+  var secs=[{title:'Work done — delivered flats ('+done.length+')',cols:cols,rows:rows,empty:'No flat delivered yet',total:['','Total','','',done.reduce(function(a,f){ return a+qty(f); },0)].concat(sz&&sz.tr?['']:[]).concat(sz&&sz.sq?[fmt(done.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(b.doneSub),nIN(b.doneGst)]:[]).concat([nIN(b.doneVal),''])}];
   if(sz&&sz.sz&&done.length) secs.push(szSection(done,function(f){ return f.no; },'Flat',sz));
   if(B.bills.length) secs.push({title:'Extra bills',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Description',w:270},{h:'Amount (Rs.)',w:90,a:'r'},{h:'Payment',w:60}],rows:B.bills.slice().sort(bldByOn).map(function(x){ return [++j,dFull(x.on),x.note||'',nIN(x.amt),stTxt(A.by[x.id])]; }),total:['','','Total extra bills',nIN(b.extra),'']});
   secs.push({title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Mode',w:64},{h:'Reference / note',w:236},{h:'Amount (Rs.)',w:90,a:'r'}],rows:B.pays.slice().sort(bldByOn).map(function(x){ return [++m,dFull(x.on),x.mode||'Cash',x.note||'',nIN(x.amt)]; }),empty:'No payment received yet',total:['','','','Total received',nIN(b.recv)]});
@@ -4275,8 +4275,8 @@ function bldPdf(p,sz){ var A=bldAlloc(p), b=pjStmt(p).b, B=bldOf(p), done=bldDon
     note:bldCoverTxt(p,'')+' Payments are applied to the flats and extra bills in date order. Only delivered flats are billed here. Please check and confirm; tell us within 7 days if anything does not match.'}).blob('Builder statement — '+p.name); }
 /* ---- one flat owner's statement (all his flats together) ---- */
 function ownPdf(p,g,sz){ var s=ownSum(g.flats), cf=g.flats.filter(function(f){ return f.stage>=1; }), gx=cf.some(function(f){ return gstOf(f)>0; }), k=0, m=0, adv=s.adv>0.5;
-  var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:96},{h:'Status',w:92}].concat(sz&&sz.sq?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
-  var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(sz&&sz.sq?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(sz&&sz.sq?[fmt(cf.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
+  var cols=[{h:'#',w:24},{h:'Flat',w:62},{h:'Type',w:sz&&sz.tr?70:96},{h:'Status',w:sz&&sz.tr?70:92}].concat(sz&&sz.tr?[{h:'Windows / track',w:150}]:[]).concat(sz&&sz.sq?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
+  var secs=[{title:'Flats',cols:cols,rows:cf.map(function(f){ var ty=typeById(f.ftype); return [++k,f.no,ty?ty.name:'',flatStatus(f)].concat(sz&&sz.tr?[trackTxt(f)]:[]).concat(sz&&sz.sq?[fmt(oSq(f))]:[]).concat(gx?[nIN(subTotal(f)),gstOf(f)?gstOf(f)+'%   '+nIN(gstAmt(f)):'-']:[]).concat([nIN(orderTotal(f))]); }),empty:'No confirmed flat yet',total:['','Total','',''].concat(sz&&sz.tr?['']:[]).concat(sz&&sz.sq?[fmt(cf.reduce(function(a,f){ return a+oSq(f); },0))]:[]).concat(gx?[nIN(s.billSub),nIN(s.billGst)]:[]).concat([nIN(s.bill)])},
     {title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Flat',w:60},{h:'Mode',w:62},{h:'Reference / note',w:180},{h:'Amount (Rs.)',w:90,a:'r'}],rows:s.pays.map(function(r){ return [++m,dFull(r.x.on),r.f.no,r.x.mode||'Cash',lpNoteT(r.x,1),nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(s.recv)]}];
   if(sz&&sz.sz&&cf.length) secs.splice(1,0,szSection(cf,function(f){ return f.no; },'Flat',sz));
   var sum=(gx?[['Bill — taxable value',rsIN(s.billSub)],['GST',rsIN(s.billGst)]]:[]).concat([['Total bill',rsIN(s.bill),1],['Less: received',rsIN(s.recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(adv?s.adv:s.pend),1,adv?PDFC.good:PDFC.warn]]);
@@ -5861,16 +5861,18 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t) return;
    - ordinary orders get a statement PDF too (Payments tab): all confirmed orders of that customer, payments, balance
    ============================================================ */
 /* what the statement PDFs add: {sz: window sizes, sq: sq ft, u: unit of the sizes} — kept on this phone */
-function szGet(){ var r={sz:false,sq:false,u:'mm'}; try{ var v=localStorage.getItem('wpsz')||''; if(v==='1') r={sz:true,sq:true,u:'mm'}; else if(v.charAt(0)==='{'){ var j=JSON.parse(v)||{}; r.sz=!!j.sz; r.sq=!!j.sq; r.u=UMM[j.u]?j.u:'mm'; } }catch(e){} return r; }
+function szGet(){ var r={sz:false,sq:false,tr:false,u:'mm'}; try{ var v=localStorage.getItem('wpsz')||''; if(v==='1') r={sz:true,sq:true,tr:false,u:'mm'}; else if(v.charAt(0)==='{'){ var j=JSON.parse(v)||{}; r.sz=!!j.sz; r.sq=!!j.sq; r.tr=!!j.tr; r.u=UMM[j.u]?j.u:'mm'; } }catch(e){} return r; }
+/* the windows of an order by track / type: "2.5 Track 80 x4, Ventilator 80 x2" */
+function trackTxt(o){ var c={}, order=[]; (o.items||[]).forEach(function(it){ var ty=String(it.type||'').replace('Ventilator','Vent').replace('Openable','Open').replace(' Track','T'); var k=o.kind==='doors'?(it.type||'')+' door':ty+(it.series?'-'+it.series:''); if(!c[k]){ c[k]=0; order.push(k); } c[k]+=n(it.qty)||1; }); return order.map(function(k){ return k+' x'+fmt(c[k]); }).join(', '); }
 function szSet(k,v){ var r=szGet(); r[k]=v; try{ localStorage.setItem('wpsz',JSON.stringify(r)); }catch(e){} return r; }
-function szOn(){ var r=szGet(); return r.sz||r.sq?r:null; }
+function szOn(){ var r=szGet(); return r.sz||r.sq||r.tr?r:null; }
 function szOpts(){ var r=szGet();
   return '<div class="szopts"><span class="faint">Add to the PDF:</span><label class="szchk"><input type="checkbox" data-szo="sz"'+(r.sz?' checked':'')+'> <span>📐 Window sizes</span></label>'
     +'<label class="szu'+(r.sz?'':' off')+'">in <select data-szo="u" aria-label="Window sizes in"'+(r.sz?'':' disabled')+'>'+UNITS.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===r.u?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select></label>'
-    +'<label class="szchk"><input type="checkbox" data-szo="sq"'+(r.sq?' checked':'')+'> <span>Sq ft</span></label></div>'; }
+    +'<label class="szchk"><input type="checkbox" data-szo="sq"'+(r.sq?' checked':'')+'> <span>Sq ft</span></label><label class="szchk"><input type="checkbox" data-szo="tr"'+(r.tr?' checked':'')+'> <span>🪟 Track / type</span></label></div>'; }
 document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.dataset||!t.dataset.szo) return; var k=t.dataset.szo, r=szSet(k,k==='u'?t.value:t.checked);
   [].forEach.call(document.querySelectorAll('.szopts'),function(box){ var w=document.createElement('div'); w.innerHTML=szOpts(); box.parentNode.replaceChild(w.firstChild,box); });
-  toast(!r.sz&&!r.sq?'The PDF without window sizes or sq ft':'The PDF will add: '+[r.sz?'window sizes ('+uLab(r.u)+')':'',r.sq?'sq ft':''].filter(Boolean).join(' and ')); });
+  toast(!r.sz&&!r.sq&&!r.tr?'The PDF without window sizes, sq ft or track':'The PDF will add: '+[r.sz?'window sizes ('+uLab(r.u)+')':'',r.sq?'sq ft':'',r.tr?'track / type':''].filter(Boolean).join(', ')); });
 /* a size for the PDF in the chosen unit (only characters the PDF font has: 54 1/2, 4' 6 1/2") */
 function frac8(e){ var w=Math.floor(e/8), f=e-w*8; if(!f) return String(w); var g=f%4===0?[f/4,2]:f%2===0?[f/2,4]:[f,8]; return (w?w+' ':'')+g[0]+'/'+g[1]; }
 function uPdf(mm,u){ mm=n(mm); if(u==='cm') return String(Math.round(mm)/10); if(u==='m') return String(Math.round(mm)/1000); if(u==='in') return frac8(Math.round(mm/25.4*8));
@@ -5895,9 +5897,9 @@ function ordPdf(o,sz){ var L=ordStmtList(o), gx=L.some(function(x){ return gstOf
   L.forEach(function(x){ bill+=orderTotal(x); sub+=subTotal(x); gst+=gstAmt(x); sq+=oSq(x); (x.payments||[]).forEach(function(p){ recv+=n(p.amt); pays.push({x:p,o:x}); }); });
   pays.sort(function(a,b){ var p=String(a.x.on||''), q=String(b.x.on||''); return p<q?-1:p>q?1:0; });
   var pend=bill-recv, adv=pend<-0.5, wn=L.some(function(x){ return x.kind!=='doors'; });
-  var cols=[{h:'#',w:24},{h:'Order',w:50},{h:'Date',w:74},{h:'Items',w:96},{h:'Status',w:84}].concat(sz&&sz.sq?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
-  var rows=L.map(function(x){ return [++k,'#'+x.no,dFull(x.confirmedOn||x.created||''),fmt(qty(x))+' '+(x.kind==='doors'?'door':'window')+(qty(x)===1?'':'s'),STAGES[x.stage]||''].concat(sz&&sz.sq?[x.kind==='doors'?'-':fmt(oSq(x))]:[]).concat(gx?[nIN(subTotal(x)),gstOf(x)?gstOf(x)+'%   '+nIN(gstAmt(x)):'-']:[]).concat([nIN(orderTotal(x))]); });
-  var secs=[{title:'Orders',cols:cols,rows:rows,total:['','Total','','',''].concat(sz&&sz.sq?[wn?fmt(sq):'-']:[]).concat(gx?[nIN(sub),nIN(gst)]:[]).concat([nIN(bill)])}];
+  var cols=[{h:'#',w:24},{h:'Order',w:50},{h:'Date',w:74},{h:'Items',w:sz&&sz.tr?70:96},{h:'Status',w:sz&&sz.tr?70:84}].concat(sz&&sz.tr?[{h:'Track / type',w:150}]:[]).concat(sz&&sz.sq?[{h:'Sq ft',w:58,a:'r'}]:[]).concat(gx?[{h:'Taxable value',w:82,a:'r'},{h:'GST',w:82,a:'r'}]:[]).concat([{h:'Amount (Rs.)',w:90,a:'r'}]);
+  var rows=L.map(function(x){ return [++k,'#'+x.no,dFull(x.confirmedOn||x.created||''),fmt(qty(x))+' '+(x.kind==='doors'?'door':'window')+(qty(x)===1?'':'s'),STAGES[x.stage]||''].concat(sz&&sz.tr?[trackTxt(x)]:[]).concat(sz&&sz.sq?[x.kind==='doors'?'-':fmt(oSq(x))]:[]).concat(gx?[nIN(subTotal(x)),gstOf(x)?gstOf(x)+'%   '+nIN(gstAmt(x)):'-']:[]).concat([nIN(orderTotal(x))]); });
+  var secs=[{title:'Orders',cols:cols,rows:rows,total:['','Total','','',''].concat(sz&&sz.tr?['']:[]).concat(sz&&sz.sq?[wn?fmt(sq):'-']:[]).concat(gx?[nIN(sub),nIN(gst)]:[]).concat([nIN(bill)])}];
   if(sz&&sz.sz) secs.push(szSection(L,function(x){ return '#'+x.no; },'Order',sz));
   secs.push({title:'Payments received',cols:[{h:'#',w:24},{h:'Date',w:84},{h:'Order',w:56},{h:'Mode',w:62},{h:'Reference / note',w:184},{h:'Amount (Rs.)',w:90,a:'r'}],rows:pays.map(function(r){ return [++m,dFull(r.x.on),'#'+r.o.no,r.x.mode||'Cash',typeof lpNoteT==='function'?lpNoteT(r.x,1):(r.x.note||''),nIN(r.x.amt)]; }),empty:'No payment received yet',total:['','','','','Total received',nIN(recv)]});
   var sum=(gx?[['Bill — taxable value',rsIN(sub)],['GST',rsIN(gst)]]:[]).concat([['Total bill',rsIN(bill),1],['Less: received',rsIN(recv)],[adv?'ADVANCE WITH US':'BALANCE DUE',rsIN(Math.abs(pend)),1,adv?PDFC.good:PDFC.warn]]);
