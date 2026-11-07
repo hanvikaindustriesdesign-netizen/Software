@@ -1109,6 +1109,19 @@ h1,h2,h3,.kpi b,.olist .o .n{letter-spacing:-.01em} h2{font-weight:800}
 .flow .done .fd{background:#12b76a;border-color:#12b76a} .flow .done b{color:#166534} .flow .fl.done{background:#12b76a} .flow .now .fd{background:#0b1220;border-color:#0b1220;box-shadow:0 0 0 4px #d1fae5} .flow .now b{color:#0b1220} .flow .now small{color:#059669}
 .updpop .btn.primary{background:#12b76a}
 .vercard{background:#0b1220;color:#e2e8f0;border-color:#0b1220} .vercard .faint{color:#94a3b8} .vercard .btn{background:#1e293b;border-color:#334155;color:#fff}
+
+/* Tally-style stock summary */
+.tly{padding:0;overflow:hidden;background:#fff;border:1px solid #cbd5e1}
+.tlyh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#1f3b64;color:#fff;padding:10px 14px;font-size:14px} .tlyh b{font-size:16px;text-transform:uppercase;letter-spacing:.03em}
+.tlyp{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px} .tlyp input{min-height:32px;padding:2px 6px;border-radius:6px;border:1px solid #94a3b8;font-size:13px;width:140px;color:#0f172a;background:#fff}
+.tlyw{border:0;border-radius:0;max-height:none;margin:0}
+table.tlyt{border-collapse:collapse;width:100%;min-width:560px;font:13.5px/1.4 "Courier New",ui-monospace,Menlo,Consolas,monospace;color:#0f172a}
+table.tlyt th{background:#e8edf5;color:#1f3b64;text-align:right;padding:6px 10px;border-bottom:2px solid #1f3b64;font-weight:700} table.tlyt th.tn{text-align:left} table.tlyt th small{font-weight:400;font-size:11px}
+table.tlyt td{padding:3px 10px;border-bottom:1px dotted #cbd5e1;white-space:nowrap} table.tlyt td.tn{text-align:left} table.tlyt td.tq{text-align:right;font-variant-numeric:tabular-nums} table.tlyt td i{font-style:normal;color:#64748b;font-size:11px}
+table.tlyt tr.tg td{font-weight:700;background:#f8fafc;border-top:1px solid #94a3b8} table.tlyt tr.ti td.tn{padding-left:28px;color:#334155}
+table.tlyt td.tc,table.tlyt th.tc{background:#fffbea} table.tlyt tr.tgt td{font-weight:800;border-top:2px solid #1f3b64;border-bottom:3px double #1f3b64;background:#e8edf5}
+@media(max-width:600px){ table.tlyt{font-size:12.5px;min-width:520px} table.tlyt td{padding:3px 6px} }
+@media print{ .tlyh input,.subtabs{display:none} }
 </style>
 </head>
 <body>
@@ -1189,7 +1202,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='07 Nov 2026, 07:03';
+var APPV='07 Nov 2026, 07:41';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -6218,6 +6231,25 @@ function buyList(){ var need=sdNeed(), lines=[], by={}; Object.keys(D.inv).forEa
 function stockCsv(){ var ks=invKeys(), need=sdNeed(), rows=[['Code','Item','Brand','Series','Unit','In stock','Min','Need (queue)','Short','To buy','Last in','Status']];
   Object.keys(D.inv).forEach(function(k){ var it=D.inv[k], m=ks[k]||{}, parts=it.name.split(' · '), nd=need[k]||0; rows.push([parts[0],parts.slice(1).join(' · ').replace(/ \([^)]*\)$/,''),m.brand||'',(m.series||[]).join(' '),it.unit,it.qty,it.min,nd?Math.round(nd*10)/10:'',Math.max(0,Math.round((nd-it.qty)*10)/10)||'',toBuy(k,nd)||'',lastIn(k),it.min>0&&it.qty<=0?'Finished':it.min>0&&it.qty<it.min?'Low':'OK']); });
   return rows.map(function(r){ return r.map(function(c){ c=String(c); return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(','); }).join('\n'); }
+/* ---- Stock Summary in Tally format (asked: "Stocks make it as tally format") ---- */
+function tlyPeriod(){ var t=today(); var from=S.tfrom||(t.slice(0,8)+'01'), to=S.tto||t; return {from:from,to:to}; }
+/* opening / inwards / outwards / closing for one item over the period */
+function tlyMove(k,per){ var inw=0, out=0, after=0; (D.invLog||[]).forEach(function(l){ if(l.key!==k) return; var q=n(l.qty); if(!q) return; var on=l.on||''; if(on>per.to){ after+=q; return; } if(on<per.from) return; if(q>0) inw+=q; else out+=-q; });
+  var it=D.inv[k], closing=n(it.qty)-after, opening=closing-inw+out; return {opening:opening,inw:inw,out:out,closing:closing}; }
+function tlyNum(v){ v=Math.round(v*100)/100; return v?String(v):''; }
+function tallyView(ks,keys){ var per=tlyPeriod(), groups=D.brands.map(function(B){ return ['P','Profiles — '+B.name,B.name]; }).concat([['P','Profiles — other','*'],['G','Glass'],['M','Mesh'],['B','Door boards'],['H','Hardware'],['X','Other items']]);
+  var secs=[]; groups.forEach(function(g){ var rows=keys.filter(function(k){ var c=k.charAt(0); if(g[0]==='X') return 'PGMBH'.indexOf(c)<0; if(c!==g[0]) return false; if(c!=='P') return true; var b=ks[k]&&ks[k].brand; if(S.ib&&b!==S.ib) return false; if(S.is&&!(ks[k]&&ks[k].series&&ks[k].series.indexOf(S.is)>=0)) return false; return g[2]==='*'?!b:b===g[2]; }); if(rows.length) secs.push({name:g[1],rows:rows}); });
+  var body='', gt={opening:0,inw:0,out:0,closing:0};
+  secs.forEach(function(sec){ var tot={opening:0,inw:0,out:0,closing:0}, unit='';
+    var lines=sec.rows.map(function(k){ var it=D.inv[k], m=tlyMove(k,per); ['opening','inw','out','closing'].forEach(function(f){ tot[f]+=m[f]; }); unit=it.unit; var nm=it.name.replace(/ \([^)]*\)$/,'');
+      return '<tr class="ti"><td class="tn">'+esc(nm)+'</td><td class="tq">'+tlyNum(m.opening)+(m.opening?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.inw)+(m.inw?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.out)+(m.out?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq tc">'+(tlyNum(m.closing)||'0')+' <i>'+esc(it.unit)+'</i></td></tr>'; }).join('');
+    ['opening','inw','out','closing'].forEach(function(f){ gt[f]+=tot[f]; });
+    body+='<tr class="tg"><td class="tn">'+esc(sec.name)+'</td><td class="tq">'+tlyNum(tot.opening)+'</td><td class="tq">'+tlyNum(tot.inw)+'</td><td class="tq">'+tlyNum(tot.out)+'</td><td class="tq tc">'+tlyNum(tot.closing)+'</td></tr>'+lines; });
+  return '<div class="card tly"><div class="tlyh"><div><b>'+esc(D.company.name||'')+'</b><div>Stock Summary</div></div><div class="tlyp"><span>'+dShort(per.from)+' to '+dShort(per.to)+'</span><input type="date" data-tly="from" value="'+per.from+'" aria-label="From"> <input type="date" data-tly="to" value="'+per.to+'" aria-label="To"></div></div>'
+   +'<div class="xwrap tlyw"><table class="tlyt"><thead><tr><th class="tn">Particulars</th><th class="tq">Opening<br><small>Quantity</small></th><th class="tq">Inwards<br><small>Quantity</small></th><th class="tq">Outwards<br><small>Quantity</small></th><th class="tq tc">Closing<br><small>Quantity</small></th></tr></thead><tbody>'+(body||'<tr><td colspan="5" class="empty">No stock items</td></tr>')+'</tbody>'
+   +'<tfoot><tr class="tgt"><td class="tn">Grand Total</td><td class="tq">'+tlyNum(gt.opening)+'</td><td class="tq">'+tlyNum(gt.inw)+'</td><td class="tq">'+tlyNum(gt.out)+'</td><td class="tq tc">'+tlyNum(gt.closing)+'</td></tr></tfoot></table></div>'
+   +'<p class="faint" style="font-size:12px;margin:8px 0 0">Opening = stock at the start of the period · Inwards = stock in, purchases, offcuts added · Outwards = issued to orders, counts down · Closing = stock now (as on the "to" date). Quantities only — purchase rates are not kept in the app.</p></div>'; }
+
 function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
   var groups=D.brands.map(function(B){ return ['P','Profiles — '+B.name+' (bars)',B.name]; }).concat([['P','Profiles — other (bars)','*'],['G','Glass (sq ft)'],['M','Mesh (sq ft)'],['B','Door boards'],['H','Hardware & consumables']]);
@@ -6246,7 +6278,8 @@ function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object
     return '<tr class="'+(out?'sout':lowk?'slow':'')+'"><td class="xc">'+nrow+'</td><td class="xo"><b>'+esc(code)+'</b>'+(custom?' <small class="faint">custom</small>':'')+'<small class="xsub">'+esc(desc||'')+(meta.brand?' · '+esc(meta.brand):'')+'</small></td><td class="xh">'+esc(desc||(custom?it.name:''))+'</td><td class="xh">'+esc(meta.brand||'')+'</td><td class="xh">'+((meta.series||[]).join(', '))+'</td><td class="xh">'+esc(it.unit)+'</td>'
      +'<td class="num sq"><input class="n xin xq" type="number" step="any" data-iqty="'+esc(k)+'" value="'+it.qty+'" aria-label="In stock"><small class="xunit">'+esc(it.unit)+'</small></td><td class="num xh"><input class="n xin" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" aria-label="Minimum"></td><td class="num xh">'+(nd?Math.round(nd*10)/10:'')+'</td><td class="num xh '+(short>0.01?'warnt':'')+'">'+(short>0.01?'<b>'+(Math.round(short*10)/10)+'</b>':'')+'</td>'
      +'<td class="num '+(toBuy(k,nd)?'buyt':'')+'">'+(toBuy(k,nd)||'')+'</td><td class="faint xh">'+(lastIn(k)?dShort(lastIn(k)):'')+'</td><td class="xst"><span class="xpill '+(out?'bad':lowk?'warn':'ok')+'">'+(out?'Finished':lowk?'Low':it.min>0?'OK':'—')+'</span></td><td class="xact xh"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</td></tr>'+offRow(k,custom); };
-  if(sec.length){ var nItems=sec.reduce(function(a,x){ return a+x.rows.length; },0);
+  if(S.iview==='tally'){ html+='<div class="subtabs" style="margin:0 0 10px"><button data-iview="">Stock sheet</button><button class="on" data-iview="tally">Tally view</button></div>'+tallyView(ks,keys); }
+  else if(sec.length){ html+='<div class="subtabs" style="margin:0 0 10px"><button class="on" data-iview="">Stock sheet</button><button data-iview="tally">Tally view</button></div>'; var nItems=sec.reduce(function(a,x){ return a+x.rows.length; },0);
     html+='<div class="card"><div class="hhead"><h2>Stock sheet</h2><span class="row" style="gap:6px"><button class="btn sm" data-act="buylist">🛒 Buy list</button><button class="btn sm" data-act="stockxls">⬇ Excel</button></span></div><p class="faint" style="margin:0 0 8px">'+nItems+' item'+(nItems===1?'':'s')+' · tap a column name to sort · tap a group row to fold it · To buy = up to 2 × minimum or enough for the queue</p><div class="xwrap xstock"><table class="xl xs"><thead><tr><th class="xc">#</th>'+[['name','Code','xo'],['item','Item','xh'],['brand','Brand','xh'],['series','Series','xh'],['unit','Unit','xh'],['qty','In stock','num'],['min','Min','num xh'],['need','Need (queue)','num xh'],['short','Short','num xh'],['buy','To buy','num'],['last','Last in','xh'],['status','Status','']].map(function(c){ var on=S.isort===c[0]; return '<th class="'+c[2]+(on?' sorted':'')+'"><button class="xsort" data-isort="'+c[0]+'">'+c[1]+(on?(S.isdir===1?' ▲':' ▼'):'')+'</button></th>'; }).join('')+'<th class="xh"></th></tr></thead><tbody>'
      +sec.map(function(x){ var gl=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min&&D.inv[k].qty>0; }).length, go=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[x.name];
        return '<tr class="xsec"><td class="xc"></td><td class="xo" colspan="13"><button class="xsecb" data-igrp="'+esc(x.name)+'"><span class="sgarrow">'+(col?'▸':'▾')+'</span> '+esc(x.name)+' <span class="sgsum">'+x.rows.length+' item'+(x.rows.length===1?'':'s')+(gl?' · <b class="warnt">'+gl+' low</b>':'')+(go?' · <b class="badt">'+go+' finished</b>':'')+'</span></button></td></tr>'+(col?'':stockSort(x.rows,need).map(function(k){ return stCell(k,!!x.custom); }).join('')+(function(){ var u={}; x.rows.forEach(function(k){ u[D.inv[k].unit]=(u[D.inv[k].unit]||0)+D.inv[k].qty; }); var tb=x.rows.reduce(function(a,k){ return a+toBuy(k,need[k]); },0); return '<tr class="xtot"><td class="xc"></td><td class="xo">Total</td><td colspan="4"></td><td class="num"><b>'+Object.keys(u).map(function(un){ return Math.round(u[un]*10)/10+' '+un; }).join(' · ')+'</b></td><td colspan="2"></td><td class="num"></td><td class="num buyt">'+(tb?'<b>'+tb+'</b>':'')+'</td><td colspan="3"></td></tr>'; })()); }).join('')
@@ -6691,9 +6724,10 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-isort],[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-iview],[data-isort],[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.ifl!==undefined){ S.ifl=d.ifl; render(); return; }
+  if(d.iview!==undefined){ S.iview=d.iview; render(); return; }
   if(d.isort){ if(S.isort===d.isort) S.isdir=(S.isdir||1)*-1; else { S.isort=d.isort; S.isdir=1; } render(); return; }
   if(d.igrp){ S.igc=S.igc||{}; S.igc[d.igrp]=!S.igc[d.igrp]; render(); return; }
   if(d.pcut){ var pco=byId(d.pcut); if(pco){ pco.profCut=!pco.profCut; if(pco.profCut) pco.profCutOn=today(); else delete pco.profCutOn; save(); render(); } return; }
@@ -6835,6 +6869,7 @@ function onInput(e){
   if(d.open){ D.opening[d.open]=n(t.value); save(); return; }
   if(d.plev){ byId(d.plev).plevel=t.value; save(); render(); return; }
   if(d.imin){ D.inv[d.imin].min=n(t.value); save(); return; }
+  if(d.tly){ if(d.tly==='from') S.tfrom=t.value; else S.tto=t.value; render(); return; }
   if(d.iqty){ var itq=D.inv[d.iqty]; if(!itq) return; var nv=n(t.value), dq=Math.round((nv-itq.qty)*10)/10; if(!dq) return; itq.qty=nv; D.lastCount=today(); D.invLog.push({id:uid(),on:today(),key:d.iqty,qty:dq,by:S.role,note:'Stock count (sheet)'}); save(); render(); toast((dq>0?'+':'')+dq+' '+itq.unit+' — '+itq.name.split(' · ')[0]+' now '+nv); return; }
   if(d.hk){ var hi=+t.closest('tr').dataset.hi; D.hw[hi][d.hk]=t.type==='number'?n(t.value):t.value; save(); return; }
   if(d.sk){ var si=+t.closest('tr').dataset.si; D.staff[si][d.sk]=t.type==='number'?n(t.value):t.value; save(); return; }
