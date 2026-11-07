@@ -1204,7 +1204,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='07 Nov 2026, 07:56';
+var APPV='07 Nov 2026, 08:15';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -6283,13 +6283,41 @@ function tallyView(ks,keys){ var per=tlyPeriod(), groups=D.brands.map(function(B
   var body='', gt={opening:0,inw:0,out:0,closing:0};
   secs.forEach(function(sec){ var tot={opening:0,inw:0,out:0,closing:0}, unit='';
     var lines=sec.rows.map(function(k){ var it=D.inv[k], m=tlyMove(k,per); ['opening','inw','out','closing'].forEach(function(f){ tot[f]+=m[f]; }); unit=it.unit; var nm=it.name.replace(/ \([^)]*\)$/,'');
-      return '<tr class="ti"><td class="tn">'+esc(nm)+'</td><td class="tq">'+tlyNum(m.opening)+(m.opening?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.inw)+(m.inw?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.out)+(m.out?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq tc">'+(tlyNum(m.closing)||'0')+' <i>'+esc(it.unit)+'</i></td></tr>'; }).join('');
+      return '<tr class="ti regv" data-tk="'+esc(k)+'"><td class="tn">'+esc(nm)+' <i>›</i></td><td class="tq">'+tlyNum(m.opening)+(m.opening?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.inw)+(m.inw?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq">'+tlyNum(m.out)+(m.out?' <i>'+esc(it.unit)+'</i>':'')+'</td><td class="tq tc">'+(tlyNum(m.closing)||'0')+' <i>'+esc(it.unit)+'</i></td></tr>'; }).join('');
     ['opening','inw','out','closing'].forEach(function(f){ gt[f]+=tot[f]; });
     body+='<tr class="tg"><td class="tn">'+esc(sec.name)+'</td><td class="tq">'+tlyNum(tot.opening)+'</td><td class="tq">'+tlyNum(tot.inw)+'</td><td class="tq">'+tlyNum(tot.out)+'</td><td class="tq tc">'+tlyNum(tot.closing)+'</td></tr>'+lines; });
   return '<div class="card tly"><div class="tlyh"><div><b>'+esc(D.company.name||'')+'</b><div>Stock Summary</div></div><div class="tlyp"><span>'+dShort(per.from)+' to '+dShort(per.to)+'</span><input type="date" data-tly="from" value="'+per.from+'" aria-label="From"> <input type="date" data-tly="to" value="'+per.to+'" aria-label="To"></div></div>'
    +'<div class="xwrap tlyw"><table class="tlyt"><thead><tr><th class="tn">Particulars</th><th class="tq">Opening<br><small>Quantity</small></th><th class="tq">Inwards<br><small>Quantity</small></th><th class="tq">Outwards<br><small>Quantity</small></th><th class="tq tc">Closing<br><small>Quantity</small></th></tr></thead><tbody>'+(body||'<tr><td colspan="5" class="empty">No stock items</td></tr>')+'</tbody>'
    +'<tfoot><tr class="tgt"><td class="tn">Grand Total</td><td class="tq">'+tlyNum(gt.opening)+'</td><td class="tq">'+tlyNum(gt.inw)+'</td><td class="tq">'+tlyNum(gt.out)+'</td><td class="tq tc">'+tlyNum(gt.closing)+'</td></tr></tfoot></table></div>'
    +'<p class="faint" style="font-size:12px;margin:8px 0 0">Opening = stock at the start of the period · Inwards = stock in, purchases, offcuts added · Outwards = issued to orders, counts down · Closing = stock now (as on the "to" date). Quantities only — purchase rates are not kept in the app.</p></div>'; }
+
+/* ---- Stock worked the Tally way: drill-down (item → monthly summary → vouchers) and stock vouchers (asked: "Stock also make using tally model") ---- */
+function tlyType(l){ var nt=(l.note||''); if(/^PO-/.test(nt)) return 'Receipt Note'; if(/stock count/i.test(nt)) return 'Physical Stock'; if(/offcut/i.test(nt)) return 'Stock Journal'; if(/^Order #|^Flat |^Project/i.test(nt)||l.qty<0&&/#/.test(nt)) return 'Delivery Note'; if(/journal/i.test(nt)) return 'Stock Journal'; return l.qty>0?'Receipt Note':'Delivery Note'; }
+function tlyVno(l){ var nt=(l.note||''); var m=nt.match(/^(PO-\d+|Order #\d+|[A-Z]-\d+)/); return m?m[1]:(l.id||'').slice(-5).toUpperCase(); }
+function tlyItemView(k){ var it=D.inv[k]; if(!it) return ''; var months=[], d=new Date(); d.setDate(1); for(var i=0;i<12;i++){ months.push(ymd(d).slice(0,7)); d.setMonth(d.getMonth()-1); } months.reverse();
+  var rows='', gt={inw:0,out:0};
+  var rowsArr=months.map(function(mm){ var per={from:mm+'-01',to:mm+'-31'}, m=tlyMove(k,per); gt.inw+=m.inw; gt.out+=m.out; return '<tr class="ti regm" data-tm="'+mm+'"><td class="tn">'+mLabel(mm)+' <i>›</i></td><td class="tq">'+tlyNum(m.opening)+'</td><td class="tq">'+tlyNum(m.inw)+'</td><td class="tq">'+tlyNum(m.out)+'</td><td class="tq tc">'+(tlyNum(m.closing)||'0')+'</td></tr>'; });
+  return '<div class="row" style="margin-bottom:8px;gap:8px"><button class="btn sm" data-tk="">‹ Stock Summary</button></div>'
+   +regTable('Stock Item Monthly Summary','<b>'+esc(it.name.replace(/ \([^)]*\)$/,''))+'</b> · in '+esc(it.unit)+' · tap a month for its vouchers','<th class="tn">Particulars</th><th class="tq">Opening</th><th class="tq">Inwards</th><th class="tq">Outwards</th><th class="tq tc">Closing</th>',rowsArr.join(''),
+     '<tr class="tgt"><td class="tn">Grand Total</td><td class="tq"></td><td class="tq">'+tlyNum(gt.inw)+'</td><td class="tq">'+tlyNum(gt.out)+'</td><td class="tq tc">'+(tlyNum(n(it.qty))||'0')+'</td></tr>','Opening of a month = closing of the month before. Closing of the latest month = stock now.'); }
+function tlyVouchers(k,mm){ var it=D.inv[k]; if(!it) return ''; var per={from:mm+'-01',to:mm+'-31'}, m=tlyMove(k,per), run=m.opening;
+  var L=(D.invLog||[]).filter(function(l){ return l.key===k&&n(l.qty)&&(l.on||'').slice(0,7)===mm; }).sort(function(a,b){ return (a.on||'')<(b.on||'')?-1:(a.on||'')>(b.on||'')?1:0; });
+  var rows=L.map(function(l){ var q=n(l.qty); run+=q; return '<tr class="ti"><td class="tn">'+dShort(l.on)+'</td><td class="tn">'+esc(l.note||'')+(l.by?' <i>'+esc(l.by)+'</i>':'')+'</td><td class="tn">'+tlyType(l)+'</td><td class="tn">'+esc(tlyVno(l))+'</td><td class="tq">'+(q>0?tlyNum(q):'')+'</td><td class="tq">'+(q<0?tlyNum(-q):'')+'</td><td class="tq tc">'+tlyNum(run)+'</td></tr>'; }).join('');
+  return '<div class="row" style="margin-bottom:8px;gap:8px"><button class="btn sm" data-tm="">‹ '+esc(it.name.split(' · ')[0])+' monthly</button><button class="btn sm" data-tk="">‹ Stock Summary</button></div>'
+   +regTable('Stock Vouchers — '+mLabel(mm),'<b>'+esc(it.name.replace(/ \([^)]*\)$/,''))+'</b> · opening '+tlyNum(m.opening)+' '+esc(it.unit),'<th class="tn">Date</th><th class="tn">Particulars</th><th class="tn">Vch Type</th><th class="tn">Vch No.</th><th class="tq">Inwards</th><th class="tq">Outwards</th><th class="tq tc">Balance</th>',rows,
+     '<tr class="tgt"><td class="tn" colspan="4">Total · '+L.length+' voucher'+(L.length===1?'':'s')+'</td><td class="tq">'+tlyNum(m.inw)+'</td><td class="tq">'+tlyNum(m.out)+'</td><td class="tq tc">'+tlyNum(m.closing)+'</td></tr>'); }
+/* voucher entry, Tally style */
+function tlyVoucherCard(){ var opts=Object.keys(D.inv).sort(function(a,b){ return D.inv[a].name<D.inv[b].name?-1:1; }).map(function(k){ return '<option value="'+esc(k)+'">'+esc(D.inv[k].name.replace(/ \([^)]*\)$/,''))+' ('+esc(D.inv[k].unit)+')</option>'; }).join('');
+  var vt=S.tvt||'rn';
+  return '<div class="card tly"><div class="tlyh"><div><b>Stock voucher</b><div>'+({rn:'Receipt Note — stock in from supplier',dn:'Delivery Note — stock out / issued',ps:'Physical Stock — counted quantity',sj:'Stock Journal — adjustment with narration'})[vt]+'</div></div><div class="tlyp"><select data-tvt="1" style="min-height:32px;border-radius:6px;padding:2px 6px;font-size:13px"><option value="rn"'+(vt==='rn'?' selected':'')+'>Receipt Note</option><option value="dn"'+(vt==='dn'?' selected':'')+'>Delivery Note</option><option value="ps"'+(vt==='ps'?' selected':'')+'>Physical Stock</option><option value="sj"'+(vt==='sj'?' selected':'')+'>Stock Journal</option></select></div></div>'
+   +'<div style="padding:12px 14px"><div class="grid2"><label class="f"><span>Date</span><input type="date" id="tv_on" value="'+today()+'"></label><label class="f"><span>Stock item</span><select id="tv_item">'+opts+'</select></label>'
+   +'<label class="f"><span>'+(vt==='ps'?'Counted quantity':vt==='sj'?'Quantity (+ in / − out)':'Quantity')+'</span><input type="number" id="tv_qty" step="any" placeholder="0"></label><label class="f"><span>'+(vt==='rn'?'Supplier / bill no':vt==='dn'?'Issued to (order / person)':'Narration')+'</span><input type="text" id="tv_note" placeholder="'+(vt==='rn'?'PO-12 · Fenstra bill 4431':vt==='dn'?'Order #48 Harish':'why')+'"></label></div>'
+   +'<div class="row" style="gap:8px"><button class="btn primary" data-act="tvsave">Accept voucher</button><span class="faint" style="font-size:12px">Each voucher is one line in the stock movements; the Stock Summary updates at once.</span></div></div></div>'; }
+function tlyVoucherSave(){ var vt=S.tvt||'rn', k=$('#tv_item').value, it=D.inv[k]; if(!it){ toast('Pick a stock item'); return; } var q=n($('#tv_qty').value), on=$('#tv_on').value||today(), nt=($('#tv_note').value||'').trim();
+  var dq=vt==='rn'?Math.abs(q):vt==='dn'?-Math.abs(q):vt==='ps'?Math.round((q-n(it.qty))*10)/10:q; if(!dq){ toast(vt==='ps'?'Counted quantity is the same as stock — nothing to record':'Enter a quantity'); return; }
+  var note=vt==='rn'?(nt||'Receipt note'):vt==='dn'?(nt||'Delivery note'):vt==='ps'?'Stock count'+(nt?' · '+nt:''):'Stock journal'+(nt?' · '+nt:'');
+  if(vt==='rn'&&!/^PO-/.test(note)) note='PO- '+note.replace(/^PO-?\s*/,''); if(vt==='rn'){ note=note.replace(/^PO- /,''); note=(/^PO-/.test(nt)?nt:nt?'Receipt · '+nt:'Receipt note'); }
+  it.qty=Math.round((n(it.qty)+dq)*10)/10; if(vt==='ps') D.lastCount=today(); D.invLog.push({id:uid(),on:on,key:k,qty:dq,note:note,by:S.role}); save(); render(); toast((dq>0?'+':'')+dq+' '+it.unit+' — '+it.name.split(' · ')[0]+' now '+it.qty); }
 
 function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object.keys(ks).forEach(function(k){ invItem(k,ks[k]); });
   var q=(S.iq||'').toLowerCase(), keys=Object.keys(D.inv).filter(function(k){ return !q||D.inv[k].name.toLowerCase().indexOf(q)>=0; }).sort(function(a,b){ return a<b?-1:1; });
@@ -6319,7 +6347,7 @@ function viewStock(){ if(admin()&&invMigrate()) save(); var ks=invKeys(); Object
     return '<tr class="'+(out?'sout':lowk?'slow':'')+'"><td class="xc">'+nrow+'</td><td class="xo"><b>'+esc(code)+'</b>'+(custom?' <small class="faint">custom</small>':'')+'<small class="xsub">'+esc(desc||'')+(meta.brand?' · '+esc(meta.brand):'')+'</small></td><td class="xh">'+esc(desc||(custom?it.name:''))+'</td><td class="xh">'+esc(meta.brand||'')+'</td><td class="xh">'+((meta.series||[]).join(', '))+'</td><td class="xh">'+esc(it.unit)+'</td>'
      +'<td class="num sq"><input class="n xin xq" type="number" step="any" data-iqty="'+esc(k)+'" value="'+it.qty+'" aria-label="In stock"><small class="xunit">'+esc(it.unit)+'</small></td><td class="num xh"><input class="n xin" type="number" data-imin="'+esc(k)+'" value="'+it.min+'" aria-label="Minimum"></td><td class="num xh">'+(nd?Math.round(nd*10)/10:'')+'</td><td class="num xh '+(short>0.01?'warnt':'')+'">'+(short>0.01?'<b>'+(Math.round(short*10)/10)+'</b>':'')+'</td>'
      +'<td class="num '+(toBuy(k,nd)?'buyt':'')+'">'+(toBuy(k,nd)||'')+'</td><td class="faint xh">'+(lastIn(k)?dShort(lastIn(k)):'')+'</td><td class="xst"><span class="xpill '+(out?'bad':lowk?'warn':'ok')+'">'+(out?'Finished':lowk?'Low':it.min>0?'OK':'—')+'</span></td><td class="xact xh"><button class="btn sm primary" data-iin="'+esc(k)+'">+ In</button>'+(custom?'<button class="del" data-idel="'+esc(k)+'">×</button>':'')+'</td></tr>'+offRow(k,custom); };
-  if(S.iview==='tally'){ html+='<div class="subtabs" style="margin:0 0 10px"><button data-iview="">Stock sheet</button><button class="on" data-iview="tally">Tally view</button></div>'+tallyView(ks,keys); }
+  if(S.iview==='tally'){ html+='<div class="subtabs" style="margin:0 0 10px"><button data-iview="">Stock sheet</button><button class="on" data-iview="tally">Tally view</button></div>'+(S.tk&&D.inv[S.tk]?(S.tm?tlyVouchers(S.tk,S.tm):tlyItemView(S.tk)):tallyView(ks,keys)+tlyVoucherCard()); }
   else if(sec.length){ html+='<div class="subtabs" style="margin:0 0 10px"><button class="on" data-iview="">Stock sheet</button><button data-iview="tally">Tally view</button></div>'; var nItems=sec.reduce(function(a,x){ return a+x.rows.length; },0);
     html+='<div class="card"><div class="hhead"><h2>Stock sheet</h2><span class="row" style="gap:6px"><button class="btn sm" data-act="buylist">🛒 Buy list</button><button class="btn sm" data-act="stockxls">⬇ Excel</button></span></div><p class="faint" style="margin:0 0 8px">'+nItems+' item'+(nItems===1?'':'s')+' · tap a column name to sort · tap a group row to fold it · To buy = up to 2 × minimum or enough for the queue</p><div class="xwrap xstock"><table class="xl xs"><thead><tr><th class="xc">#</th>'+[['name','Code','xo'],['item','Item','xh'],['brand','Brand','xh'],['series','Series','xh'],['unit','Unit','xh'],['qty','In stock','num'],['min','Min','num xh'],['need','Need (queue)','num xh'],['short','Short','num xh'],['buy','To buy','num'],['last','Last in','xh'],['status','Status','']].map(function(c){ var on=S.isort===c[0]; return '<th class="'+c[2]+(on?' sorted':'')+'"><button class="xsort" data-isort="'+c[0]+'">'+c[1]+(on?(S.isdir===1?' ▲':' ▼'):'')+'</button></th>'; }).join('')+'<th class="xh"></th></tr></thead><tbody>'
      +sec.map(function(x){ var gl=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<D.inv[k].min&&D.inv[k].qty>0; }).length, go=x.rows.filter(function(k){ return D.inv[k].min>0&&D.inv[k].qty<=0; }).length, col=(S.igc||{})[x.name];
@@ -6765,12 +6793,14 @@ function newItem(o){ var l=o.items[o.items.length-1], df=wdef(), it;
 function byId(id){ if(typeof id==='string'&&id.slice(0,2)==='B:') return batchOrder(id.slice(2)); var o=D.orders.filter(function(y){return y.id===id;})[0]; var f=flatById(id); return o||(f&&!f.del?f:null)||typeById(id)||undefined; }
 
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-rm],[data-po],[data-iview],[data-isort],[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
+  var t=e.target.closest('[data-tk],[data-tm],[data-rm],[data-po],[data-iview],[data-isort],[data-pcut],[data-ifl],[data-igrp],[data-gcut],[data-step],[data-mkfirst],[data-go],[data-act],[data-open],[data-filter],[data-sub],[data-del],[data-pdel],[data-edel],[data-made],[data-pick],[data-edit],[data-cell],[data-phdel],[data-view],[data-pad],[data-split],[data-ldir],[data-nst],[data-pmode],[data-wt],[data-hdel],[data-iin],[data-iadj],[data-idel],[data-ocdel],[data-pmv],[data-phold],[data-hol],[data-holdel],[data-esub],[data-hddel],[data-udel],[data-rudel],[data-ushare],[data-att],[data-sdel],[data-adx],[data-qa]'); if(!t) return;
   var o=order(), d=t.dataset;
   if(d.ifl!==undefined){ S.ifl=d.ifl; render(); return; }
   if(d.rm!==undefined&&!d.open){ S.rm=d.rm; render(); window.scrollTo(0,0); return; }
   if(d.po&&!d.open){ S.tab='inventory'; S.isub='po'; S.poid=d.po; render(); return; }
-  if(d.iview!==undefined){ S.iview=d.iview; render(); return; }
+  if(d.tk!==undefined&&!d.open){ S.tk=d.tk; S.tm=''; render(); window.scrollTo(0,0); return; }
+  if(d.tm!==undefined&&!d.open){ S.tm=d.tm; render(); window.scrollTo(0,0); return; }
+  if(d.iview!==undefined){ S.iview=d.iview; S.tk=''; S.tm=''; render(); return; }
   if(d.isort){ if(S.isort===d.isort) S.isdir=(S.isdir||1)*-1; else { S.isort=d.isort; S.isdir=1; } render(); return; }
   if(d.igrp){ S.igc=S.igc||{}; S.igc[d.igrp]=!S.igc[d.igrp]; render(); return; }
   if(d.pcut){ var pco=byId(d.pcut); if(pco){ pco.profCut=!pco.profCut; if(pco.profCut) pco.profCutOn=today(); else delete pco.profCutOn; save(); render(); } return; }
@@ -6834,6 +6864,7 @@ document.addEventListener('click',function(e){
   if(a==='navback'){ if(canBack()) history.back(); else go('home'); }
   if(a==='unfix'&&o&&S.di!=null&&o.items[S.di]){ delete o.items[S.di].fixed; save(); render(); toast('Now priced from the rate card'); }
   if(a==='chkupd') checkUpdate(true);
+  if(a==='tvsave') tlyVoucherSave();
   if(a==='fenstra'){ var FB=D.brands[S.bi||0]; if(FB&&confirm('Fill the profile codes of "'+FB.name+'" from the Fenstra Ultra catalogue? Existing codes for these profiles will be replaced.')){ fenstraLoad(FB); save(); render(); toast('Fenstra Ultra codes filled for '+FB.name); } }
   if(a==='buylist'){ var bl=buyList(); if(!bl) toast('Nothing to buy — all items are above minimum and enough for the queue'); else pjShare(bl); }
   if(a==='stockxls'){ download('stock-'+today()+'.csv',stockCsv()); toast('Stock sheet downloaded — opens in Excel'); }
@@ -6913,6 +6944,7 @@ function onInput(e){
   if(d.plev){ byId(d.plev).plevel=t.value; save(); render(); return; }
   if(d.imin){ D.inv[d.imin].min=n(t.value); save(); return; }
   if(d.tly){ if(d.tly==='from') S.tfrom=t.value; else S.tto=t.value; render(); return; }
+  if(d.tvt){ S.tvt=t.value; render(); return; }
   if(d.iqty){ var itq=D.inv[d.iqty]; if(!itq) return; var nv=n(t.value), dq=Math.round((nv-itq.qty)*10)/10; if(!dq) return; itq.qty=nv; D.lastCount=today(); D.invLog.push({id:uid(),on:today(),key:d.iqty,qty:dq,by:S.role,note:'Stock count (sheet)'}); save(); render(); toast((dq>0?'+':'')+dq+' '+itq.unit+' — '+itq.name.split(' · ')[0]+' now '+nv); return; }
   if(d.hk){ var hi=+t.closest('tr').dataset.hi; D.hw[hi][d.hk]=t.type==='number'?n(t.value):t.value; save(); return; }
   if(d.sk){ var si=+t.closest('tr').dataset.si; D.staff[si][d.sk]=t.type==='number'?n(t.value):t.value; save(); return; }
