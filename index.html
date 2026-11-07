@@ -1204,7 +1204,7 @@ var DEF={
   opening:{Cash:0,Bank:0,UPI:0}, vseq:1, saladj:{}, holidays:[], staff:[], att:{}, shiftHrs:9, inv:{}, invLog:[], offcuts:{}, minOffcut:500, orders:[], expenses:[], seq:1
 };
 var BAKED={url:'https://xwszjiokhvotajqelbwb.supabase.co',key:'sb_publishable_i9IokGrLlBQ2Yk9O42qz-A_nXiiTKvZ'};
-var APPV='07 Nov 2026, 10:59';
+var APPV='07 Nov 2026, 12:18';
 var D=migrate(load()); if(BAKED.url&&!D.sb.url){ D.sb={url:BAKED.url,key:BAKED.key}; }
 function load(){ try{ var s=JSON.parse(localStorage.getItem('wshop')||'null'); if(s) return migrate(merge(JSON.parse(JSON.stringify(DEF)),s)); }catch(e){} return JSON.parse(JSON.stringify(DEF)); }
 function migrate(d){ if(!d.projects) d.projects=[]; if(d.cutRule&&!d.cutRule.sash) d.cutRule.sash={bars:2,angle:45};
@@ -5863,7 +5863,7 @@ document.addEventListener('change',function(e){ var t=e.target; if(!t) return;
 /* what the statement PDFs add: {sz: window sizes, sq: sq ft, u: unit of the sizes} — kept on this phone */
 function szGet(){ var r={sz:false,sq:false,tr:false,u:'mm'}; try{ var v=localStorage.getItem('wpsz')||''; if(v==='1') r={sz:true,sq:true,tr:false,u:'mm'}; else if(v.charAt(0)==='{'){ var j=JSON.parse(v)||{}; r.sz=!!j.sz; r.sq=!!j.sq; r.tr=!!j.tr; r.u=UMM[j.u]?j.u:'mm'; } }catch(e){} return r; }
 /* the windows of an order by track / type: "2.5 Track 80 x4, Ventilator 80 x2" */
-function trackTxt(o){ var c={}, order=[]; (o.items||[]).forEach(function(it){ var ty=String(it.type||'').replace('Ventilator','Vent').replace('Openable','Open').replace(' Track','T'); var k=o.kind==='doors'?(it.type||'')+' door':ty+(it.series?'-'+it.series:''); if(!c[k]){ c[k]=0; order.push(k); } c[k]+=n(it.qty)||1; }); return order.map(function(k){ return k+' x'+fmt(c[k]); }).join(', '); }
+function trackTxt(o){ var c={}, order=[]; (o.items||[]).forEach(function(it){ if(o.kind==='doors'||!/Track/.test(String(it.type||''))) return; var k=String(it.type).replace(' Track','T')+(it.series?'-'+it.series:''); if(!c[k]){ c[k]=0; order.push(k); } c[k]+=n(it.qty)||1; }); return order.map(function(k){ return k+' x'+fmt(c[k]); }).join(', '); }
 function szSet(k,v){ var r=szGet(); r[k]=v; try{ localStorage.setItem('wpsz',JSON.stringify(r)); }catch(e){} return r; }
 function szOn(){ var r=szGet(); return r.sz||r.sq||r.tr?r:null; }
 function szOpts(){ var r=szGet();
